@@ -1,0 +1,20 @@
+Checks: >
+  -*,
+  bugprone-*,
+  google-*,
+  modernize-*,
+  performance-*,
+  readability-*,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-exception-escape,
+  -google-readability-todo,
+  -modernize-use-trailing-return-type,
+  -performance-unnecessary-value-param,
+  -readability-identifier-length,
+  -readability-identifier-naming,
+  -readability-magic-numbers,
+  -readability-named-parameter,
+
+WarningsAsErrors: '*'
+
+HeaderFilterRegex: 'z3wire/.*\.h$'

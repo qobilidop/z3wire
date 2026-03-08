@@ -22,7 +22,7 @@ class Bool {
   static Bool False(z3::context& ctx) { return Bool(ctx.bool_val(false)); }
 
   // Access the underlying z3::expr.
-  const z3::expr& raw() const { return expr_; }
+  [[nodiscard]] const z3::expr& raw() const { return expr_; }
 
   // Logical operators.
   friend Bool operator&&(const Bool& lhs, const Bool& rhs) {

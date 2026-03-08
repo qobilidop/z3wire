@@ -38,10 +38,10 @@ class BitVec {
       static_assert(Width >= 64 || Value < (uint64_t{1} << Width),
                     "Literal value does not fit in the specified bit-width.");
     }
-    return BitVec(ctx.bv_val(static_cast<uint64_t>(Value), Width));
+    return BitVec(ctx.bv_val(Value, Width));
   }
 
-  const z3::expr& raw() const { return expr_; }
+  [[nodiscard]] const z3::expr& raw() const { return expr_; }
 
   // --- Bitwise operators (strict: same width and signedness) ---
 
@@ -197,7 +197,7 @@ Target safe_cast(const BitVec<SrcW, SrcS>& val) {
   constexpr bool kTgtS = Target::kIsSigned;
 
   // Signed-to-unsigned is always forbidden.
-  static_assert(!(SrcS && !kTgtS),
+  static_assert(!SrcS || kTgtS,
                 "safe_cast from signed to unsigned is always forbidden.");
 
   if constexpr (!SrcS && !kTgtS) {

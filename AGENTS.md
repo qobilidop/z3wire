@@ -6,8 +6,8 @@
 docs/design.md               Full design document. Read this first.
 z3wire/                       Library source: headers, sources, and tests.
 examples/                     Runnable examples.
-tools/format.sh               Auto-format all C++ files.
-tools/lint.sh                 Check formatting (used in CI).
+tools/format.sh               Auto-format (or --check) all C++ files.
+tools/lint.sh                 Run clang-tidy static analysis (used in CI).
 dev.sh                        Run commands in the devcontainer.
 .devcontainer/                Devcontainer setup (Ubuntu 24.04 + clang + Bazel).
 .github/workflows/ci.yml     CI workflow.
@@ -25,7 +25,8 @@ Use `./dev.sh` to run commands inside the devcontainer:
 ./dev.sh bazel build //...    # build everything
 ./dev.sh bazel test //...     # run all tests
 ./dev.sh ./tools/format.sh    # auto-format all C++ files
-./dev.sh ./tools/lint.sh      # check formatting
+./dev.sh ./tools/format.sh --check  # check formatting
+./dev.sh ./tools/lint.sh      # run clang-tidy static analysis
 ```
 
 All builds are hermetic via Bazel. Do not install dependencies outside of

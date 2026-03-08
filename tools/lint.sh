@@ -1,15 +1,54 @@
 #!/usr/bin/env bash
-# Check formatting of all C++ source files.
+# Run clang-tidy on all C++ source files.
 set -euo pipefail
 
 cd "$(git rev-parse --show-toplevel)"
 
-files=$(find z3wire examples -name '*.h' -o -name '*.cc')
+# Build the library to ensure external dependencies are fetched.
+bazel build //z3wire:z3wire 2>/dev/null
 
-if ! echo "$files" | xargs clang-format --dry-run -Werror 2>&1; then
-  echo ""
-  echo "Formatting errors found. Run ./tools/format.sh to fix."
+output_base=$(bazel info output_base 2>/dev/null)
+
+# Locate z3 include path from the cmake build output.
+z3_include_dir=$(find "$output_base/execroot" \
+  -path "*/z3_static/include/z3++.h" -print -quit 2>/dev/null | xargs dirname)
+if [[ -z "$z3_include_dir" ]]; then
+  echo "Error: could not find z3 include directory in Bazel build output."
   exit 1
 fi
 
-echo "All files are properly formatted."
+# Locate googletest include path.
+gtest_include_dir=$(find "$output_base/external" \
+  -path "*/googletest/include/gtest/gtest.h" -print -quit 2>/dev/null \
+  | sed 's|/gtest/gtest.h||')
+if [[ -z "$gtest_include_dir" ]]; then
+  echo "Error: could not find googletest include directory in Bazel externals."
+  exit 1
+fi
+
+# Generate a compile_commands.json so clang-tidy knows the compilation flags.
+files=$(find z3wire examples -name '*.h' -o -name '*.cc')
+entries=""
+for f in $files; do
+  abs_path="$(pwd)/$f"
+  if [[ -n "$entries" ]]; then entries+=","; fi
+  entries+="
+  {
+    \"directory\": \"$(pwd)\",
+    \"command\": \"clang++ -std=c++20 -xc++ -I. -isystem $z3_include_dir -isystem $gtest_include_dir -c $abs_path\",
+    \"file\": \"$abs_path\"
+  }"
+done
+echo "[$entries
+]" > compile_commands.json
+
+echo "$files" | xargs clang-tidy -p .
+status=$?
+
+rm -f compile_commands.json
+
+if [[ $status -ne 0 ]]; then
+  exit $status
+fi
+
+echo "clang-tidy: all checks passed."
