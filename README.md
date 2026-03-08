@@ -75,7 +75,7 @@ cmake --build build
 ctest --test-dir build
 ```
 
-Requires Z3 to be installed on your system (e.g., `apt install libz3-dev`).
+Requires clang and Z3 to be installed on your system (e.g., `apt install clang libz3-dev`).
 
 ## Design
 

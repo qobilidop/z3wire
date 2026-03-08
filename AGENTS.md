@@ -16,7 +16,6 @@ dev.sh                        Run commands in the devcontainer.
 .github/workflows/bazel.yml    Bazel workflow (build, test, coverage).
 .github/workflows/cmake.yml    CMake workflow (build, test).
 .github/workflows/docs.yml      Docs workflow (MkDocs → GitHub Pages).
-BUILD.bazel                   Root Bazel build file.
 MODULE.bazel                  Bazel module definition.
 CMakeLists.txt                Root CMake build file.
 ```

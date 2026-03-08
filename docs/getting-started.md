@@ -4,7 +4,7 @@
 
 Z3Wire requires:
 
-- A C++20-compatible compiler (clang or GCC)
+- A C++20-compatible compiler (clang is the only supported compiler; GCC may work but is untested)
 - [Z3](https://github.com/Z3Prover/z3)
 - Either [Bazel](https://bazel.build/) (via
   [Bazelisk](https://github.com/bazelbuild/bazelisk)) or
