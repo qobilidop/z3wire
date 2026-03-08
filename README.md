@@ -1,6 +1,7 @@
 # Z3Wire
 
 [![CI](https://github.com/qobilidop/z3wire/actions/workflows/ci.yml/badge.svg)](https://github.com/qobilidop/z3wire/actions/workflows/ci.yml)
+[![Docs](https://github.com/qobilidop/z3wire/actions/workflows/docs.yml/badge.svg)](https://qobilidop.github.io/z3wire/)
 
 A type-safe C++20 template library for [Z3](https://github.com/Z3Prover/z3) that enforces compile-time bit-width consistency and bit-growth arithmetic for hardware modeling and formal verification.
 
