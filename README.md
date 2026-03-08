@@ -15,9 +15,12 @@ A type-safe C++20 template library for [Z3](https://github.com/Z3Prover/z3) that
 ## Quick Example
 
 ```cpp
-#include "z3wire.hpp"
+#include <z3++.h>
+#include "z3wire/bitvec.h"
 
 z3::context ctx;
+z3::solver solver(ctx);
+
 z3w::Ubv<8> a(ctx, "a");
 z3w::Ubv<8> b(ctx, "b");
 
@@ -30,6 +33,8 @@ auto reg = z3w::cast<z3w::Ubv<8>>(sum);
 auto [result, overflowed] = z3w::checked_cast<z3w::Ubv<8>>(sum);
 solver.add(!overflowed.raw());
 ```
+
+See [`examples/`](examples/) for more runnable examples.
 
 ## Building
 
