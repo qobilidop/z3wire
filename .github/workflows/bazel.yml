@@ -19,4 +19,11 @@ jobs:
         run: ./dev.sh bazel test //...
 
       - name: Coverage
-        run: ./dev.sh ./tools/coverage.sh
+        run: |
+          ./dev.sh ./tools/coverage.sh
+          ./dev.sh bash -c 'cp "$(bazel info output_path)/_coverage/_coverage_report.dat" /workspace/coverage.lcov'
+
+      - name: Upload Coverage
+        uses: codecov/codecov-action@v5
+        with:
+          files: coverage.lcov
