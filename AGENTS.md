@@ -12,10 +12,10 @@ tools/coverage.sh             Generate LCOV coverage report (used in CI).
 tools/docs.sh                 Build or serve the MkDocs documentation site.
 dev.sh                        Run commands in the devcontainer.
 .devcontainer/                Devcontainer setup (Ubuntu 24.04 + clang + Bazel).
-.github/workflows/checks.yml    Checks workflow (format, lint).
-.github/workflows/bazel.yml    Bazel workflow (build, test, coverage).
-.github/workflows/cmake.yml    CMake workflow (build, test).
-.github/workflows/docs.yml      Docs workflow (MkDocs → GitHub Pages).
+.github/workflows/checks.yml  Checks workflow (format, lint).
+.github/workflows/bazel.yml  Bazel workflow (build, test, coverage).
+.github/workflows/cmake.yml  CMake workflow (build, test).
+.github/workflows/docs.yml   Docs workflow (MkDocs → GitHub Pages).
 MODULE.bazel                  Bazel module definition.
 CMakeLists.txt                Root CMake build file.
 renovate.json                 Renovate dependency update config.
@@ -37,7 +37,7 @@ Use `./dev.sh` to run commands inside the devcontainer:
 ```
 
 All builds are hermetic via Bazel. Do not install dependencies outside of
-Bazel.
+Bazel. Only clang is supported (GCC is untested).
 
 ## CI
 
@@ -82,11 +82,20 @@ Formatting is enforced by `clang-format` (Google style). Run `./tools/format.sh`
 before completing a task.
 
 Key conventions for this project:
-- Types: `CamelCase` (`Ubv`, `Sbv`, `Bool`, `BitVec`)
+- Types: `CamelCase` (`Bool`, `Ubv`, `Sbv`)
 - Functions: `snake_case` (`to_bool`, `to_ubv1`, `checked_cast`)
 - Template library: templates live in headers, non-template utilities go in
   `.cc` files.
 - C++20 features: `static_assert`, `if constexpr`, `requires` clauses.
+
+## Terminology and spelling
+
+- **bit-vector** (hyphenated) in prose — follows SMT-LIB and academic convention.
+- **bitvec** in code identifiers — e.g., `bitvec.h`.
+  - **Ubv** = unsigned bit-vector.
+  - **Sbv** = signed bit-vector.
+- **bit-width** (hyphenated) in prose.
+- **bit-growth** (hyphenated) in prose.
 
 ## Commit messages
 
