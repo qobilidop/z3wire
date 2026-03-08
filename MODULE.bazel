@@ -1,3 +1,6 @@
 module(
     name = "z3wire",
 )
+
+bazel_dep(name = "z3", version = "4.15.2")
+bazel_dep(name = "googletest", version = "1.16.0")
