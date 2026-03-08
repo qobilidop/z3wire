@@ -1,11 +1,4 @@
-# Z3Wire design document
-
-## Project identity
-
-- **Name:** Z3Wire
-- **Namespace:** `z3w::`
-- **Target audience:** Hardware designers, verification engineers, and security
-  researchers.
+# Design
 
 ## Motivation
 
@@ -128,7 +121,7 @@ z3w::Ubv<32> x(ctx, "x");
 
 ### Three-tier casting API
 
-#### `z3w::cast<T>(val)` -- The hardware cast
+#### `z3w::cast<T>(val)` —The hardware cast
 
 Performs raw truncation, extension, or sign reinterpretation based on source and
 target types. No safety checks. Use when you intentionally want hardware-style
@@ -140,7 +133,7 @@ Under the hood, uses `if constexpr` to select:
   signedness.
 - Target width == source width: zero-overhead type reinterpretation (bitcast).
 
-#### `z3w::safe_cast<T>(val)` -- The compiler guard
+#### `z3w::safe_cast<T>(val)` —The compiler guard
 
 Only compiles if the cast is mathematically guaranteed to be lossless.
 
@@ -152,7 +145,7 @@ Only compiles if the cast is mathematically guaranteed to be lossless.
 | `Sbv<W1>`   | `Ubv<W2>`   | **Always forbidden.** Negative values corrupt.  |
 | Any         | Smaller     | **Always forbidden.** Truncation is not safe.   |
 
-#### `z3w::checked_cast<T>(val)` -- The verification cast
+#### `z3w::checked_cast<T>(val)` —The verification cast
 
 Returns `std::pair<T, z3w::Bool>`. Performs the cast and also returns a symbolic
 boolean formula representing whether mathematical data loss occurred. The user
@@ -272,7 +265,7 @@ z3w::Bool t = z3w::Bool::True(ctx);
 
 Z3Wire provides a three-tier shift API, mirroring the casting tiers.
 
-#### `<<`, `>>` -- Hardware shift
+#### `<<`, `>>` —Hardware shift
 
 Raw hardware shift. Width stays constant, bits that shift out are silently lost.
 Widths and signedness must match exactly (strict, like bitwise ops).
@@ -287,7 +280,7 @@ z3w::Ubv<8> n(ctx, "n");
 auto result = a << n;  // -> z3w::Ubv<8>, bits may be lost
 ```
 
-#### `checked_shl`, `checked_shr` -- Checked shift
+#### `checked_shl`, `checked_shr` —Checked shift
 
 Performs the shift and returns a symbolic Bool indicating whether any non-zero
 bits were lost. Width stays constant.
@@ -297,7 +290,7 @@ auto [shifted, lost] = z3w::checked_shl(a, n);
 solver.add(!lost.raw());  // Assert: this shift never loses bits
 ```
 
-#### `lossless_shl` -- Lossless left shift
+#### `lossless_shl` —Lossless left shift
 
 Result type is wide enough to guarantee no bits are ever lost. Works with both
 compile-time constant and symbolic shift amounts.
@@ -342,23 +335,3 @@ auto flag = z3w::ite(sel, z3w::Bool::True(ctx), z3w::Bool::False(ctx));
   APIs (e.g., passing to `z3::solver`).
 - Users interact with `z3::context` and `z3::solver` directly; Z3Wire does not
   wrap these.
-
-## MVP scope
-
-Supported in the initial version:
-- Types: `Bool`, `Ubv<W>`, `Sbv<W>` (width > 0 enforced)
-- Bool operations: `&&`, `||`, `!`, `True`/`False` literals
-- Bool/Ubv<1> conversion: `to_bool`, `to_ubv1`
-- Arithmetic: `+`, `-` (bit growth)
-- Bitwise: `&`, `|`, `^`, `~` (strict width matching)
-- Shifts: `<<`, `>>`, `checked_shl`, `checked_shr`, `lossless_shl`
-- Equality: `==`, `!=`
-- Ordered comparison: `<`, `<=`, `>`, `>=` (signedness-aware)
-- Casting: `cast`, `safe_cast`, `checked_cast`
-- Construction: `Literal<Value>`, symbolic variables
-- Slicing: `extract` (static and symbolic-offset)
-- Concatenation: `concat` (variadic)
-- Conditional selection: `ite`
-
-Deferred to post-MVP:
-- Multiplication, division, modulo

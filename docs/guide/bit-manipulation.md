@@ -1,5 +1,8 @@
 # Bit manipulation
 
+Z3Wire provides functions for bit-level operations: slicing fields out of
+bit-vectors and concatenating them back together.
+
 ## Extract (bit slicing)
 
 ### Static extract
