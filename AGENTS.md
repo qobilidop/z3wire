@@ -5,6 +5,9 @@
 ```
 docs/design.md               Full design document. Read this first.
 z3wire/                       Library source: headers, sources, and tests.
+examples/                     Runnable examples.
+tools/format.sh               Auto-format all C++ files.
+tools/lint.sh                 Check formatting (used in CI).
 .devcontainer/                Devcontainer setup (Ubuntu 24.04 + clang + Bazel).
 .github/workflows/ci.yml     CI workflow.
 BUILD.bazel                   Root build file.
@@ -18,6 +21,8 @@ Unit tests live alongside the code they test (`foo.h` → `foo_test.cc`).
 ```sh
 bazel build //...             # build everything
 bazel test //...              # run all tests
+./tools/format.sh             # auto-format all C++ files
+./tools/lint.sh               # check formatting
 ```
 
 All builds are hermetic via Bazel. Do not install dependencies outside of
@@ -51,6 +56,8 @@ CI runs on every push to `main` and on PRs via GitHub Actions
 ## Style
 
 Follow the [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html).
+Formatting is enforced by `clang-format` (Google style). Run `./tools/format.sh`
+before completing a task.
 
 Key conventions for this project:
 - Types: `CamelCase` (`Ubv`, `Sbv`, `Bool`, `BitVec`)

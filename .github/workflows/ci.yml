@@ -15,6 +15,14 @@ jobs:
       - name: Build devcontainer image
         run: docker build -t z3wire-dev .devcontainer/
 
+      - name: Format Check
+        run: |
+          docker run --rm \
+            -v "$PWD":/workspace \
+            -w /workspace \
+            z3wire-dev \
+            ./tools/lint.sh
+
       - name: Build and Test
         run: |
           docker run --rm \

@@ -4,9 +4,9 @@
 // We verify that the ADD operation never silently overflows by checking the
 // carry bit.
 
-#include <iostream>
-
 #include <z3++.h>
+
+#include <iostream>
 
 #include "z3wire/bitvec.h"
 
@@ -29,10 +29,10 @@ int main() {
   auto op1 = z3w::Ubv<2>::Literal<1>(ctx);
   auto op2 = z3w::Ubv<2>::Literal<2>(ctx);
 
-  auto result = z3w::ite(opcode == op0, add_result,
-                z3w::ite(opcode == op1, sub_result,
-                z3w::ite(opcode == op2, and_result,
-                                        or_result)));
+  auto result =
+      z3w::ite(opcode == op0, add_result,
+               z3w::ite(opcode == op1, sub_result,
+                        z3w::ite(opcode == op2, and_result, or_result)));
 
   // Property: for AND operation, result is always <= both inputs.
   solver.push();

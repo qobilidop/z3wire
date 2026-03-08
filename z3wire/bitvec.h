@@ -231,8 +231,8 @@ std::pair<Target, Bool> checked_cast(const BitVec<SrcW, SrcS>& val) {
 // --- Bool / Ubv<1> conversion ---
 
 inline Ubv<1> to_ubv1(const Bool& b) {
-  return Ubv<1>(z3::ite(b.raw(), b.raw().ctx().bv_val(1, 1),
-                        b.raw().ctx().bv_val(0, 1)));
+  return Ubv<1>(
+      z3::ite(b.raw(), b.raw().ctx().bv_val(1, 1), b.raw().ctx().bv_val(0, 1)));
 }
 
 inline Bool to_bool(const Ubv<1>& v) {
@@ -251,10 +251,10 @@ Ubv<High - Low + 1> extract(const BitVec<W, S>& val) {
 
 // Symbolic-offset extract: shift right by offset, then static extract.
 template <size_t TargetWidth, size_t W, bool S, size_t IdxW>
-Ubv<TargetWidth> extract(const BitVec<W, S>& val,
-                         const Ubv<IdxW>& start_idx) {
+Ubv<TargetWidth> extract(const BitVec<W, S>& val, const Ubv<IdxW>& start_idx) {
   static_assert(TargetWidth > 0, "extract: TargetWidth must be > 0.");
-  static_assert(TargetWidth <= W, "extract: TargetWidth must be <= input width.");
+  static_assert(TargetWidth <= W,
+                "extract: TargetWidth must be <= input width.");
   // Extend index to match input width for the shift.
   auto idx_ext = z3::zext(start_idx.raw(), W - IdxW);
   auto shifted = z3::lshr(val.raw(), idx_ext);

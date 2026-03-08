@@ -3,9 +3,9 @@
 // Models unpacking a 16-bit instruction word into fields, modifying a field,
 // and repacking — then verifies the round-trip is correct.
 
-#include <iostream>
-
 #include <z3++.h>
+
+#include <iostream>
 
 #include "z3wire/bitvec.h"
 
@@ -17,9 +17,9 @@ int main() {
   z3w::Ubv<16> instruction(ctx, "instruction");
 
   // Unpack fields.
-  auto opcode = z3w::extract<15, 12>(instruction);    // Ubv<4>
-  auto dest = z3w::extract<11, 8>(instruction);        // Ubv<4>
-  auto immediate = z3w::extract<7, 0>(instruction);    // Ubv<8>
+  auto opcode = z3w::extract<15, 12>(instruction);   // Ubv<4>
+  auto dest = z3w::extract<11, 8>(instruction);      // Ubv<4>
+  auto immediate = z3w::extract<7, 0>(instruction);  // Ubv<8>
 
   // Repack.
   auto repacked = z3w::concat(opcode, dest, immediate);  // Ubv<16>

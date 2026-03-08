@@ -186,8 +186,8 @@ TEST_F(BitVecTest, AdditionDifferentWidths) {
 TEST_F(BitVecTest, AdditionChained) {
   Ubv<8> a(ctx_, "a");
   Ubv<8> b(ctx_, "b");
-  auto sum1 = a + b;      // Ubv<9>
-  auto sum2 = sum1 + a;   // Ubv<10>
+  auto sum1 = a + b;     // Ubv<9>
+  auto sum2 = sum1 + a;  // Ubv<10>
 
   static_assert(decltype(sum1)::kWidth == 9);
   static_assert(decltype(sum2)::kWidth == 10);
@@ -316,7 +316,7 @@ TEST_F(BitVecTest, CastSignExtension) {
   auto b = cast<Sbv<16>>(a);
 
   z3::solver s(ctx_);
-  s.add(a.raw() == ctx_.bv_val(0x80, 8));  // -128
+  s.add(a.raw() == ctx_.bv_val(0x80, 8));     // -128
   s.add(b.raw() != ctx_.bv_val(0xFF80, 16));  // -128 sign-extended
   EXPECT_EQ(s.check(), z3::unsat);
 }

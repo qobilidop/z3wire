@@ -4,9 +4,9 @@
 // a carry flag. Z3Wire's bit-growth arithmetic lets us verify this without
 // manually managing widths.
 
-#include <iostream>
-
 #include <z3++.h>
+
+#include <iostream>
 
 #include "z3wire/bitvec.h"
 
@@ -27,8 +27,7 @@ int main() {
   auto carry = z3w::to_bool(z3w::extract<8, 8>(sum9));
 
   // Verify: if no carry, the truncated result equals the full sum.
-  auto [checked_result, overflowed] =
-      z3w::checked_cast<z3w::Ubv<8>>(sum9);
+  auto [checked_result, overflowed] = z3w::checked_cast<z3w::Ubv<8>>(sum9);
   solver.add(carry.raw() != overflowed.raw());
 
   if (solver.check() == z3::unsat) {

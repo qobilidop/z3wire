@@ -3,6 +3,8 @@ FROM ubuntu:24.04
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     clang \
+    clang-format \
+    clang-tidy \
     curl \
     git \
     python3 \
