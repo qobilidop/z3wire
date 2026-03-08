@@ -4,6 +4,7 @@
 
 ```
 docs/design.md               Full design document. Read this first.
+docs/roadmap.md              Future directions and planned features.
 z3wire/                       Library source: headers, sources, and tests.
 examples/                     Runnable examples.
 tools/format.sh               Auto-format (or --check) all C++ files.
