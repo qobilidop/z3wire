@@ -20,9 +20,14 @@ if [ -t 0 ]; then
   tty_flag="-it"
 fi
 
-docker run --rm $tty_flag \
+# Expose port 8000 for mkdocs serve.
+port_flag=""
+if [[ "${*}" == *"docs.sh serve"* ]]; then
+  port_flag="-p 8000:8000"
+fi
+
+docker run --rm $tty_flag $port_flag \
   -v "$PWD":/workspace \
   -v bazel-cache:/home/dev/.cache/bazel \
-  -p 8000:8000 \
   -w /workspace \
   "$IMAGE" "$@"

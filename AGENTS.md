@@ -41,6 +41,9 @@ CI runs on every push to `main` and on PRs via GitHub Actions
 (`.github/workflows/ci.yml`). It uses `./dev.sh` to run format checks,
 builds, and tests inside the devcontainer.
 
+When adding a new CI workflow or deployable service, add a corresponding
+badge to `README.md`.
+
 ## Key design invariants — do not break these
 
 1. **Compile-time type safety.** Bit-width and signedness mismatches must be

@@ -5,26 +5,27 @@ set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 
 # Build the library to ensure external dependencies are fetched.
-bazel build //z3wire:z3wire 2>/dev/null
+bazel build //z3wire:z3wire
 
-output_base=$(bazel info output_base 2>/dev/null)
+output_base=$(bazel info output_base)
 
 # Locate z3 include path from the cmake build output.
-z3_include_dir=$(find "$output_base/execroot" \
-  -path "*/z3_static/include/z3++.h" -print -quit 2>/dev/null | xargs dirname)
-if [[ -z "$z3_include_dir" ]]; then
+z3_header=$(find "$output_base/execroot" \
+  -path "*/z3_static/include/z3++.h" -print -quit 2>/dev/null)
+if [[ -z "$z3_header" ]]; then
   echo "Error: could not find z3 include directory in Bazel build output."
   exit 1
 fi
+z3_include_dir=$(dirname "$z3_header")
 
 # Locate googletest include path.
-gtest_include_dir=$(find "$output_base/external" \
-  -path "*/googletest/include/gtest/gtest.h" -print -quit 2>/dev/null \
-  | sed 's|/gtest/gtest.h||')
-if [[ -z "$gtest_include_dir" ]]; then
+gtest_header=$(find "$output_base/external" \
+  -path "*/googletest/include/gtest/gtest.h" -print -quit 2>/dev/null)
+if [[ -z "$gtest_header" ]]; then
   echo "Error: could not find googletest include directory in Bazel externals."
   exit 1
 fi
+gtest_include_dir=$(dirname "$(dirname "$gtest_header")")
 
 # Generate a compile_commands.json so clang-tidy knows the compilation flags.
 files=$(find z3wire examples -name '*.h' -o -name '*.cc')
