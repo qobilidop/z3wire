@@ -8,6 +8,7 @@ z3wire/                       Library source: headers, sources, and tests.
 examples/                     Runnable examples.
 tools/format.sh               Auto-format all C++ files.
 tools/lint.sh                 Check formatting (used in CI).
+dev.sh                        Run commands in the devcontainer.
 .devcontainer/                Devcontainer setup (Ubuntu 24.04 + clang + Bazel).
 .github/workflows/ci.yml     CI workflow.
 BUILD.bazel                   Root build file.
@@ -18,11 +19,13 @@ Unit tests live alongside the code they test (`foo.h` → `foo_test.cc`).
 
 ## Build and test
 
+Use `./dev.sh` to run commands inside the devcontainer:
+
 ```sh
-bazel build //...             # build everything
-bazel test //...              # run all tests
-./tools/format.sh             # auto-format all C++ files
-./tools/lint.sh               # check formatting
+./dev.sh bazel build //...    # build everything
+./dev.sh bazel test //...     # run all tests
+./dev.sh ./tools/format.sh    # auto-format all C++ files
+./dev.sh ./tools/lint.sh      # check formatting
 ```
 
 All builds are hermetic via Bazel. Do not install dependencies outside of
@@ -31,8 +34,8 @@ Bazel.
 ## CI
 
 CI runs on every push to `main` and on PRs via GitHub Actions
-(`.github/workflows/ci.yml`). It builds the devcontainer image and runs
-`bazel build //...` and `bazel test //...` inside it.
+(`.github/workflows/ci.yml`). It uses `./dev.sh` to run format checks,
+builds, and tests inside the devcontainer.
 
 ## Key design invariants — do not break these
 

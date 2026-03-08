@@ -12,22 +12,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build devcontainer image
-        run: docker build -t z3wire-dev .devcontainer/
-
       - name: Format Check
-        run: |
-          docker run --rm \
-            -v "$PWD":/workspace \
-            -w /workspace \
-            z3wire-dev \
-            ./tools/lint.sh
+        run: ./dev.sh ./tools/lint.sh
 
-      - name: Build and Test
-        run: |
-          docker run --rm \
-            -v "$PWD":/workspace \
-            -v bazel-cache:/root/.cache/bazel \
-            -w /workspace \
-            z3wire-dev \
-            bash -c "bazel build //... && bazel test //..."
+      - name: Build
+        run: ./dev.sh bazel build //...
+
+      - name: Test
+        run: ./dev.sh bazel test //...

@@ -38,10 +38,27 @@ See [`examples/`](examples/) for more runnable examples.
 
 ## Building
 
-Requires Bazel (via [Bazelisk](https://github.com/bazelbuild/bazelisk)):
+The easiest way to build and test is with the included devcontainer, which has
+all dependencies pre-installed (clang, Bazel, Z3 builds from source via Bazel):
+
+```sh
+./dev.sh bazel build //...
+./dev.sh ./tools/lint.sh
+./dev.sh bazel test //...
+./dev.sh bazel run //examples:safe_adder
+```
+
+`dev.sh` builds the devcontainer image on first use and runs commands inside it
+with a persistent Bazel cache.
+
+The first build takes several minutes (compiling Z3 from source). Subsequent
+builds use the cached result and complete in seconds.
+
+If you have Bazel installed locally, you can also run commands directly:
 
 ```sh
 bazel build //...
+./tools/lint.sh
 bazel test //...
 ```
 
