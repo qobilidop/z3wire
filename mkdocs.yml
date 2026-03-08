@@ -1,8 +1,7 @@
 site_name: Z3Wire
 site_description: >-
-  A type-safe C++20 template library for Z3 that enforces compile-time
-  bit-width consistency and bit-growth arithmetic for hardware modeling
-  and formal verification.
+  Z3 bit-vectors with compile-time width safety and overflow-proof arithmetic.
+  A C++20 template library.
 repo_url: https://github.com/qobilidop/z3wire
 repo_name: qobilidop/z3wire
 

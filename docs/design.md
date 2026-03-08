@@ -4,9 +4,6 @@
 
 - **Name:** Z3Wire
 - **Namespace:** `z3w::`
-- **One-liner:** A type-safe C++20 template library for Z3 that enforces
-  compile-time bit-width consistency and bit-growth arithmetic for hardware
-  modeling and formal verification.
 - **Target audience:** Hardware designers, verification engineers, and security
   researchers.
 

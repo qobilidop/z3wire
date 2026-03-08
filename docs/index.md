@@ -1,9 +1,5 @@
 # Z3Wire
 
-A type-safe C++20 template library for [Z3](https://github.com/Z3Prover/z3)
-that enforces compile-time bit-width consistency and bit-growth arithmetic for
-hardware modeling and formal verification.
-
 ## Why Z3Wire?
 
 Z3's C++ API represents all expressions as `z3::expr`, with no compile-time

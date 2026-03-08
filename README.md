@@ -6,7 +6,7 @@
 [![codecov](https://codecov.io/gh/qobilidop/z3wire/graph/badge.svg)](https://codecov.io/gh/qobilidop/z3wire)
 [![Docs](https://github.com/qobilidop/z3wire/actions/workflows/docs.yml/badge.svg)](https://qobilidop.github.io/z3wire/)
 
-A type-safe C++20 template library for [Z3](https://github.com/Z3Prover/z3) that enforces compile-time bit-width consistency and bit-growth arithmetic for hardware modeling and formal verification.
+Z3 bit-vectors with compile-time width safety and overflow-proof arithmetic. A C++20 template library.
 
 ## Features
 
