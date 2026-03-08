@@ -23,5 +23,6 @@ fi
 docker run --rm $tty_flag \
   -v "$PWD":/workspace \
   -v bazel-cache:/home/dev/.cache/bazel \
+  -p 8000:8000 \
   -w /workspace \
   "$IMAGE" "$@"

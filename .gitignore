@@ -4,3 +4,6 @@ MODULE.bazel.lock
 
 # clang-tidy
 /compile_commands.json
+
+# MkDocs
+/site/

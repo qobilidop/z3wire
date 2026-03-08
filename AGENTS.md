@@ -9,6 +9,7 @@ examples/                     Runnable examples.
 tools/format.sh               Auto-format (or --check) all C++ files.
 tools/lint.sh                 Run clang-tidy static analysis (used in CI).
 tools/coverage.sh             Generate LCOV coverage report (used in CI).
+tools/docs.sh                 Build or serve the MkDocs documentation site.
 dev.sh                        Run commands in the devcontainer.
 .devcontainer/                Devcontainer setup (Ubuntu 24.04 + clang + Bazel).
 .github/workflows/ci.yml     CI workflow.
