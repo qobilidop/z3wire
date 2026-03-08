@@ -13,3 +13,12 @@ cc_test(
         "@googletest//:gtest_main",
     ],
 )
+
+cc_test(
+    name = "bitvec_test",
+    srcs = ["bitvec_test.cc"],
+    deps = [
+        ":z3wire",
+        "@googletest//:gtest_main",
+    ],
+)
