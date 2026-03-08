@@ -1,12 +1,1 @@
-cc_library(
-    name = "z3wire",
-    hdrs = glob(["include/z3wire/*.h"]),
-    includes = ["include"],
-    visibility = ["//visibility:public"],
-    deps = ["@z3//:z3_static"],
-)
-
-sh_test(
-    name = "ci_smoke_test",
-    srcs = ["tools/ci_smoke_test.sh"],
-)
+# Root BUILD file. Library targets live in //z3wire.

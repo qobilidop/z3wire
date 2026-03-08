@@ -4,16 +4,14 @@
 
 ```
 docs/design.md               Full design document. Read this first.
-include/z3wire/               Public headers (TODO: not yet created).
-tests/                        Tests (TODO: not yet created).
-tools/ci_smoke_test.sh        CI smoke test.
+z3wire/                       Library source: headers, sources, and tests.
 .devcontainer/                Devcontainer setup (Ubuntu 24.04 + clang + Bazel).
 .github/workflows/ci.yml     CI workflow.
 BUILD.bazel                   Root build file.
 MODULE.bazel                  Bazel module definition.
 ```
 
-Unit tests should live alongside the code they test or in a `tests/` directory.
+Unit tests live alongside the code they test (`foo.h` → `foo_test.cc`).
 
 ## Build and test
 

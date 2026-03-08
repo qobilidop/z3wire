@@ -1,0 +1,15 @@
+cc_library(
+    name = "z3wire",
+    hdrs = glob(["*.h"]),
+    visibility = ["//visibility:public"],
+    deps = ["@z3//:z3_static"],
+)
+
+cc_test(
+    name = "bool_test",
+    srcs = ["bool_test.cc"],
+    deps = [
+        ":z3wire",
+        "@googletest//:gtest_main",
+    ],
+)
