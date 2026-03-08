@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Bazelisk as "bazel"
-ARG BAZELISK_VERSION=v1.25.0
+ARG BAZELISK_VERSION=v1.28.1
 RUN ARCH=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/') && \
     curl -fSL "https://github.com/bazelbuild/bazelisk/releases/download/${BAZELISK_VERSION}/bazelisk-linux-${ARCH}" \
     -o /usr/local/bin/bazel && chmod +x /usr/local/bin/bazel
