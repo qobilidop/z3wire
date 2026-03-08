@@ -285,5 +285,248 @@ TEST_F(BitVecTest, Ite) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
+// --- cast ---
+
+TEST_F(BitVecTest, CastTruncation) {
+  Ubv<16> a(ctx_, "a");
+  auto b = cast<Ubv<8>>(a);
+
+  static_assert(decltype(b)::kWidth == 8);
+
+  z3::solver s(ctx_);
+  s.add(a.raw() == ctx_.bv_val(0x1234, 16));
+  s.add(b.raw() != ctx_.bv_val(0x34, 8));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(BitVecTest, CastZeroExtension) {
+  Ubv<8> a(ctx_, "a");
+  auto b = cast<Ubv<16>>(a);
+
+  static_assert(decltype(b)::kWidth == 16);
+
+  z3::solver s(ctx_);
+  s.add(a.raw() == ctx_.bv_val(0xFF, 8));
+  s.add(b.raw() != ctx_.bv_val(0x00FF, 16));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(BitVecTest, CastSignExtension) {
+  Sbv<8> a(ctx_, "a");
+  auto b = cast<Sbv<16>>(a);
+
+  z3::solver s(ctx_);
+  s.add(a.raw() == ctx_.bv_val(0x80, 8));  // -128
+  s.add(b.raw() != ctx_.bv_val(0xFF80, 16));  // -128 sign-extended
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(BitVecTest, CastBitcast) {
+  Ubv<8> a(ctx_, "a");
+  auto b = cast<Sbv<8>>(a);
+
+  static_assert(decltype(b)::kIsSigned);
+
+  z3::solver s(ctx_);
+  s.add(a.raw() == ctx_.bv_val(42, 8));
+  s.add(b.raw() != ctx_.bv_val(42, 8));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+// --- safe_cast ---
+
+TEST_F(BitVecTest, SafeCastWidening) {
+  Ubv<8> a(ctx_, "a");
+  auto b = safe_cast<Ubv<16>>(a);
+
+  static_assert(decltype(b)::kWidth == 16);
+}
+
+TEST_F(BitVecTest, SafeCastUnsignedToSigned) {
+  Ubv<8> a(ctx_, "a");
+  // Needs W2 > W1 (9 > 8).
+  auto b = safe_cast<Sbv<9>>(a);
+
+  static_assert(decltype(b)::kWidth == 9);
+  static_assert(decltype(b)::kIsSigned);
+}
+
+// --- checked_cast ---
+
+TEST_F(BitVecTest, CheckedCastNoOverflow) {
+  Ubv<16> a(ctx_, "a");
+  auto [result, overflowed] = checked_cast<Ubv<8>>(a);
+
+  // When value fits in 8 bits, overflow should be false.
+  z3::solver s(ctx_);
+  s.add(a.raw() == ctx_.bv_val(42, 16));
+  s.add(overflowed.raw());
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(BitVecTest, CheckedCastWithOverflow) {
+  Ubv<16> a(ctx_, "a");
+  auto [result, overflowed] = checked_cast<Ubv<8>>(a);
+
+  // When value doesn't fit, overflow should be true.
+  z3::solver s(ctx_);
+  s.add(a.raw() == ctx_.bv_val(256, 16));
+  s.add(!overflowed.raw());
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+// --- Bool / Ubv<1> conversion ---
+
+TEST_F(BitVecTest, ToUbv1) {
+  Bool b = Bool::True(ctx_);
+  Ubv<1> v = to_ubv1(b);
+
+  z3::solver s(ctx_);
+  s.add(v.raw() != ctx_.bv_val(1, 1));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(BitVecTest, ToBool) {
+  auto v = Ubv<1>::Literal<1>(ctx_);
+  Bool b = to_bool(v);
+
+  z3::solver s(ctx_);
+  s.add(!b.raw());
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(BitVecTest, ToBoolRoundtrip) {
+  Bool orig(ctx_, "orig");
+  Bool roundtrip = to_bool(to_ubv1(orig));
+
+  // orig <=> roundtrip should always hold.
+  z3::solver s(ctx_);
+  s.add(orig.raw() != roundtrip.raw());
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+// --- extract ---
+
+TEST_F(BitVecTest, StaticExtract) {
+  Ubv<16> a(ctx_, "a");
+  auto high = extract<15, 8>(a);
+  auto low = extract<7, 0>(a);
+
+  static_assert(decltype(high)::kWidth == 8);
+  static_assert(decltype(low)::kWidth == 8);
+
+  z3::solver s(ctx_);
+  s.add(a.raw() == ctx_.bv_val(0x1234, 16));
+  s.add(high.raw() != ctx_.bv_val(0x12, 8));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(BitVecTest, SymbolicExtract) {
+  Ubv<16> a(ctx_, "a");
+  Ubv<4> idx(ctx_, "idx");
+  auto nibble = extract<4>(a, idx);
+
+  static_assert(decltype(nibble)::kWidth == 4);
+
+  z3::solver s(ctx_);
+  s.add(a.raw() == ctx_.bv_val(0xABCD, 16));
+  s.add(idx.raw() == ctx_.bv_val(4, 4));
+  // Shift right by 4: 0xABCD >> 4 = 0x0ABC, take low 4 bits = 0xC.
+  s.add(nibble.raw() != ctx_.bv_val(0xC, 4));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+// --- concat ---
+
+TEST_F(BitVecTest, Concat) {
+  Ubv<8> high(ctx_, "high");
+  Ubv<8> low(ctx_, "low");
+  auto full = concat(high, low);
+
+  static_assert(decltype(full)::kWidth == 16);
+
+  z3::solver s(ctx_);
+  s.add(high.raw() == ctx_.bv_val(0xAB, 8));
+  s.add(low.raw() == ctx_.bv_val(0xCD, 8));
+  s.add(full.raw() != ctx_.bv_val(0xABCD, 16));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(BitVecTest, ConcatVariadic) {
+  Ubv<4> a(ctx_, "a");
+  Ubv<4> b(ctx_, "b");
+  Ubv<4> c(ctx_, "c");
+  auto result = concat(a, b, c);
+
+  static_assert(decltype(result)::kWidth == 12);
+}
+
+// --- checked_shl ---
+
+TEST_F(BitVecTest, CheckedShlNoLoss) {
+  Ubv<8> a(ctx_, "a");
+  Ubv<8> n(ctx_, "n");
+  auto [shifted, lost] = checked_shl(a, n);
+
+  // Shifting 1 left by 4 should not lose bits.
+  z3::solver s(ctx_);
+  s.add(a.raw() == ctx_.bv_val(1, 8));
+  s.add(n.raw() == ctx_.bv_val(4, 8));
+  s.add(lost.raw());
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(BitVecTest, CheckedShlWithLoss) {
+  Ubv<8> a(ctx_, "a");
+  Ubv<8> n(ctx_, "n");
+  auto [shifted, lost] = checked_shl(a, n);
+
+  // Shifting 0x80 left by 1 loses the high bit.
+  z3::solver s(ctx_);
+  s.add(a.raw() == ctx_.bv_val(0x80, 8));
+  s.add(n.raw() == ctx_.bv_val(1, 8));
+  s.add(!lost.raw());
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+// --- checked_shr ---
+
+TEST_F(BitVecTest, CheckedShrWithLoss) {
+  Ubv<8> a(ctx_, "a");
+  Ubv<8> n(ctx_, "n");
+  auto [shifted, lost] = checked_shr(a, n);
+
+  // Shifting 0x01 right by 1 loses the low bit.
+  z3::solver s(ctx_);
+  s.add(a.raw() == ctx_.bv_val(1, 8));
+  s.add(n.raw() == ctx_.bv_val(1, 8));
+  s.add(!lost.raw());
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+// --- lossless_shl ---
+
+TEST_F(BitVecTest, LosslessShlConstant) {
+  Ubv<8> a(ctx_, "a");
+  auto result = lossless_shl<3>(a);
+
+  static_assert(decltype(result)::kWidth == 11);
+
+  z3::solver s(ctx_);
+  s.add(a.raw() == ctx_.bv_val(0xFF, 8));
+  // 0xFF << 3 = 0x7F8.
+  s.add(result.raw() != ctx_.bv_val(0x7F8, 11));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(BitVecTest, LosslessShlSymbolic) {
+  Ubv<8> a(ctx_, "a");
+  Ubv<3> n(ctx_, "n");
+  auto result = lossless_shl(a, n);
+
+  // Result width = 8 + 2^3 - 1 = 15.
+  static_assert(decltype(result)::kWidth == 15);
+}
+
 }  // namespace
 }  // namespace z3w
