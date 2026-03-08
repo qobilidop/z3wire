@@ -1,6 +1,8 @@
 # Z3Wire
 
-[![CI](https://github.com/qobilidop/z3wire/actions/workflows/ci.yml/badge.svg)](https://github.com/qobilidop/z3wire/actions/workflows/ci.yml)
+[![Checks](https://github.com/qobilidop/z3wire/actions/workflows/checks.yml/badge.svg)](https://github.com/qobilidop/z3wire/actions/workflows/checks.yml)
+[![Bazel](https://github.com/qobilidop/z3wire/actions/workflows/bazel.yml/badge.svg)](https://github.com/qobilidop/z3wire/actions/workflows/bazel.yml)
+[![CMake](https://github.com/qobilidop/z3wire/actions/workflows/cmake.yml/badge.svg)](https://github.com/qobilidop/z3wire/actions/workflows/cmake.yml)
 [![Docs](https://github.com/qobilidop/z3wire/actions/workflows/docs.yml/badge.svg)](https://qobilidop.github.io/z3wire/)
 
 A type-safe C++20 template library for [Z3](https://github.com/Z3Prover/z3) that enforces compile-time bit-width consistency and bit-growth arithmetic for hardware modeling and formal verification.
@@ -39,12 +41,15 @@ See [`examples/`](examples/) for more runnable examples.
 
 ## Building
 
+Z3Wire supports both **Bazel** and **CMake** build systems.
+
+### Devcontainer (recommended)
+
 The easiest way to build and test is with the included devcontainer, which has
-all dependencies pre-installed (clang, Bazel, Z3 builds from source via Bazel):
+all dependencies pre-installed:
 
 ```sh
 ./dev.sh bazel build //...
-./dev.sh ./tools/lint.sh
 ./dev.sh bazel test //...
 ./dev.sh bazel run //examples:safe_adder
 ```
@@ -52,16 +57,25 @@ all dependencies pre-installed (clang, Bazel, Z3 builds from source via Bazel):
 `dev.sh` builds the devcontainer image on first use and runs commands inside it
 with a persistent Bazel cache.
 
-The first build takes several minutes (compiling Z3 from source). Subsequent
-builds use the cached result and complete in seconds.
-
-If you have Bazel installed locally, you can also run commands directly:
+### Bazel
 
 ```sh
 bazel build //...
-./tools/lint.sh
 bazel test //...
 ```
+
+The first build takes several minutes (compiling Z3 from source). Subsequent
+builds use the cached result and complete in seconds.
+
+### CMake
+
+```sh
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+ctest --test-dir build
+```
+
+Requires Z3 to be installed on your system (e.g., `apt install libz3-dev`).
 
 ## Design
 

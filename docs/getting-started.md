@@ -5,8 +5,10 @@
 Z3Wire requires:
 
 - A C++20-compatible compiler (clang or GCC)
-- [Bazel](https://bazel.build/) (via [Bazelisk](https://github.com/bazelbuild/bazelisk))
-- Z3 (built from source by Bazel — no manual installation needed)
+- [Z3](https://github.com/Z3Prover/z3)
+- Either [Bazel](https://bazel.build/) (via
+  [Bazelisk](https://github.com/bazelbuild/bazelisk)) or
+  [CMake](https://cmake.org/) 3.16+
 
 ## Using the Devcontainer
 
@@ -51,6 +53,29 @@ cc_binary(
     srcs = ["my_verifier.cc"],
     deps = ["@z3wire//z3wire"],
 )
+```
+
+### CMake
+
+Use `FetchContent` to add Z3Wire to your project:
+
+```cmake
+include(FetchContent)
+FetchContent_Declare(
+    z3wire
+    GIT_REPOSITORY https://github.com/qobilidop/z3wire.git
+    GIT_TAG main
+)
+FetchContent_MakeAvailable(z3wire)
+
+target_link_libraries(my_verifier PRIVATE z3wire::z3wire)
+```
+
+Z3 must be installed on your system (e.g., `apt install libz3-dev`).
+Alternatively, if Z3 is installed in a custom location:
+
+```sh
+cmake -B build -DCMAKE_PREFIX_PATH=/path/to/z3
 ```
 
 ## Your First Verification

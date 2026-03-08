@@ -2,6 +2,9 @@
 /bazel-*
 MODULE.bazel.lock
 
+# CMake
+/build/
+
 # clang-tidy
 /compile_commands.json
 

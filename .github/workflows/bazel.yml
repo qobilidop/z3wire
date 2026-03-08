@@ -1,4 +1,4 @@
-name: CI
+name: Bazel
 
 on:
   push:
@@ -11,12 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Format Check
-        run: ./dev.sh ./tools/format.sh --check
-
-      - name: Lint Check
-        run: ./dev.sh ./tools/lint.sh
 
       - name: Build
         run: ./dev.sh bazel build //...

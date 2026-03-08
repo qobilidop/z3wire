@@ -12,9 +12,13 @@ tools/coverage.sh             Generate LCOV coverage report (used in CI).
 tools/docs.sh                 Build or serve the MkDocs documentation site.
 dev.sh                        Run commands in the devcontainer.
 .devcontainer/                Devcontainer setup (Ubuntu 24.04 + clang + Bazel).
-.github/workflows/ci.yml     CI workflow.
-BUILD.bazel                   Root build file.
+.github/workflows/checks.yml    Checks workflow (format, lint).
+.github/workflows/bazel.yml    Bazel workflow (build, test, coverage).
+.github/workflows/cmake.yml    CMake workflow (build, test).
+.github/workflows/docs.yml      Docs workflow (MkDocs → GitHub Pages).
+BUILD.bazel                   Root Bazel build file.
 MODULE.bazel                  Bazel module definition.
+CMakeLists.txt                Root CMake build file.
 ```
 
 Unit tests live alongside the code they test (`foo.h` → `foo_test.cc`).
@@ -37,9 +41,10 @@ Bazel.
 
 ## CI
 
-CI runs on every push to `main` and on PRs via GitHub Actions
-(`.github/workflows/ci.yml`). It uses `./dev.sh` to run format checks,
-builds, and tests inside the devcontainer.
+CI runs on every push to `main` and on PRs via GitHub Actions.
+Four workflows: Checks (format, lint), Bazel (build, test, coverage),
+CMake (build, test), and Docs (MkDocs deploy). All use `./dev.sh` to run
+commands inside the devcontainer (except CMake and Docs which run on bare Ubuntu).
 
 When adding a new CI workflow or deployable service, add a corresponding
 badge to `README.md`.
