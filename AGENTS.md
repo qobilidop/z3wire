@@ -8,6 +8,7 @@ z3wire/                       Library source: headers, sources, and tests.
 examples/                     Runnable examples.
 tools/format.sh               Auto-format (or --check) all C++ files.
 tools/lint.sh                 Run clang-tidy static analysis (used in CI).
+tools/coverage.sh             Generate LCOV coverage report (used in CI).
 dev.sh                        Run commands in the devcontainer.
 .devcontainer/                Devcontainer setup (Ubuntu 24.04 + clang + Bazel).
 .github/workflows/ci.yml     CI workflow.
@@ -27,6 +28,7 @@ Use `./dev.sh` to run commands inside the devcontainer:
 ./dev.sh ./tools/format.sh    # auto-format all C++ files
 ./dev.sh ./tools/format.sh --check  # check formatting
 ./dev.sh ./tools/lint.sh      # run clang-tidy static analysis
+./dev.sh ./tools/coverage.sh  # generate coverage report
 ```
 
 All builds are hermetic via Bazel. Do not install dependencies outside of
