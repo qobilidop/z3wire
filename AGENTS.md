@@ -18,6 +18,7 @@ dev.sh                        Run commands in the devcontainer.
 .github/workflows/docs.yml      Docs workflow (MkDocs → GitHub Pages).
 MODULE.bazel                  Bazel module definition.
 CMakeLists.txt                Root CMake build file.
+renovate.json                 Renovate dependency update config.
 ```
 
 Unit tests live alongside the code they test (`foo.h` → `foo_test.cc`).
@@ -47,6 +48,13 @@ commands inside the devcontainer (except CMake and Docs which run on bare Ubuntu
 
 When adding a new CI workflow or deployable service, add a corresponding
 badge to `README.md`.
+
+## Dependency updates
+
+Renovate (via the GitHub App) automates dependency update PRs. Chosen over
+Dependabot because Renovate supports Bazel `MODULE.bazel`, `.bazelversion`,
+GitHub Actions, and pip — Dependabot lacks Bazel support. Configuration is in
+`renovate.json`.
 
 ## Key design invariants — do not break these
 
