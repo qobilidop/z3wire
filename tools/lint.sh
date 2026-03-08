@@ -4,8 +4,8 @@ set -euo pipefail
 
 cd "$(git rev-parse --show-toplevel)"
 
-# Build the library to ensure external dependencies are fetched.
-bazel build //z3wire:z3wire
+# Build a test target to ensure external dependencies (z3, googletest) are fetched.
+bazel build //z3wire:bool_test
 
 output_base=$(bazel info output_base)
 
