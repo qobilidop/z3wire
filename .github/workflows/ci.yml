@@ -1,0 +1,22 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build devcontainer image
+        run: docker build -t z3wire-dev .devcontainer/
+
+      - name: Build
+        run: docker run --rm -v "$PWD":/workspace -w /workspace z3wire-dev bazel build //...
+
+      - name: Test
+        run: docker run --rm -v "$PWD":/workspace -w /workspace z3wire-dev bazel test //...

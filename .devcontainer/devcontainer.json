@@ -1,0 +1,6 @@
+{
+  "name": "z3wire",
+  "build": {
+    "dockerfile": "Dockerfile"
+  }
+}
