@@ -1,8 +1,8 @@
-# Bit Manipulation
+# Bit manipulation
 
-## Extract (Bit Slicing)
+## Extract (bit slicing)
 
-### Static Extract
+### Static extract
 
 Extract a contiguous range of bits with compile-time bounds:
 
@@ -25,7 +25,7 @@ auto bit5 = z3w::extract<5, 5>(instruction);       // Ubv<1>
     The result is always `Ubv` (unsigned). Extracted bits have no inherent
     signedness.
 
-### Symbolic-Offset Extract
+### Symbolic-offset extract
 
 Extract a fixed number of bits starting at a symbolic position:
 

@@ -1,4 +1,4 @@
-# Getting Started
+# Getting started
 
 ## Prerequisites
 
@@ -10,7 +10,7 @@ Z3Wire requires:
   [Bazelisk](https://github.com/bazelbuild/bazelisk)) or
   [CMake](https://cmake.org/) 3.16+
 
-## Using the Devcontainer
+## Using the devcontainer
 
 The easiest way to get started is with the included devcontainer, which has all
 dependencies pre-installed:
@@ -28,7 +28,7 @@ with a persistent Bazel cache.
     The first build takes several minutes (compiling Z3 from source). Subsequent
     builds use the cached result and complete in seconds.
 
-## Adding Z3Wire to Your Project
+## Adding Z3Wire to your project
 
 ### Bazel
 
@@ -78,7 +78,7 @@ Alternatively, if Z3 is installed in a custom location:
 cmake -B build -DCMAKE_PREFIX_PATH=/path/to/z3
 ```
 
-## Your First Verification
+## Your first verification
 
 Here's a minimal example that verifies a property of 8-bit addition:
 
@@ -111,7 +111,7 @@ int main() {
 }
 ```
 
-## Next Steps
+## Next steps
 
 - [Type System](guide/types.md) — learn about `Bool`, `Ubv<W>`, and `Sbv<W>`
 - [Operations](guide/operations.md) — arithmetic, bitwise, and comparison

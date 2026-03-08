@@ -1,4 +1,4 @@
-# Bit Manipulation
+# Bit manipulation
 
 This example demonstrates extract, concat, and lossless shifts by modeling the
 unpacking and repacking of a 16-bit instruction word.
@@ -53,7 +53,7 @@ int main() {
 }
 ```
 
-## What This Demonstrates
+## What this demonstrates
 
 - **`extract`:** Slicing a word into fields with compile-time bounds checking.
 - **`concat`:** Variadic concatenation to repack fields.

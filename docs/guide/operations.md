@@ -1,6 +1,6 @@
 # Operations
 
-## Arithmetic (Bit-Growth)
+## Arithmetic (bit-growth)
 
 To prevent silent overflow, addition and subtraction automatically widen the
 result type. This is inspired by
@@ -44,7 +44,7 @@ auto diff = a - b;  // z3w::Sbv<9>
     auto reg = z3w::cast<z3w::Ubv<8>>(a + b);  // Truncate to 8 bits
     ```
 
-## Bitwise Operations (Strict)
+## Bitwise operations (strict)
 
 Bitwise operators require operands of the **exact same width and signedness**.
 Mismatches are compile errors.
@@ -63,7 +63,7 @@ auto masked = a & b;  // z3w::Ubv<8>
 auto flipped = ~a;    // z3w::Ubv<8>
 ```
 
-## Equality (Strict)
+## Equality (strict)
 
 Requires the same width and signedness. Returns `z3w::Bool`.
 
@@ -74,7 +74,7 @@ z3w::Bool eq = (a == b);
 z3w::Bool ne = (a != b);
 ```
 
-## Ordered Comparison (Strict)
+## Ordered comparison (strict)
 
 Requires the same width and signedness. Automatically dispatches to the correct
 Z3 function based on signedness. Returns `z3w::Bool`.
@@ -96,7 +96,7 @@ z3w::Sbv<8> y(ctx, "y");
 z3w::Bool less_s = (x < y);  // Uses bvslt (signed)
 ```
 
-## Bool Operations
+## Bool operations
 
 `z3w::Bool` supports standard logical operations:
 
@@ -109,7 +109,7 @@ z3w::Bool d = a || b;   // Logical OR
 z3w::Bool e = !a;       // Logical NOT
 ```
 
-## Conditional Selection (`ite`)
+## Conditional selection (`ite`)
 
 Symbolic If-Then-Else. Both branches must be the exact same type.
 

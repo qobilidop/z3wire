@@ -1,6 +1,6 @@
-# Z3Wire Design Document
+# Z3Wire design document
 
-## Project Identity
+## Project identity
 
 - **Name:** Z3Wire
 - **Namespace:** `z3w::`
@@ -31,7 +31,7 @@ before every arithmetic operation, which is tedious and error-prone.
 Z3Wire addresses both problems: compile-time type safety eliminates sort errors,
 and bit-growth arithmetic makes overflow explicit.
 
-## Core Goals
+## Core goals
 
 1. **Compile-time type safety:** Move Z3 "Sort Errors" (bit-width/type
    mismatches) from runtime exceptions to compile-time errors using C++20
@@ -62,7 +62,7 @@ By targeting only the QF_BV logic (Quantifier-Free Bit-Vectors), Z3Wire can:
   uninterpreted functions).
 - Wrapping `z3::context` or `z3::solver`.
 
-## Design Philosophy
+## Design philosophy
 
 - **Zero overhead:** Each wrapper stores only a `z3::expr`. No virtual
   functions, no extra data members.
@@ -72,7 +72,7 @@ By targeting only the QF_BV logic (Quantifier-Free Bit-Vectors), Z3Wire can:
   and must live in headers. Any non-template utilities should go in `.cc` files
   per Google C++ style guide conventions.
 
-## Type System
+## Type system
 
 The library centers around a zero-overhead wrapper class that holds a single
 `z3::expr` by value, adding no runtime overhead.
@@ -100,7 +100,7 @@ template <size_t W> using Sbv = BitVec<W, true>;
 Note: `BitVec<0, S>` is forbidden via `static_assert`. A zero-width bit-vector
 has no meaning in hardware or SMT.
 
-## Construction and Literals
+## Construction and literals
 
 ### Compile-time range-checked literals
 
@@ -124,11 +124,11 @@ auto bad = z3w::Ubv<8>::Literal<256>(ctx);  // Compile error!
 z3w::Ubv<32> x(ctx, "x");
 ```
 
-## Type Conversions
+## Type conversions
 
-### Three-Tier Casting API
+### Three-tier casting API
 
-#### `z3w::cast<T>(val)` -- The Hardware Cast
+#### `z3w::cast<T>(val)` -- The hardware cast
 
 Performs raw truncation, extension, or sign reinterpretation based on source and
 target types. No safety checks. Use when you intentionally want hardware-style
@@ -140,7 +140,7 @@ Under the hood, uses `if constexpr` to select:
   signedness.
 - Target width == source width: zero-overhead type reinterpretation (bitcast).
 
-#### `z3w::safe_cast<T>(val)` -- The Compiler Guard
+#### `z3w::safe_cast<T>(val)` -- The compiler guard
 
 Only compiles if the cast is mathematically guaranteed to be lossless.
 
@@ -152,7 +152,7 @@ Only compiles if the cast is mathematically guaranteed to be lossless.
 | `Sbv<W1>`   | `Ubv<W2>`   | **Always forbidden.** Negative values corrupt.  |
 | Any         | Smaller     | **Always forbidden.** Truncation is not safe.   |
 
-#### `z3w::checked_cast<T>(val)` -- The Verification Cast
+#### `z3w::checked_cast<T>(val)` -- The verification cast
 
 Returns `std::pair<T, z3w::Bool>`. Performs the cast and also returns a symbolic
 boolean formula representing whether mathematical data loss occurred. The user
@@ -163,7 +163,7 @@ auto [result, overflowed] = z3w::checked_cast<z3w::Ubv<8>>(my_32bit_val);
 solver.add(!overflowed.raw());  // Assert: this cast never loses data
 ```
 
-### Bool / Ubv<1> Conversion
+### Bool / Ubv<1> conversion
 
 In Z3, `Bool` and a 1-bit bit-vector are distinct sorts. Hardware frequently
 needs to convert between them (e.g., a condition flag in a register vs. a
@@ -182,9 +182,9 @@ z3w::Bool cond(ctx, "cond");
 z3w::Ubv<1> flag = z3w::to_ubv1(cond);
 ```
 
-## Bit Manipulation
+## Bit manipulation
 
-### Bit Slicing (`extract`)
+### Bit slicing (`extract`)
 
 #### Fully static (compile-time bounds)
 
@@ -222,7 +222,7 @@ auto full = z3w::concat(high, low);  // -> z3w::Ubv<32>
 
 ## Operations
 
-### Arithmetic and Bitwise
+### Arithmetic and bitwise
 
 To prevent silent overflows, Z3Wire adopts bit-growth semantics for arithmetic,
 inspired by
@@ -252,7 +252,7 @@ auto total = sum + a;   // -> z3w::Ubv<10>
 auto reg = z3w::cast<z3w::Ubv<8>>(total);
 ```
 
-### Bool Operations
+### Bool operations
 
 `z3w::Bool` supports standard logical operations:
 
@@ -272,7 +272,7 @@ z3w::Bool t = z3w::Bool::True(ctx);
 
 Z3Wire provides a three-tier shift API, mirroring the casting tiers.
 
-#### `<<`, `>>` -- Hardware Shift
+#### `<<`, `>>` -- Hardware shift
 
 Raw hardware shift. Width stays constant, bits that shift out are silently lost.
 Widths and signedness must match exactly (strict, like bitwise ops).
@@ -287,7 +287,7 @@ z3w::Ubv<8> n(ctx, "n");
 auto result = a << n;  // -> z3w::Ubv<8>, bits may be lost
 ```
 
-#### `checked_shl`, `checked_shr` -- Checked Shift
+#### `checked_shl`, `checked_shr` -- Checked shift
 
 Performs the shift and returns a symbolic Bool indicating whether any non-zero
 bits were lost. Width stays constant.
@@ -297,7 +297,7 @@ auto [shifted, lost] = z3w::checked_shl(a, n);
 solver.add(!lost.raw());  // Assert: this shift never loses bits
 ```
 
-#### `lossless_shl` -- Lossless Left Shift
+#### `lossless_shl` -- Lossless left shift
 
 Result type is wide enough to guarantee no bits are ever lost. Works with both
 compile-time constant and symbolic shift amounts.
@@ -317,7 +317,7 @@ z3w::Ubv<3> n(ctx, "n");
 auto r2 = z3w::lossless_shl(a, n);    // -> z3w::Ubv<15>
 ```
 
-### Conditional Selection (`ite`)
+### Conditional selection (`ite`)
 
 Symbolic If-Then-Else. Works for any Z3Wire type (`Bool`, `Ubv<W>`, `Sbv<W>`).
 Both branches must be the exact same type.
@@ -336,14 +336,14 @@ auto result = z3w::ite(sel, a, b);  // -> z3w::Ubv<8>
 auto flag = z3w::ite(sel, z3w::Bool::True(ctx), z3w::Bool::False(ctx));
 ```
 
-## Boundary Layer
+## Boundary layer
 
 - **`val.raw()`**: Returns the underlying `z3::expr` for interop with raw Z3
   APIs (e.g., passing to `z3::solver`).
 - Users interact with `z3::context` and `z3::solver` directly; Z3Wire does not
   wrap these.
 
-## MVP Scope
+## MVP scope
 
 Supported in the initial version:
 - Types: `Bool`, `Ubv<W>`, `Sbv<W>` (width > 0 enforced)

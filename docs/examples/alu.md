@@ -1,4 +1,4 @@
-# ALU Verification
+# ALU verification
 
 This example models a simple 4-operation ALU and verifies its properties.
 
@@ -65,7 +65,7 @@ int main() {
 }
 ```
 
-## What This Demonstrates
+## What this demonstrates
 
 - **`ite`:** Building a mux (multiplexer) from symbolic conditions.
 - **`Literal`:** Compile-time range-checked constants for opcodes.

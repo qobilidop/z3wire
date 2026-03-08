@@ -1,4 +1,4 @@
-# Type System
+# Type system
 
 Z3Wire provides three core types, all zero-overhead wrappers around `z3::expr`.
 
@@ -24,7 +24,7 @@ template <size_t W> using Sbv = BitVec<W, true>;
     `BitVec<0, S>` is forbidden via `static_assert`. A zero-width bit-vector has
     no meaning in hardware or SMT.
 
-## Creating Symbolic Variables
+## Creating symbolic variables
 
 All types are constructed with a Z3 context and a name:
 
@@ -38,14 +38,14 @@ z3w::Sbv<16> offset(ctx, "offset");
 
 ## Literals
 
-### Bool Literals
+### Bool literals
 
 ```cpp
 z3w::Bool t = z3w::Bool::True(ctx);
 z3w::Bool f = z3w::Bool::False(ctx);
 ```
 
-### Bit-Vector Literals
+### Bit-vector literals
 
 Use the `Literal` static method with a compile-time value. The value is
 range-checked at compile time:
@@ -55,7 +55,7 @@ auto x = z3w::Ubv<8>::Literal<255>(ctx);  // OK
 auto y = z3w::Ubv<8>::Literal<256>(ctx);  // Compile error: value doesn't fit
 ```
 
-## Accessing the Underlying Z3 Expression
+## Accessing the underlying Z3 expression
 
 Use `.raw()` to get the underlying `z3::expr` for interop with Z3 APIs:
 
@@ -68,7 +68,7 @@ solver.add(x.raw() > 0);  // Pass to Z3 solver directly
     Z3Wire does not wrap `z3::context` or `z3::solver`. You interact with these
     directly.
 
-## Bool / Ubv<1> Conversion
+## Bool / Ubv<1> conversion
 
 In Z3, `Bool` and a 1-bit bit-vector are distinct sorts. Hardware frequently
 needs to convert between them. Z3Wire provides explicit conversion functions:
@@ -83,7 +83,7 @@ z3w::Bool cond(ctx, "cond");
 z3w::Ubv<1> flag = z3w::to_ubv1(cond);
 ```
 
-## Design Principle: Explicit Over Implicit
+## Design principle: explicit over implicit
 
 Z3Wire never implicitly converts between types. There are no implicit
 conversions between:

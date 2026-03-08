@@ -3,7 +3,7 @@
 Z3Wire provides a three-tier shift API, mirroring the
 [casting tiers](casting.md).
 
-## `<<`, `>>` — Hardware Shift
+## `<<`, `>>` — Hardware shift
 
 Raw hardware shift. Width stays constant, bits that shift out are silently lost.
 Operands must have the same width and signedness.
@@ -19,7 +19,7 @@ auto result = a << n;  // Ubv<8>, bits may be lost
 auto shifted = a >> n;  // Ubv<8>, zero-filled from the left
 ```
 
-## `checked_shl`, `checked_shr` — Checked Shift
+## `checked_shl`, `checked_shr` — Checked shift
 
 Performs the shift and returns a symbolic `Bool` indicating whether any non-zero
 bits were lost. Width stays constant.
@@ -35,11 +35,11 @@ auto [shifted, lost] = z3w::checked_shl(val, amount);
 solver.add(!lost.raw());  // Assert: this shift never loses bits
 ```
 
-## `lossless_shl` — Lossless Left Shift
+## `lossless_shl` — Lossless left shift
 
 The result type is wide enough to guarantee no bits are ever lost.
 
-### Constant Shift
+### Constant shift
 
 Result width = `W + N`:
 
@@ -48,7 +48,7 @@ z3w::Ubv<8> a(ctx, "a");
 auto r = z3w::lossless_shl<3>(a);  // Ubv<11>
 ```
 
-### Symbolic Shift
+### Symbolic shift
 
 Result width = `W + 2^K - 1`, where `K` is the shift amount width. This
 accounts for the maximum possible shift.
@@ -59,7 +59,7 @@ z3w::Ubv<3> n(ctx, "n");      // Can shift by 0..7
 auto r = z3w::lossless_shl(a, n);  // Ubv<15> (8 + 2^3 - 1)
 ```
 
-## Choosing the Right Tier
+## Choosing the right tier
 
 | Situation | Use |
 |:----------|:----|

@@ -88,6 +88,11 @@ Key conventions for this project:
   `.cc` files.
 - C++20 features: `static_assert`, `if constexpr`, `requires` clauses.
 
+## Headings
+
+Use sentence case for all headings — capitalize only the first word and proper
+nouns (e.g., "Getting started", not "Getting Started").
+
 ## Terminology and spelling
 
 - **bit-vector** (hyphenated) in prose — follows SMT-LIB and academic convention.

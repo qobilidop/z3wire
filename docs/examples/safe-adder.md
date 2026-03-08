@@ -1,4 +1,4 @@
-# Safe Adder
+# Safe adder
 
 This example verifies that an 8-bit adder with overflow detection is correct.
 
@@ -44,7 +44,7 @@ int main() {
 }
 ```
 
-## What This Demonstrates
+## What this demonstrates
 
 - **Bit-growth arithmetic:** `a + b` produces a 9-bit result, so no information
   is lost.

@@ -26,6 +26,9 @@ theme:
     - navigation.expand
     - toc.follow
 
+plugins:
+  - include-markdown
+
 markdown_extensions:
   - admonition
   - pymdownx.details
@@ -39,15 +42,15 @@ markdown_extensions:
 
 nav:
   - Home: index.md
-  - Getting Started: getting-started.md
-  - User Guide:
-      - Type System: guide/types.md
+  - Getting started: getting-started.md
+  - User guide:
+      - Type system: guide/types.md
       - Operations: guide/operations.md
       - Casting: guide/casting.md
-      - Bit Manipulation: guide/bit-manipulation.md
+      - Bit manipulation: guide/bit-manipulation.md
       - Shifting: guide/shifting.md
   - Examples:
-      - Safe Adder: examples/safe-adder.md
-      - ALU Verification: examples/alu.md
-      - Bit Manipulation: examples/bit-manipulation.md
+      - Safe adder: examples/safe-adder.md
+      - ALU verification: examples/alu.md
+      - Bit manipulation: examples/bit-manipulation.md
   - Design: design.md

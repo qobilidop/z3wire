@@ -3,7 +3,7 @@
 Z3Wire provides a three-tier casting API, giving you explicit control over how
 bit-vectors change width or signedness.
 
-## `cast<T>(val)` — Hardware Cast
+## `cast<T>(val)` — Hardware cast
 
 Raw truncation, extension, or sign reinterpretation. No safety checks. Use when
 you intentionally want hardware-style overflow or wrap behavior.
@@ -23,7 +23,7 @@ Under the hood:
 | Target wider than source | `z3::zext` or `z3::sext` (based on source signedness) |
 | Same width | Zero-overhead type reinterpretation |
 
-## `safe_cast<T>(val)` — Compile-Time Guard
+## `safe_cast<T>(val)` — Compile-time guard
 
 Only compiles if the cast is mathematically guaranteed to be lossless. Use when
 you want the compiler to verify that no data can be lost.
@@ -44,7 +44,7 @@ auto bad = z3w::safe_cast<z3w::Ubv<4>>(small);      // Compile error!
 | `Sbv<W1>` | `Ubv<W2>` | **Always forbidden** (negative values corrupt) |
 | Any | Smaller | **Always forbidden** (truncation is not safe) |
 
-## `checked_cast<T>(val)` — Verification Cast
+## `checked_cast<T>(val)` — Verification cast
 
 Performs the cast and returns a symbolic boolean indicating whether data loss
 occurred. Use when you want to verify safety as part of a Z3 proof.
@@ -60,7 +60,7 @@ solver.add(!overflowed.raw());
 The overflow flag works by round-tripping: cast to the target type, cast back,
 and check if the value changed.
 
-## Choosing the Right Tier
+## Choosing the right tier
 
 | Situation | Use |
 |:----------|:----|
