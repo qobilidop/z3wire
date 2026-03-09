@@ -57,4 +57,5 @@ nav:
       - Limitations: user/limitations.md
   - Developer guide:
       - Design: dev/design.md
+      - Coverage: dev/coverage.md
       - Roadmap: dev/roadmap.md
