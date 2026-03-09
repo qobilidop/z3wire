@@ -185,6 +185,36 @@ auto operator-(const BitVec<W1, S1>& lhs, const BitVec<W2, S2>& rhs) {
   return BitVec<kResultWidth, true>(lhs_ext - rhs_ext);
 }
 
+// --- Mixed concrete + symbolic arithmetic ---
+
+// Addition: symbolic + concrete.
+template <size_t W1, bool S1, unsigned W2, bool S2>
+auto operator+(const BitVec<W1, S1>& lhs, const Int<W2, S2>& rhs) {
+  auto& ctx = lhs.raw().ctx();
+  return lhs + to_symbolic(rhs, ctx);
+}
+
+// Addition: concrete + symbolic.
+template <unsigned W1, bool S1, size_t W2, bool S2>
+auto operator+(const Int<W1, S1>& lhs, const BitVec<W2, S2>& rhs) {
+  auto& ctx = rhs.raw().ctx();
+  return to_symbolic(lhs, ctx) + rhs;
+}
+
+// Subtraction: symbolic - concrete.
+template <size_t W1, bool S1, unsigned W2, bool S2>
+auto operator-(const BitVec<W1, S1>& lhs, const Int<W2, S2>& rhs) {
+  auto& ctx = lhs.raw().ctx();
+  return lhs - to_symbolic(rhs, ctx);
+}
+
+// Subtraction: concrete - symbolic.
+template <unsigned W1, bool S1, size_t W2, bool S2>
+auto operator-(const Int<W1, S1>& lhs, const BitVec<W2, S2>& rhs) {
+  auto& ctx = rhs.raw().ctx();
+  return to_symbolic(lhs, ctx) - rhs;
+}
+
 // --- Three-tier casting API ---
 
 // cast<T>(val): raw hardware cast (truncation, extension, or bitcast).

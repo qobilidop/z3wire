@@ -558,5 +558,48 @@ TEST_F(BitVecTest, SignedConcreteToSymbolic) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
+// --- Mixed concrete + symbolic arithmetic ---
+
+TEST_F(BitVecTest, MixedAddSymbolicPlusConcrete) {
+  Ubv<8> sym(ctx_, "x");
+  UInt<8> conc(42);
+  auto result = sym + conc;
+
+  static_assert(decltype(result)::kWidth == 9);
+  static_assert(is_symbolic_v<decltype(result)>);
+
+  z3::solver s(ctx_);
+  s.add(sym.raw() == ctx_.bv_val(10, 8));
+  s.add(result.raw() != ctx_.bv_val(52, 9));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(BitVecTest, MixedAddConcretePlusSymbolic) {
+  UInt<8> conc(42);
+  Ubv<8> sym(ctx_, "x");
+  auto result = conc + sym;
+
+  static_assert(decltype(result)::kWidth == 9);
+  static_assert(is_symbolic_v<decltype(result)>);
+}
+
+TEST_F(BitVecTest, MixedSubSymbolicMinusConcrete) {
+  Ubv<8> sym(ctx_, "x");
+  UInt<8> conc(50);
+  auto result = sym - conc;
+
+  static_assert(decltype(result)::kWidth == 9);
+  static_assert(decltype(result)::kIsSigned);
+  static_assert(is_symbolic_v<decltype(result)>);
+}
+
+TEST_F(BitVecTest, MixedAddDifferentWidths) {
+  Ubv<8> sym(ctx_, "x");
+  UInt<4> conc(15);
+  auto result = sym + conc;
+
+  static_assert(decltype(result)::kWidth == 9);
+}
+
 }  // namespace
 }  // namespace z3w
