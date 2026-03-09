@@ -261,10 +261,9 @@ UInt<W + N> lossless_shl(const Int<W, S>& val) {
 template <typename Target, unsigned SrcW, bool SrcS>
 Target cast(const Int<SrcW, SrcS>& val) {
   constexpr unsigned kTgtW = Target::kWidth;
-  if constexpr (kTgtW == SrcW) {
+  if constexpr (kTgtW <= SrcW) {
+    // Same width or truncation — constructor masks to target width.
     return Target(val.value());
-  } else if constexpr (kTgtW < SrcW) {
-    return Target(val.value());  // Constructor masks.
   } else {
     if constexpr (SrcS) {
       int64_t signed_val = Int<SrcW, SrcS>::sign_extend_value(val.value());
