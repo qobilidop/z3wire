@@ -298,6 +298,41 @@ std::pair<Target, bool> checked_cast(const Int<SrcW, SrcS>& val) {
   return {result, overflowed};
 }
 
+// Static extract: extract<High, Low>(val) -> UInt<High - Low + 1>.
+template <unsigned High, unsigned Low, unsigned W, bool S>
+UInt<High - Low + 1> extract(const Int<W, S>& val) {
+  static_assert(High >= Low, "extract: High must be >= Low.");
+  static_assert(High < W, "extract: High must be < input width.");
+  return UInt<High - Low + 1>(val.value() >> Low);
+}
+
+// concat(a, b): result width = W1 + W2, always UInt.
+template <unsigned W1, bool S1, unsigned W2, bool S2>
+UInt<W1 + W2> concat(const Int<W1, S1>& high, const Int<W2, S2>& low) {
+  uint64_t result = (static_cast<uint64_t>(high.value()) << W2) |
+                    static_cast<uint64_t>(low.value());
+  return UInt<W1 + W2>(result);
+}
+
+// Variadic concat.
+template <unsigned W1, bool S1, unsigned W2, bool S2, typename... Rest>
+auto concat(const Int<W1, S1>& high, const Int<W2, S2>& next,
+            const Rest&... rest) {
+  return concat(concat(high, next), rest...);
+}
+
+// Bool / UInt<1> conversion.
+inline UInt<1> to_uint1(bool b) { return UInt<1>(b ? 1 : 0); }
+
+inline bool to_bool(const UInt<1>& v) { return v.value() != 0; }
+
+// ite: concrete conditional selection.
+template <unsigned W, bool S>
+Int<W, S> ite(bool cond, const Int<W, S>& true_val,
+              const Int<W, S>& false_val) {
+  return cond ? true_val : false_val;
+}
+
 }  // namespace z3w
 
 #endif  // Z3WIRE_INT_H_

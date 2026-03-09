@@ -358,5 +358,68 @@ TEST(IntTest, CheckedCastWithOverflow) {
   EXPECT_TRUE(overflowed);
 }
 
+// --- extract ---
+
+TEST(IntTest, StaticExtract) {
+  UInt<16> a(0x1234);
+  auto high = extract<15, 8>(a);
+  auto low = extract<7, 0>(a);
+  static_assert(decltype(high)::kWidth == 8);
+  static_assert(decltype(low)::kWidth == 8);
+  EXPECT_EQ(high.value(), 0x12);
+  EXPECT_EQ(low.value(), 0x34);
+}
+
+// --- concat ---
+
+TEST(IntTest, Concat) {
+  UInt<8> high(0xAB);
+  UInt<8> low(0xCD);
+  auto full = concat(high, low);
+  static_assert(decltype(full)::kWidth == 16);
+  EXPECT_EQ(full.value(), 0xABCD);
+}
+
+TEST(IntTest, ConcatVariadic) {
+  UInt<4> a(0xA);
+  UInt<4> b(0xB);
+  UInt<4> c(0xC);
+  auto result = concat(a, b, c);
+  static_assert(decltype(result)::kWidth == 12);
+  EXPECT_EQ(result.value(), 0xABC);
+}
+
+// --- Bool / UInt<1> conversion ---
+
+TEST(IntTest, ToUInt1) {
+  auto one = to_uint1(true);
+  auto zero = to_uint1(false);
+  EXPECT_EQ(one.value(), 1);
+  EXPECT_EQ(zero.value(), 0);
+}
+
+TEST(IntTest, ToBoolFromUInt1) {
+  UInt<1> one(1);
+  UInt<1> zero(0);
+  EXPECT_TRUE(to_bool(one));
+  EXPECT_FALSE(to_bool(zero));
+}
+
+// --- ite ---
+
+TEST(IntTest, IteTrue) {
+  UInt<8> a(42);
+  UInt<8> b(99);
+  UInt<8> result = ite(true, a, b);
+  EXPECT_EQ(result.value(), 42);
+}
+
+TEST(IntTest, IteFalse) {
+  UInt<8> a(42);
+  UInt<8> b(99);
+  UInt<8> result = ite(false, a, b);
+  EXPECT_EQ(result.value(), 99);
+}
+
 }  // namespace
 }  // namespace z3w
