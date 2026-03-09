@@ -1,6 +1,26 @@
 cc_library(
-    name = "z3wire",
-    hdrs = glob(["*.h"]),
+    name = "bitvec",
+    hdrs = ["bitvec.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":bool",
+        ":int",
+        "@z3//:z3_static",
+    ],
+)
+
+cc_test(
+    name = "bitvec_test",
+    srcs = ["bitvec_test.cc"],
+    deps = [
+        ":bitvec",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "bool",
+    hdrs = ["bool.h"],
     visibility = ["//visibility:public"],
     deps = ["@z3//:z3_static"],
 )
@@ -9,25 +29,22 @@ cc_test(
     name = "bool_test",
     srcs = ["bool_test.cc"],
     deps = [
-        ":z3wire",
+        ":bool",
         "@googletest//:gtest_main",
     ],
 )
 
-cc_test(
-    name = "bitvec_test",
-    srcs = ["bitvec_test.cc"],
-    deps = [
-        ":z3wire",
-        "@googletest//:gtest_main",
-    ],
+cc_library(
+    name = "int",
+    hdrs = ["int.h"],
+    visibility = ["//visibility:public"],
 )
 
 cc_test(
     name = "int_test",
     srcs = ["int_test.cc"],
     deps = [
-        ":z3wire",
+        ":int",
         "@googletest//:gtest_main",
     ],
 )
