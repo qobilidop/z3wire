@@ -6,7 +6,6 @@
 docs/user/                    User guide (types, operations, casting, etc.).
 docs/dev/design.md            Full design document. Read this first.
 docs/dev/roadmap.md           Future directions and planned features.
-docs/dev/plans/               Implementation plans.
 z3wire/                       Library source: headers, sources, and tests.
 examples/                     Runnable examples.
 tools/format.sh               Auto-format (or --check) all C++ files.

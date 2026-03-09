@@ -329,6 +329,47 @@ auto result = z3w::ite(sel, a, b);  // -> z3w::Ubv<8>
 auto flag = z3w::ite(sel, z3w::Bool::True(ctx), z3w::Bool::False(ctx));
 ```
 
+## Concrete types
+
+### Motivation
+
+Native C++ types like `uint8_t` only cover power-of-two widths and lack
+bit-growth semantics. Concrete types (`UInt<W>`, `SInt<W>`) fill this gap,
+serving two purposes:
+
+1. **Mixed expressions.** Users can write `symbolic_x + concrete_y` without
+   manually creating Z3 constants.
+2. **Standalone type-safe integers.** `UInt<5>` or `SInt<12>` enforce
+   bit-width at the type level, even without Z3.
+
+`Bool` does not need a concrete counterpart — native C++ `bool` is sufficient.
+
+### Storage
+
+Both `UInt` and `SInt` use unsigned storage (`uint8_t` / `uint16_t` /
+`uint32_t` / `uint64_t`, whichever is smallest). Width is constrained to
+1--64.
+
+**Why unsigned storage for `SInt`?** Signed integer overflow is undefined
+behavior in C++, while unsigned overflow is well-defined (wraps mod 2^N).
+A bit-vector library performs intermediate arithmetic with masking, and
+unsigned storage avoids UB. The bits are identical (two's complement);
+signed interpretation happens only at comparison and sign-extension
+boundaries.
+
+### Promotion to symbolic
+
+Concrete values implicitly promote to symbolic when mixed in expressions.
+This is the one exception to "explicit over implicit": the promotion is
+always lossless and unambiguous (same width, same signedness), so it is safe
+to allow implicitly. The Z3 context is grabbed from the symbolic operand's
+`z3::expr`.
+
+### Operations
+
+All operations mirror the symbolic API. The key difference is that flags
+(`truncated`, `overflowed`, `lost`) are plain `bool`, not symbolic `Bool`.
+
 ## Boundary layer
 
 - **`val.raw()`**: Returns the underlying `z3::expr` for interop with raw Z3

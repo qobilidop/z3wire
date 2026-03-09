@@ -2,6 +2,7 @@
 #define Z3WIRE_INT_H_
 
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <type_traits>
 #include <utility>
@@ -9,18 +10,18 @@
 namespace z3w {
 
 // Storage: smallest unsigned integer type that fits W bits.
-template <unsigned W>
+template <size_t W>
 using StorageType = std::conditional_t<
     (W <= 8), uint8_t,
     std::conditional_t<(W <= 16), uint16_t,
                        std::conditional_t<(W <= 32), uint32_t, uint64_t>>>;
 
-template <unsigned W, bool IsSigned>
+template <size_t W, bool IsSigned>
 class Int {
   static_assert(W >= 1 && W <= 64, "Bit-width must be between 1 and 64.");
 
  public:
-  static constexpr unsigned kWidth = W;
+  static constexpr size_t kWidth = W;
   static constexpr bool kIsSigned = IsSigned;
   using Storage = StorageType<W>;
 
@@ -193,17 +194,17 @@ class Int {
   Storage bits_;
 };
 
-template <unsigned W>
+template <size_t W>
 using UInt = Int<W, false>;
 
-template <unsigned W>
+template <size_t W>
 using SInt = Int<W, true>;
 
 // Type trait: is this a concrete Int type?
 template <typename T>
 struct is_concrete : std::false_type {};
 
-template <unsigned W, bool S>
+template <size_t W, bool S>
 struct is_concrete<Int<W, S>> : std::true_type {};
 
 template <typename T>
@@ -211,7 +212,7 @@ inline constexpr bool is_concrete_v = is_concrete<T>::value;
 
 namespace internal {
 
-template <unsigned TargetW, unsigned SrcW, bool SrcS>
+template <size_t TargetW, size_t SrcW, bool SrcS>
 uint64_t extend(const Int<SrcW, SrcS>& val) {
   if constexpr (!SrcS) {
     return val.value();
@@ -227,25 +228,25 @@ uint64_t extend(const Int<SrcW, SrcS>& val) {
 
 }  // namespace internal
 
-template <unsigned W1, bool S1, unsigned W2, bool S2>
+template <size_t W1, bool S1, size_t W2, bool S2>
 auto operator+(const Int<W1, S1>& lhs, const Int<W2, S2>& rhs) {
-  constexpr unsigned kResultWidth = std::max(W1, W2) + 1;
+  constexpr size_t kResultWidth = std::max(W1, W2) + 1;
   constexpr bool kResultSigned = S1 || S2;
   uint64_t lhs_ext = internal::extend<kResultWidth, W1, S1>(lhs);
   uint64_t rhs_ext = internal::extend<kResultWidth, W2, S2>(rhs);
   return Int<kResultWidth, kResultSigned>(lhs_ext + rhs_ext);
 }
 
-template <unsigned W1, bool S1, unsigned W2, bool S2>
+template <size_t W1, bool S1, size_t W2, bool S2>
 auto operator-(const Int<W1, S1>& lhs, const Int<W2, S2>& rhs) {
-  constexpr unsigned kResultWidth = std::max(W1, W2) + 1;
+  constexpr size_t kResultWidth = std::max(W1, W2) + 1;
   uint64_t lhs_ext = internal::extend<kResultWidth, W1, S1>(lhs);
   uint64_t rhs_ext = internal::extend<kResultWidth, W2, S2>(rhs);
   return Int<kResultWidth, true>(lhs_ext - rhs_ext);
 }
 
 // checked_shl: returns {shifted, lost}.
-template <unsigned W, bool S>
+template <size_t W, bool S>
 std::pair<Int<W, S>, bool> checked_shl(const Int<W, S>& val,
                                        const Int<W, S>& amount) {
   auto shifted = val << amount;
@@ -255,7 +256,7 @@ std::pair<Int<W, S>, bool> checked_shl(const Int<W, S>& val,
 }
 
 // checked_shr: returns {shifted, lost}.
-template <unsigned W, bool S>
+template <size_t W, bool S>
 std::pair<Int<W, S>, bool> checked_shr(const Int<W, S>& val,
                                        const Int<W, S>& amount) {
   auto shifted = val >> amount;
@@ -265,15 +266,15 @@ std::pair<Int<W, S>, bool> checked_shr(const Int<W, S>& val,
 }
 
 // Lossless left shift by constant N: result width = W + N.
-template <unsigned N, unsigned W, bool S>
+template <size_t N, size_t W, bool S>
 UInt<W + N> lossless_shl(const Int<W, S>& val) {
   return UInt<W + N>(static_cast<uint64_t>(val.value()) << N);
 }
 
 // cast<T>(val): raw hardware cast.
-template <typename Target, unsigned SrcW, bool SrcS>
+template <typename Target, size_t SrcW, bool SrcS>
 Target cast(const Int<SrcW, SrcS>& val) {
-  constexpr unsigned kTgtW = Target::kWidth;
+  constexpr size_t kTgtW = Target::kWidth;
   if constexpr (kTgtW <= SrcW) {
     // Same width or truncation — constructor masks to target width.
     return Target(val.value());
@@ -288,9 +289,9 @@ Target cast(const Int<SrcW, SrcS>& val) {
 }
 
 // safe_cast<T>(val): compile-time lossless check.
-template <typename Target, unsigned SrcW, bool SrcS>
+template <typename Target, size_t SrcW, bool SrcS>
 Target safe_cast(const Int<SrcW, SrcS>& val) {
-  constexpr unsigned kTgtW = Target::kWidth;
+  constexpr size_t kTgtW = Target::kWidth;
   constexpr bool kTgtS = Target::kIsSigned;
 
   static_assert(!SrcS || kTgtS,
@@ -312,7 +313,7 @@ Target safe_cast(const Int<SrcW, SrcS>& val) {
 }
 
 // checked_cast<T>(val): returns {result, overflowed}.
-template <typename Target, unsigned SrcW, bool SrcS>
+template <typename Target, size_t SrcW, bool SrcS>
 std::pair<Target, bool> checked_cast(const Int<SrcW, SrcS>& val) {
   auto result = cast<Target>(val);
   auto roundtrip = cast<Int<SrcW, SrcS>>(result);
@@ -321,7 +322,7 @@ std::pair<Target, bool> checked_cast(const Int<SrcW, SrcS>& val) {
 }
 
 // Static extract: extract<High, Low>(val) -> UInt<High - Low + 1>.
-template <unsigned High, unsigned Low, unsigned W, bool S>
+template <size_t High, size_t Low, size_t W, bool S>
 UInt<High - Low + 1> extract(const Int<W, S>& val) {
   static_assert(High >= Low, "extract: High must be >= Low.");
   static_assert(High < W, "extract: High must be < input width.");
@@ -329,7 +330,7 @@ UInt<High - Low + 1> extract(const Int<W, S>& val) {
 }
 
 // concat(a, b): result width = W1 + W2, always UInt.
-template <unsigned W1, bool S1, unsigned W2, bool S2>
+template <size_t W1, bool S1, size_t W2, bool S2>
 UInt<W1 + W2> concat(const Int<W1, S1>& high, const Int<W2, S2>& low) {
   uint64_t result = (static_cast<uint64_t>(high.value()) << W2) |
                     static_cast<uint64_t>(low.value());
@@ -337,7 +338,7 @@ UInt<W1 + W2> concat(const Int<W1, S1>& high, const Int<W2, S2>& low) {
 }
 
 // Variadic concat.
-template <unsigned W1, bool S1, unsigned W2, bool S2, typename... Rest>
+template <size_t W1, bool S1, size_t W2, bool S2, typename... Rest>
 auto concat(const Int<W1, S1>& high, const Int<W2, S2>& next,
             const Rest&... rest) {
   return concat(concat(high, next), rest...);
@@ -349,7 +350,7 @@ inline UInt<1> to_uint1(bool b) { return UInt<1>(b ? 1 : 0); }
 inline bool to_bool(const UInt<1>& v) { return v.value() != 0; }
 
 // ite: concrete conditional selection.
-template <unsigned W, bool S>
+template <size_t W, bool S>
 Int<W, S> ite(bool cond, const Int<W, S>& true_val,
               const Int<W, S>& false_val) {
   return cond ? true_val : false_val;
