@@ -232,5 +232,70 @@ TEST(IntTest, SubtractionPositiveResult) {
   EXPECT_EQ(diff.value(), 100);
 }
 
+// --- Hardware shifts ---
+
+TEST(IntTest, LeftShift) {
+  UInt<8> a(1);
+  UInt<8> n(4);
+  UInt<8> result = a << n;
+  EXPECT_EQ(result.value(), 16);
+}
+
+TEST(IntTest, LeftShiftOverflow) {
+  UInt<8> a(0x80);
+  UInt<8> n(1);
+  UInt<8> result = a << n;
+  EXPECT_EQ(result.value(), 0);  // Bit shifted out
+}
+
+TEST(IntTest, UnsignedRightShift) {
+  UInt<8> a(0x80);
+  UInt<8> n(4);
+  UInt<8> result = a >> n;
+  EXPECT_EQ(result.value(), 0x08);  // Logical shift
+}
+
+TEST(IntTest, SignedRightShift) {
+  SInt<8> a(0x80);  // -128
+  SInt<8> n(4);
+  SInt<8> result = a >> n;
+  EXPECT_EQ(result.value(), 0xF8);  // Arithmetic shift: sign-extended
+}
+
+// --- Checked shifts ---
+
+TEST(IntTest, CheckedShlNoLoss) {
+  UInt<8> a(1);
+  UInt<8> n(4);
+  auto [shifted, lost] = checked_shl(a, n);
+  EXPECT_EQ(shifted.value(), 16);
+  EXPECT_FALSE(lost);
+}
+
+TEST(IntTest, CheckedShlWithLoss) {
+  UInt<8> a(0x80);
+  UInt<8> n(1);
+  auto [shifted, lost] = checked_shl(a, n);
+  EXPECT_EQ(shifted.value(), 0);
+  EXPECT_TRUE(lost);
+}
+
+TEST(IntTest, CheckedShrWithLoss) {
+  UInt<8> a(1);
+  UInt<8> n(1);
+  auto [shifted, lost] = checked_shr(a, n);
+  EXPECT_EQ(shifted.value(), 0);
+  EXPECT_TRUE(lost);
+}
+
+// --- Lossless left shift ---
+
+TEST(IntTest, LosslessShlConstant) {
+  UInt<8> a(0xFF);
+  auto result = lossless_shl<3>(a);
+  static_assert(decltype(result)::kWidth == 11);
+  EXPECT_EQ(result.value(), 0x7F8);
+}
+
 }  // namespace
 }  // namespace z3w

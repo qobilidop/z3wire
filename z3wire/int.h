@@ -113,6 +113,22 @@ class Int {
     }
   }
 
+  // --- Hardware shifts (strict: same width and signedness) ---
+
+  friend Int operator<<(const Int& lhs, const Int& rhs) {
+    return Int(static_cast<uint64_t>(lhs.bits_) << rhs.bits_);
+  }
+
+  friend Int operator>>(const Int& lhs, const Int& rhs) {
+    if constexpr (IsSigned) {
+      // Arithmetic right shift: sign-extend, shift, re-mask.
+      int64_t signed_val = sign_extend(lhs.bits_);
+      return Int(static_cast<uint64_t>(signed_val >> rhs.bits_));
+    } else {
+      return Int(lhs.bits_ >> rhs.bits_);
+    }
+  }
+
   // Public for use by internal::extend.
   static constexpr int64_t sign_extend_value(Storage val) {
     return sign_extend(val);
@@ -203,6 +219,32 @@ auto operator-(const Int<W1, S1>& lhs, const Int<W2, S2>& rhs) {
   uint64_t lhs_ext = internal::extend<kResultWidth, W1, S1>(lhs);
   uint64_t rhs_ext = internal::extend<kResultWidth, W2, S2>(rhs);
   return Int<kResultWidth, true>(lhs_ext - rhs_ext);
+}
+
+// checked_shl: returns {shifted, lost}.
+template <unsigned W, bool S>
+std::pair<Int<W, S>, bool> checked_shl(const Int<W, S>& val,
+                                       const Int<W, S>& amount) {
+  auto shifted = val << amount;
+  auto restored = shifted >> amount;
+  bool lost = (restored != val);
+  return {shifted, lost};
+}
+
+// checked_shr: returns {shifted, lost}.
+template <unsigned W, bool S>
+std::pair<Int<W, S>, bool> checked_shr(const Int<W, S>& val,
+                                       const Int<W, S>& amount) {
+  auto shifted = val >> amount;
+  auto restored = shifted << amount;
+  bool lost = (restored != val);
+  return {shifted, lost};
+}
+
+// Lossless left shift by constant N: result width = W + N.
+template <unsigned N, unsigned W, bool S>
+UInt<W + N> lossless_shl(const Int<W, S>& val) {
+  return UInt<W + N>(static_cast<uint64_t>(val.value()) << N);
 }
 
 }  // namespace z3w
