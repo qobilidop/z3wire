@@ -247,6 +247,57 @@ UInt<W + N> lossless_shl(const Int<W, S>& val) {
   return UInt<W + N>(static_cast<uint64_t>(val.value()) << N);
 }
 
+// cast<T>(val): raw hardware cast.
+template <typename Target, unsigned SrcW, bool SrcS>
+Target cast(const Int<SrcW, SrcS>& val) {
+  constexpr unsigned kTgtW = Target::kWidth;
+  if constexpr (kTgtW == SrcW) {
+    return Target(val.value());
+  } else if constexpr (kTgtW < SrcW) {
+    return Target(val.value());  // Constructor masks.
+  } else {
+    if constexpr (SrcS) {
+      int64_t signed_val = Int<SrcW, SrcS>::sign_extend_value(val.value());
+      return Target(static_cast<uint64_t>(signed_val));
+    } else {
+      return Target(val.value());
+    }
+  }
+}
+
+// safe_cast<T>(val): compile-time lossless check.
+template <typename Target, unsigned SrcW, bool SrcS>
+Target safe_cast(const Int<SrcW, SrcS>& val) {
+  constexpr unsigned kTgtW = Target::kWidth;
+  constexpr bool kTgtS = Target::kIsSigned;
+
+  static_assert(!SrcS || kTgtS,
+                "safe_cast from signed to unsigned is always forbidden.");
+
+  if constexpr (!SrcS && !kTgtS) {
+    static_assert(kTgtW >= SrcW,
+                  "safe_cast: target width too small for lossless conversion.");
+  } else if constexpr (SrcS && kTgtS) {
+    static_assert(kTgtW >= SrcW,
+                  "safe_cast: target width too small for lossless conversion.");
+  } else if constexpr (!SrcS && kTgtS) {
+    static_assert(
+        kTgtW > SrcW,
+        "safe_cast: unsigned-to-signed needs target width > source width.");
+  }
+
+  return cast<Target>(val);
+}
+
+// checked_cast<T>(val): returns {result, overflowed}.
+template <typename Target, unsigned SrcW, bool SrcS>
+std::pair<Target, bool> checked_cast(const Int<SrcW, SrcS>& val) {
+  auto result = cast<Target>(val);
+  auto roundtrip = cast<Int<SrcW, SrcS>>(result);
+  bool overflowed = (roundtrip != val);
+  return {result, overflowed};
+}
+
 }  // namespace z3w
 
 #endif  // Z3WIRE_INT_H_

@@ -297,5 +297,66 @@ TEST(IntTest, LosslessShlConstant) {
   EXPECT_EQ(result.value(), 0x7F8);
 }
 
+// --- cast ---
+
+TEST(IntTest, CastTruncation) {
+  UInt<16> a(0x1234);
+  auto b = cast<UInt<8>>(a);
+  static_assert(decltype(b)::kWidth == 8);
+  EXPECT_EQ(b.value(), 0x34);
+}
+
+TEST(IntTest, CastZeroExtension) {
+  UInt<8> a(0xFF);
+  auto b = cast<UInt<16>>(a);
+  static_assert(decltype(b)::kWidth == 16);
+  EXPECT_EQ(b.value(), 0x00FF);
+}
+
+TEST(IntTest, CastSignExtension) {
+  SInt<8> a(0x80);  // -128
+  auto b = cast<SInt<16>>(a);
+  EXPECT_EQ(b.value(), 0xFF80);
+}
+
+TEST(IntTest, CastBitcast) {
+  UInt<8> a(42);
+  auto b = cast<SInt<8>>(a);
+  static_assert(decltype(b)::kIsSigned);
+  EXPECT_EQ(b.value(), 42);
+}
+
+// --- safe_cast ---
+
+TEST(IntTest, SafeCastWidening) {
+  UInt<8> a(255);
+  auto b = safe_cast<UInt<16>>(a);
+  static_assert(decltype(b)::kWidth == 16);
+  EXPECT_EQ(b.value(), 255);
+}
+
+TEST(IntTest, SafeCastUnsignedToSigned) {
+  UInt<8> a(255);
+  auto b = safe_cast<SInt<9>>(a);
+  static_assert(decltype(b)::kWidth == 9);
+  EXPECT_EQ(b.value(), 255);
+}
+
+// --- checked_cast ---
+
+TEST(IntTest, CheckedCastNoOverflow) {
+  UInt<16> a(42);
+  auto [result, overflowed] = checked_cast<UInt<8>>(a);
+  EXPECT_EQ(result.value(), 42);
+  EXPECT_FALSE(overflowed);
+}
+
+TEST(IntTest, CheckedCastWithOverflow) {
+  UInt<16> a(256);
+  auto [result, overflowed] = checked_cast<UInt<8>>(a);
+  EXPECT_EQ(result.value(), 0);
+  EXPECT_TRUE(overflowed);
+}
+
 }  // namespace
 }  // namespace z3w
