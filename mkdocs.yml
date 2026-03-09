@@ -55,5 +55,5 @@ nav:
       - Bit manipulation: guide/bit-manipulation.md
       - Shifting: guide/shifting.md
   - Developer guide:
-      - Design: design.md
-      - Roadmap: roadmap.md
+      - Design: dev/design.md
+      - Roadmap: dev/roadmap.md

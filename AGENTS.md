@@ -3,8 +3,10 @@
 ## Repository map
 
 ```
-docs/design.md               Full design document. Read this first.
-docs/roadmap.md              Future directions and planned features.
+docs/guide/                   User guide (types, operations, casting, etc.).
+docs/dev/design.md            Full design document. Read this first.
+docs/dev/roadmap.md           Future directions and planned features.
+docs/dev/plans/               Implementation plans.
 z3wire/                       Library source: headers, sources, and tests.
 examples/                     Runnable examples.
 tools/format.sh               Auto-format (or --check) all C++ files.
@@ -122,7 +124,7 @@ git worktree add ../z3wire-<branch> -b <branch>
 
 ## Expectations
 
-- **Read the design doc** (`docs/design.md`) before implementing any feature.
+- **Read the design doc** (`docs/dev/design.md`) before implementing any feature.
 - **Write tests** for every new feature. Do not implement without a test.
 - **Run `bazel test //...`** before considering any task complete.
 - **Do not wrap `z3::context` or `z3::solver`.** Users interact with these

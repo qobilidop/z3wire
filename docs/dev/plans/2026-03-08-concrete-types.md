@@ -4,7 +4,7 @@
 
 **Goal:** Add concrete fixed-width integer types (`UInt<W>`, `SInt<W>`) that mirror the symbolic `Ubv<W>`/`Sbv<W>` API and support implicit promotion to symbolic in mixed expressions.
 
-**Architecture:** Standalone `Int<W, IsSigned>` template in `z3wire/int.h` storing a masked unsigned native integer. Mixed concrete+symbolic overloads added to `z3wire/bitvec.h` using C++20 concepts. See `docs/plans/2026-03-08-concrete-types-design.md` for rationale.
+**Architecture:** Standalone `Int<W, IsSigned>` template in `z3wire/int.h` storing a masked unsigned native integer. Mixed concrete+symbolic overloads added to `z3wire/bitvec.h` using C++20 concepts. See `docs/dev/plans/2026-03-08-concrete-types-design.md` for rationale.
 
 **Tech Stack:** C++20 (clang), Bazel + CMake, Google Test, Z3
 
@@ -1557,7 +1557,7 @@ git commit -m "Fix formatting and lint issues"
 
 ---
 
-Plan complete and saved to `docs/plans/2026-03-08-concrete-types.md`. Two execution options:
+Plan complete and saved to `docs/dev/plans/2026-03-08-concrete-types.md`. Two execution options:
 
 **1. Subagent-Driven (this session)** — I dispatch a fresh subagent per task, review between tasks, fast iteration
 
