@@ -601,5 +601,67 @@ TEST_F(BitVecTest, MixedAddDifferentWidths) {
   static_assert(decltype(result)::kWidth == 9);
 }
 
+// --- Mixed bitwise ---
+
+TEST_F(BitVecTest, MixedBitwiseAnd) {
+  Ubv<8> sym(ctx_, "x");
+  UInt<8> conc(0x0F);
+  Ubv<8> result = sym & conc;
+
+  z3::solver s(ctx_);
+  s.add(sym.raw() == ctx_.bv_val(0xAB, 8));
+  s.add(result.raw() != ctx_.bv_val(0x0B, 8));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+// --- Mixed comparison ---
+
+TEST_F(BitVecTest, MixedEquality) {
+  Ubv<8> sym(ctx_, "x");
+  UInt<8> conc(42);
+  Bool eq = (sym == conc);
+
+  z3::solver s(ctx_);
+  s.add(eq.raw());
+  s.add(sym.raw() != ctx_.bv_val(42, 8));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(BitVecTest, MixedLessThan) {
+  Ubv<8> sym(ctx_, "x");
+  UInt<8> conc(100);
+  Bool lt = (sym < conc);
+
+  z3::solver s(ctx_);
+  s.add(lt.raw());
+  s.add(sym.raw() == ctx_.bv_val(200, 8));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+// --- Mixed ite ---
+
+TEST_F(BitVecTest, MixedIteSymbolicCondConcreteValues) {
+  Bool cond(ctx_, "c");
+  UInt<8> a(42);
+  UInt<8> b(99);
+  auto result = ite(cond, a, b);
+
+  static_assert(is_symbolic_v<decltype(result)>);
+
+  z3::solver s(ctx_);
+  s.add(cond.raw());
+  s.add(result.raw() != ctx_.bv_val(42, 8));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(BitVecTest, MixedIteSymbolicCondMixedValues) {
+  Bool cond(ctx_, "c");
+  Ubv<8> sym(ctx_, "x");
+  UInt<8> conc(99);
+  auto result = ite(cond, sym, conc);
+
+  static_assert(is_symbolic_v<decltype(result)>);
+}
+
 }  // namespace
 }  // namespace z3w

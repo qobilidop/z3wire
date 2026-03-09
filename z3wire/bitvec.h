@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
+#include <type_traits>
 #include <utility>
 
 #include "z3wire/bool.h"
@@ -213,6 +214,152 @@ template <unsigned W1, bool S1, size_t W2, bool S2>
 auto operator-(const Int<W1, S1>& lhs, const BitVec<W2, S2>& rhs) {
   auto& ctx = rhs.raw().ctx();
   return to_symbolic(lhs, ctx) - rhs;
+}
+
+// --- Mixed bitwise operators ---
+
+template <size_t W1, bool S, unsigned W2,
+          std::enable_if_t<W1 == W2, int> = 0>
+BitVec<W1, S> operator&(const BitVec<W1, S>& lhs, const Int<W2, S>& rhs) {
+  return lhs & to_symbolic(rhs, lhs.raw().ctx());
+}
+
+template <unsigned W1, bool S, size_t W2,
+          std::enable_if_t<W1 == W2, int> = 0>
+BitVec<W2, S> operator&(const Int<W1, S>& lhs, const BitVec<W2, S>& rhs) {
+  return to_symbolic(lhs, rhs.raw().ctx()) & rhs;
+}
+
+template <size_t W1, bool S, unsigned W2,
+          std::enable_if_t<W1 == W2, int> = 0>
+BitVec<W1, S> operator|(const BitVec<W1, S>& lhs, const Int<W2, S>& rhs) {
+  return lhs | to_symbolic(rhs, lhs.raw().ctx());
+}
+
+template <unsigned W1, bool S, size_t W2,
+          std::enable_if_t<W1 == W2, int> = 0>
+BitVec<W2, S> operator|(const Int<W1, S>& lhs, const BitVec<W2, S>& rhs) {
+  return to_symbolic(lhs, rhs.raw().ctx()) | rhs;
+}
+
+template <size_t W1, bool S, unsigned W2,
+          std::enable_if_t<W1 == W2, int> = 0>
+BitVec<W1, S> operator^(const BitVec<W1, S>& lhs, const Int<W2, S>& rhs) {
+  return lhs ^ to_symbolic(rhs, lhs.raw().ctx());
+}
+
+template <unsigned W1, bool S, size_t W2,
+          std::enable_if_t<W1 == W2, int> = 0>
+BitVec<W2, S> operator^(const Int<W1, S>& lhs, const BitVec<W2, S>& rhs) {
+  return to_symbolic(lhs, rhs.raw().ctx()) ^ rhs;
+}
+
+// --- Mixed comparison operators ---
+
+template <size_t W1, bool S, unsigned W2,
+          std::enable_if_t<W1 == W2, int> = 0>
+Bool operator==(const BitVec<W1, S>& lhs, const Int<W2, S>& rhs) {
+  return lhs == to_symbolic(rhs, lhs.raw().ctx());
+}
+
+template <unsigned W1, bool S, size_t W2,
+          std::enable_if_t<W1 == W2, int> = 0>
+Bool operator==(const Int<W1, S>& lhs, const BitVec<W2, S>& rhs) {
+  return to_symbolic(lhs, rhs.raw().ctx()) == rhs;
+}
+
+template <size_t W1, bool S, unsigned W2,
+          std::enable_if_t<W1 == W2, int> = 0>
+Bool operator!=(const BitVec<W1, S>& lhs, const Int<W2, S>& rhs) {
+  return lhs != to_symbolic(rhs, lhs.raw().ctx());
+}
+
+template <unsigned W1, bool S, size_t W2,
+          std::enable_if_t<W1 == W2, int> = 0>
+Bool operator!=(const Int<W1, S>& lhs, const BitVec<W2, S>& rhs) {
+  return to_symbolic(lhs, rhs.raw().ctx()) != rhs;
+}
+
+template <size_t W1, bool S, unsigned W2,
+          std::enable_if_t<W1 == W2, int> = 0>
+Bool operator<(const BitVec<W1, S>& lhs, const Int<W2, S>& rhs) {
+  return lhs < to_symbolic(rhs, lhs.raw().ctx());
+}
+
+template <unsigned W1, bool S, size_t W2,
+          std::enable_if_t<W1 == W2, int> = 0>
+Bool operator<(const Int<W1, S>& lhs, const BitVec<W2, S>& rhs) {
+  return to_symbolic(lhs, rhs.raw().ctx()) < rhs;
+}
+
+template <size_t W1, bool S, unsigned W2,
+          std::enable_if_t<W1 == W2, int> = 0>
+Bool operator<=(const BitVec<W1, S>& lhs, const Int<W2, S>& rhs) {
+  return lhs <= to_symbolic(rhs, lhs.raw().ctx());
+}
+
+template <unsigned W1, bool S, size_t W2,
+          std::enable_if_t<W1 == W2, int> = 0>
+Bool operator<=(const Int<W1, S>& lhs, const BitVec<W2, S>& rhs) {
+  return to_symbolic(lhs, rhs.raw().ctx()) <= rhs;
+}
+
+template <size_t W1, bool S, unsigned W2,
+          std::enable_if_t<W1 == W2, int> = 0>
+Bool operator>(const BitVec<W1, S>& lhs, const Int<W2, S>& rhs) {
+  return lhs > to_symbolic(rhs, lhs.raw().ctx());
+}
+
+template <unsigned W1, bool S, size_t W2,
+          std::enable_if_t<W1 == W2, int> = 0>
+Bool operator>(const Int<W1, S>& lhs, const BitVec<W2, S>& rhs) {
+  return to_symbolic(lhs, rhs.raw().ctx()) > rhs;
+}
+
+template <size_t W1, bool S, unsigned W2,
+          std::enable_if_t<W1 == W2, int> = 0>
+Bool operator>=(const BitVec<W1, S>& lhs, const Int<W2, S>& rhs) {
+  return lhs >= to_symbolic(rhs, lhs.raw().ctx());
+}
+
+template <unsigned W1, bool S, size_t W2,
+          std::enable_if_t<W1 == W2, int> = 0>
+Bool operator>=(const Int<W1, S>& lhs, const BitVec<W2, S>& rhs) {
+  return to_symbolic(lhs, rhs.raw().ctx()) >= rhs;
+}
+
+// --- Mixed ite ---
+
+// Bool condition with concrete values.
+template <unsigned W, bool S>
+BitVec<W, S> ite(const Bool& cond, const Int<W, S>& true_val,
+                 const Int<W, S>& false_val) {
+  auto& ctx = cond.raw().ctx();
+  return ite(cond, to_symbolic(true_val, ctx), to_symbolic(false_val, ctx));
+}
+
+// Bool condition with mixed values.
+template <size_t W1, bool S, unsigned W2,
+          std::enable_if_t<W1 == W2, int> = 0>
+BitVec<W1, S> ite(const Bool& cond, const BitVec<W1, S>& true_val,
+                  const Int<W2, S>& false_val) {
+  auto& ctx = cond.raw().ctx();
+  return ite(cond, true_val, to_symbolic(false_val, ctx));
+}
+
+template <unsigned W1, bool S, size_t W2,
+          std::enable_if_t<W1 == W2, int> = 0>
+BitVec<W2, S> ite(const Bool& cond, const Int<W1, S>& true_val,
+                  const BitVec<W2, S>& false_val) {
+  auto& ctx = cond.raw().ctx();
+  return ite(cond, to_symbolic(true_val, ctx), false_val);
+}
+
+// bool condition with symbolic values.
+template <size_t W, bool S>
+BitVec<W, S> ite(bool cond, const BitVec<W, S>& true_val,
+                 const BitVec<W, S>& false_val) {
+  return cond ? true_val : false_val;
 }
 
 // --- Three-tier casting API ---
