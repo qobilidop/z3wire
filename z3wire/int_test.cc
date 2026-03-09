@@ -2,6 +2,8 @@
 
 #include <gtest/gtest.h>
 
+#include <cstdint>
+
 namespace z3w {
 namespace {
 
@@ -425,6 +427,39 @@ TEST(IntTest, IteFalse) {
   UInt<8> b(99);
   UInt<8> result = ite(false, a, b);
   EXPECT_EQ(result.value(), 99);
+}
+
+// --- W=64 boundary ---
+
+TEST(IntTest, Width64Construction) {
+  UInt<64> a(UINT64_MAX);
+  EXPECT_EQ(a.value(), UINT64_MAX);
+  auto [val, truncated] = UInt<64>::checked(UINT64_MAX);
+  EXPECT_FALSE(truncated);
+}
+
+TEST(IntTest, Width64Arithmetic) {
+  UInt<63> a(UINT64_MAX >> 1);  // max 63-bit value
+  UInt<63> b(1);
+  auto sum = a + b;
+  static_assert(decltype(sum)::kWidth == 64);
+  // (2^63 - 1) + 1 = 2^63
+  EXPECT_EQ(sum.value(), uint64_t{1} << 63);
+}
+
+TEST(IntTest, Width64SignedComparison) {
+  // SInt<64>: -1 should be less than 1
+  SInt<64> neg(UINT64_MAX);  // -1 in two's complement
+  SInt<64> pos(1);
+  EXPECT_TRUE(neg < pos);
+  EXPECT_FALSE(pos < neg);
+}
+
+TEST(IntTest, Width1) {
+  UInt<1> a(3);
+  EXPECT_EQ(a.value(), 1);  // 3 & 0x1
+  UInt<1> b(0);
+  EXPECT_TRUE(a > b);
 }
 
 }  // namespace

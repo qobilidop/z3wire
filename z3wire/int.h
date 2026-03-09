@@ -43,7 +43,10 @@ class Int {
     }
   }
 
-  // Runtime checked construction.
+  // Runtime checked construction. Takes an unsigned raw bit pattern.
+  // Note: for signed types, pass the two's complement bit pattern, not a
+  // negative integer. E.g., use SInt<8>::checked(0x80) for -128, not
+  // SInt<8>::checked(-128).
   static std::pair<Int, bool> checked(uint64_t raw) {
     Int result(raw);
     bool truncated = (raw != result.bits_);
