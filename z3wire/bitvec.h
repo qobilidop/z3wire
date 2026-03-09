@@ -136,6 +136,9 @@ struct is_symbolic : std::false_type {};
 template <size_t W, bool S>
 struct is_symbolic<BitVec<W, S>> : std::true_type {};
 
+template <>
+struct is_symbolic<Bool> : std::true_type {};
+
 template <typename T>
 inline constexpr bool is_symbolic_v = is_symbolic<T>::value;
 
@@ -247,6 +250,28 @@ BitVec<W1, S> operator^(const BitVec<W1, S>& lhs, const Int<W2, S>& rhs) {
 template <unsigned W1, bool S, size_t W2, std::enable_if_t<W1 == W2, int> = 0>
 BitVec<W2, S> operator^(const Int<W1, S>& lhs, const BitVec<W2, S>& rhs) {
   return to_symbolic(lhs, rhs.raw().ctx()) ^ rhs;
+}
+
+// --- Mixed shift operators ---
+
+template <size_t W1, bool S, unsigned W2, std::enable_if_t<W1 == W2, int> = 0>
+BitVec<W1, S> operator<<(const BitVec<W1, S>& lhs, const Int<W2, S>& rhs) {
+  return lhs << to_symbolic(rhs, lhs.raw().ctx());
+}
+
+template <unsigned W1, bool S, size_t W2, std::enable_if_t<W1 == W2, int> = 0>
+BitVec<W2, S> operator<<(const Int<W1, S>& lhs, const BitVec<W2, S>& rhs) {
+  return to_symbolic(lhs, rhs.raw().ctx()) << rhs;
+}
+
+template <size_t W1, bool S, unsigned W2, std::enable_if_t<W1 == W2, int> = 0>
+BitVec<W1, S> operator>>(const BitVec<W1, S>& lhs, const Int<W2, S>& rhs) {
+  return lhs >> to_symbolic(rhs, lhs.raw().ctx());
+}
+
+template <unsigned W1, bool S, size_t W2, std::enable_if_t<W1 == W2, int> = 0>
+BitVec<W2, S> operator>>(const Int<W1, S>& lhs, const BitVec<W2, S>& rhs) {
+  return to_symbolic(lhs, rhs.raw().ctx()) >> rhs;
 }
 
 // --- Mixed comparison operators ---

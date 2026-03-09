@@ -663,5 +663,33 @@ TEST_F(BitVecTest, MixedIteSymbolicCondMixedValues) {
   static_assert(is_symbolic_v<decltype(result)>);
 }
 
+// --- Mixed shifts ---
+
+TEST_F(BitVecTest, MixedLeftShift) {
+  Ubv<8> sym(ctx_, "x");
+  UInt<8> conc(4);
+  auto result = sym << conc;
+
+  z3::solver s(ctx_);
+  s.add(sym.raw() == ctx_.bv_val(1, 8));
+  s.add(result.raw() != ctx_.bv_val(16, 8));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(BitVecTest, MixedRightShift) {
+  Ubv<8> sym(ctx_, "x");
+  UInt<8> conc(4);
+  auto result = sym >> conc;
+
+  z3::solver s(ctx_);
+  s.add(sym.raw() == ctx_.bv_val(0x80, 8));
+  s.add(result.raw() != ctx_.bv_val(0x08, 8));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+// --- is_symbolic_v<Bool> ---
+
+TEST_F(BitVecTest, IsSymbolicBool) { static_assert(is_symbolic_v<Bool>); }
+
 }  // namespace
 }  // namespace z3w

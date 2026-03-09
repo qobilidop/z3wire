@@ -462,5 +462,29 @@ TEST(IntTest, Width1) {
   EXPECT_TRUE(a > b);
 }
 
+// --- Signed checked construction ---
+
+TEST(IntTest, SignedCheckedNoTruncation) {
+  auto [val, truncated] = SInt<8>::checked(int64_t{-128});
+  EXPECT_EQ(val.value(), 0x80);  // -128 in two's complement
+  EXPECT_FALSE(truncated);
+}
+
+TEST(IntTest, SignedCheckedPositive) {
+  auto [val, truncated] = SInt<8>::checked(int64_t{127});
+  EXPECT_EQ(val.value(), 127);
+  EXPECT_FALSE(truncated);
+}
+
+TEST(IntTest, SignedCheckedOverflowNegative) {
+  auto [val, truncated] = SInt<8>::checked(int64_t{-200});
+  EXPECT_TRUE(truncated);
+}
+
+TEST(IntTest, SignedCheckedOverflowPositive) {
+  auto [val, truncated] = SInt<8>::checked(int64_t{200});
+  EXPECT_TRUE(truncated);
+}
+
 }  // namespace
 }  // namespace z3w

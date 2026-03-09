@@ -53,6 +53,16 @@ class Int {
     return {result, truncated};
   }
 
+  // Runtime checked construction from a signed value.
+  // Only meaningful for signed types; for unsigned, use checked(uint64_t).
+  // NOLINTNEXTLINE(modernize-use-constraints)
+  template <bool Signed = IsSigned, typename = std::enable_if_t<Signed>>
+  static std::pair<Int, bool> checked(int64_t raw) {
+    Int result(static_cast<uint64_t>(raw));
+    bool truncated = (raw < min_signed() || raw > max_signed());
+    return {result, truncated};
+  }
+
   // Access the underlying value (always unsigned representation).
   [[nodiscard]] Storage value() const { return bits_; }
 
