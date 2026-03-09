@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "z3wire/bool.h"
+#include "z3wire/int.h"
 
 namespace z3w {
 
@@ -126,6 +127,22 @@ using Ubv = BitVec<W, false>;
 
 template <size_t W>
 using Sbv = BitVec<W, true>;
+
+// Type trait: is this a symbolic BitVec type?
+template <typename T>
+struct is_symbolic : std::false_type {};
+
+template <size_t W, bool S>
+struct is_symbolic<BitVec<W, S>> : std::true_type {};
+
+template <typename T>
+inline constexpr bool is_symbolic_v = is_symbolic<T>::value;
+
+// Convert a concrete Int to a symbolic BitVec.
+template <unsigned W, bool S>
+BitVec<W, S> to_symbolic(const Int<W, S>& val, z3::context& ctx) {
+  return BitVec<W, S>(ctx.bv_val(static_cast<uint64_t>(val.value()), W));
+}
 
 // --- Bit-growth arithmetic ---
 // Result width = max(W1, W2) + 1. Operands are extended to the result width

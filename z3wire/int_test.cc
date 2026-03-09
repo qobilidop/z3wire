@@ -27,6 +27,12 @@ TEST(IntTest, TypeTraits) {
   static_assert(SInt<8>::kIsSigned);
 }
 
+TEST(IntTest, IsConcreteV) {
+  static_assert(is_concrete_v<UInt<8>>);
+  static_assert(is_concrete_v<SInt<16>>);
+  static_assert(!is_concrete_v<int>);
+}
+
 // --- Raw constructor (masking) ---
 
 TEST(IntTest, RawConstructorMasks) {

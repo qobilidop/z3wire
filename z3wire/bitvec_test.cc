@@ -3,6 +3,8 @@
 #include <gtest/gtest.h>
 #include <z3++.h>
 
+#include "z3wire/int.h"
+
 namespace z3w {
 namespace {
 
@@ -526,6 +528,34 @@ TEST_F(BitVecTest, LosslessShlSymbolic) {
 
   // Result width = 8 + 2^3 - 1 = 15.
   static_assert(decltype(result)::kWidth == 15);
+}
+
+// --- Type traits ---
+
+TEST_F(BitVecTest, IsSymbolicV) {
+  static_assert(is_symbolic_v<Ubv<8>>);
+  static_assert(is_symbolic_v<Sbv<16>>);
+  static_assert(!is_symbolic_v<int>);
+}
+
+// --- Concrete to symbolic promotion ---
+
+TEST_F(BitVecTest, ConcreteToSymbolic) {
+  UInt<8> concrete(42);
+  Ubv<8> symbolic = to_symbolic(concrete, ctx_);
+
+  z3::solver s(ctx_);
+  s.add(symbolic.raw() != ctx_.bv_val(42, 8));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(BitVecTest, SignedConcreteToSymbolic) {
+  SInt<8> concrete(0x80);  // -128
+  Sbv<8> symbolic = to_symbolic(concrete, ctx_);
+
+  z3::solver s(ctx_);
+  s.add(symbolic.raw() != ctx_.bv_val(0x80, 8));
+  EXPECT_EQ(s.check(), z3::unsat);
 }
 
 }  // namespace

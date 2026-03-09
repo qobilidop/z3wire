@@ -186,6 +186,16 @@ using UInt = Int<W, false>;
 template <unsigned W>
 using SInt = Int<W, true>;
 
+// Type trait: is this a concrete Int type?
+template <typename T>
+struct is_concrete : std::false_type {};
+
+template <unsigned W, bool S>
+struct is_concrete<Int<W, S>> : std::true_type {};
+
+template <typename T>
+inline constexpr bool is_concrete_v = is_concrete<T>::value;
+
 namespace internal {
 
 template <unsigned TargetW, unsigned SrcW, bool SrcS>
