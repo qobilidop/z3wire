@@ -129,5 +129,7 @@ git worktree add ../z3wire-<branch> -b <branch>
 - **Run `bazel test //...`** before considering any task complete.
 - **Do not wrap `z3::context` or `z3::solver`.** Users interact with these
   directly; Z3Wire wraps only expressions.
+- **Keep limitations up to date.** When adding a feature that has known
+  limitations, or removing a limitation, update `docs/user/limitations.md`.
 - **Always confirm before committing.** Never auto-commit. Show the changes
   and wait for explicit approval. Once approved, push automatically.

@@ -54,6 +54,7 @@ nav:
       - Casting: user/casting.md
       - Bit manipulation: user/bit-manipulation.md
       - Shifting: user/shifting.md
+      - Limitations: user/limitations.md
   - Developer guide:
       - Design: dev/design.md
       - Roadmap: dev/roadmap.md
