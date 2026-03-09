@@ -49,6 +49,7 @@ nav:
       - Bit manipulation: examples/bit-manipulation.md
   - User guide:
       - Type system: guide/types.md
+      - Concrete types: guide/concrete-types.md
       - Operations: guide/operations.md
       - Casting: guide/casting.md
       - Bit manipulation: guide/bit-manipulation.md

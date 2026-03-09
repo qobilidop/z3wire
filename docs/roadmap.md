@@ -2,6 +2,12 @@
 
 Future directions for Z3Wire, roughly in priority order.
 
+## Recently completed
+
+- **Concrete types (`UInt<W>`, `SInt<W>`)** — Fixed-width integer types that
+  mirror the symbolic API and automatically promote in mixed expressions.
+  See the [concrete types guide](guide/concrete-types.md).
+
 ## Next features
 
 - **Multiplication, division, modulo** — Deferred from MVP. Need to decide on

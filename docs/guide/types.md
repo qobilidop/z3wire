@@ -93,3 +93,10 @@ conversions between:
 - Bit-vectors of different widths
 
 All conversions must go through the [casting API](casting.md).
+
+## Concrete types
+
+Z3Wire also provides [concrete types](concrete-types.md) (`UInt<W>`,
+`SInt<W>`) that store actual values instead of Z3 expressions. These mirror
+the symbolic API and automatically promote to symbolic when mixed in
+expressions.
