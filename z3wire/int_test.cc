@@ -83,5 +83,57 @@ TEST(IntTest, CheckedWithTruncation) {
   EXPECT_TRUE(truncated);
 }
 
+// --- Bitwise operators ---
+
+TEST(IntTest, BitwiseAnd) {
+  UInt<8> a(0xF0);
+  UInt<8> b(0x3C);
+  UInt<8> c = a & b;
+  EXPECT_EQ(c.value(), 0x30);
+}
+
+TEST(IntTest, BitwiseOr) {
+  UInt<8> a(0xF0);
+  UInt<8> b(0x0F);
+  UInt<8> c = a | b;
+  EXPECT_EQ(c.value(), 0xFF);
+}
+
+TEST(IntTest, BitwiseXor) {
+  UInt<8> a(0xFF);
+  UInt<8> b(0x0F);
+  UInt<8> c = a ^ b;
+  EXPECT_EQ(c.value(), 0xF0);
+}
+
+TEST(IntTest, BitwiseNot) {
+  UInt<8> a(0xF0);
+  UInt<8> b = ~a;
+  EXPECT_EQ(b.value(), 0x0F);
+}
+
+TEST(IntTest, BitwiseNotNonPowerOfTwo) {
+  UInt<5> a(0x1F);
+  UInt<5> b = ~a;
+  EXPECT_EQ(b.value(), 0x00);  // ~0x1F masked to 5 bits
+}
+
+// --- Equality ---
+
+TEST(IntTest, Equality) {
+  UInt<8> a(42);
+  UInt<8> b(42);
+  UInt<8> c(99);
+  EXPECT_TRUE(a == b);
+  EXPECT_FALSE(a == c);
+}
+
+TEST(IntTest, Inequality) {
+  UInt<8> a(42);
+  UInt<8> b(99);
+  EXPECT_TRUE(a != b);
+  EXPECT_FALSE(a != a);
+}
+
 }  // namespace
 }  // namespace z3w

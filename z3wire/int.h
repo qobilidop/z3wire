@@ -52,6 +52,32 @@ class Int {
   // Access the underlying value (always unsigned representation).
   [[nodiscard]] Storage value() const { return bits_; }
 
+  // --- Bitwise operators (strict: same width and signedness) ---
+
+  friend Int operator&(const Int& lhs, const Int& rhs) {
+    return Int(lhs.bits_ & rhs.bits_);
+  }
+
+  friend Int operator|(const Int& lhs, const Int& rhs) {
+    return Int(lhs.bits_ | rhs.bits_);
+  }
+
+  friend Int operator^(const Int& lhs, const Int& rhs) {
+    return Int(lhs.bits_ ^ rhs.bits_);
+  }
+
+  Int operator~() const { return Int(~bits_); }
+
+  // --- Equality ---
+
+  friend bool operator==(const Int& lhs, const Int& rhs) {
+    return lhs.bits_ == rhs.bits_;
+  }
+
+  friend bool operator!=(const Int& lhs, const Int& rhs) {
+    return lhs.bits_ != rhs.bits_;
+  }
+
  private:
   static constexpr Storage mask(uint64_t val) {
     if constexpr (W >= 64) {
