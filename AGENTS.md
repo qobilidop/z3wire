@@ -3,7 +3,7 @@
 ## Repository map
 
 ```
-docs/guide/                   User guide (types, operations, casting, etc.).
+docs/user/                    User guide (types, operations, casting, etc.).
 docs/dev/design.md            Full design document. Read this first.
 docs/dev/roadmap.md           Future directions and planned features.
 docs/dev/plans/               Implementation plans.

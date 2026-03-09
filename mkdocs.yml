@@ -48,12 +48,12 @@ nav:
       - ALU verification: examples/alu.md
       - Bit manipulation: examples/bit-manipulation.md
   - User guide:
-      - Type system: guide/types.md
-      - Concrete types: guide/concrete-types.md
-      - Operations: guide/operations.md
-      - Casting: guide/casting.md
-      - Bit manipulation: guide/bit-manipulation.md
-      - Shifting: guide/shifting.md
+      - Type system: user/types.md
+      - Concrete types: user/concrete-types.md
+      - Operations: user/operations.md
+      - Casting: user/casting.md
+      - Bit manipulation: user/bit-manipulation.md
+      - Shifting: user/shifting.md
   - Developer guide:
       - Design: dev/design.md
       - Roadmap: dev/roadmap.md

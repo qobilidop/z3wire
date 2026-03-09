@@ -113,6 +113,6 @@ int main() {
 
 ## Next steps
 
-- [Type System](guide/types.md) — learn about `Bool`, `Ubv<W>`, and `Sbv<W>`
-- [Operations](guide/operations.md) — arithmetic, bitwise, and comparison
+- [Type System](user/types.md) — learn about `Bool`, `Ubv<W>`, and `Sbv<W>`
+- [Operations](user/operations.md) — arithmetic, bitwise, and comparison
 - [Examples](examples/safe-adder.md) — runnable verification examples
