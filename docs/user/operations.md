@@ -63,21 +63,28 @@ auto masked = a & b;  // z3w::Ubv<8>
 auto flipped = ~a;    // z3w::Ubv<8>
 ```
 
-## Equality (strict)
+## Equality (relaxed)
 
-Requires the same width and signedness. Returns `z3w::Bool`.
+Allows different widths and signedness. Operands are extended to a common type
+before comparing. Returns `z3w::Bool`.
 
 ```cpp
 z3w::Ubv<8> a(ctx, "a");
 z3w::Ubv<8> b(ctx, "b");
 z3w::Bool eq = (a == b);
 z3w::Bool ne = (a != b);
+
+// Different widths:
+z3w::Ubv<16> c(ctx, "c");
+z3w::Bool eq2 = (a == c);  // a is zero-extended to 16 bits first
 ```
 
-## Ordered comparison (strict)
+## Ordered comparison (relaxed)
 
-Requires the same width and signedness. Automatically dispatches to the correct
-Z3 function based on signedness. Returns `z3w::Bool`.
+Allows different widths and signedness. Operands are extended to a common type
+before comparing. Automatically dispatches to unsigned or signed comparison
+based on the common type (signed if either operand is signed). Returns
+`z3w::Bool`.
 
 | Operator | Unsigned | Signed |
 |:---------|:---------|:-------|
@@ -94,6 +101,9 @@ z3w::Bool less = (a < b);  // Uses bvult (unsigned)
 z3w::Sbv<8> x(ctx, "x");
 z3w::Sbv<8> y(ctx, "y");
 z3w::Bool less_s = (x < y);  // Uses bvslt (signed)
+
+// Mixed signedness — extends both to a common signed type:
+z3w::Bool less_m = (a < x);  // Common type: Sbv<9>
 ```
 
 ## Bool operations

@@ -83,50 +83,6 @@ class Int {
 
   Int operator~() const { return Int(~bits_); }
 
-  // --- Equality ---
-
-  friend bool operator==(const Int& lhs, const Int& rhs) {
-    return lhs.bits_ == rhs.bits_;
-  }
-
-  friend bool operator!=(const Int& lhs, const Int& rhs) {
-    return lhs.bits_ != rhs.bits_;
-  }
-
-  // --- Ordered comparison ---
-
-  friend bool operator<(const Int& lhs, const Int& rhs) {
-    if constexpr (IsSigned) {
-      return sign_extend(lhs.bits_) < sign_extend(rhs.bits_);
-    } else {
-      return lhs.bits_ < rhs.bits_;
-    }
-  }
-
-  friend bool operator<=(const Int& lhs, const Int& rhs) {
-    if constexpr (IsSigned) {
-      return sign_extend(lhs.bits_) <= sign_extend(rhs.bits_);
-    } else {
-      return lhs.bits_ <= rhs.bits_;
-    }
-  }
-
-  friend bool operator>(const Int& lhs, const Int& rhs) {
-    if constexpr (IsSigned) {
-      return sign_extend(lhs.bits_) > sign_extend(rhs.bits_);
-    } else {
-      return lhs.bits_ > rhs.bits_;
-    }
-  }
-
-  friend bool operator>=(const Int& lhs, const Int& rhs) {
-    if constexpr (IsSigned) {
-      return sign_extend(lhs.bits_) >= sign_extend(rhs.bits_);
-    } else {
-      return lhs.bits_ >= rhs.bits_;
-    }
-  }
-
   // --- Hardware shifts (strict: same width and signedness) ---
 
   friend Int operator<<(const Int& lhs, const Int& rhs) {
@@ -243,6 +199,56 @@ auto operator-(const Int<W1, S1>& lhs, const Int<W2, S2>& rhs) {
   uint64_t lhs_ext = internal::extend<kResultWidth, W1, S1>(lhs);
   uint64_t rhs_ext = internal::extend<kResultWidth, W2, S2>(rhs);
   return Int<kResultWidth, true>(lhs_ext - rhs_ext);
+}
+
+// --- Equality (relaxed: any width/signedness combination) ---
+
+template <size_t W1, bool S1, size_t W2, bool S2>
+bool operator==(const Int<W1, S1>& lhs, const Int<W2, S2>& rhs) {
+  constexpr size_t kCommonWidth =
+      (S1 == S2) ? std::max(W1, W2) : std::max(W1, W2) + 1;
+  uint64_t lhs_ext = internal::extend<kCommonWidth, W1, S1>(lhs);
+  uint64_t rhs_ext = internal::extend<kCommonWidth, W2, S2>(rhs);
+  return lhs_ext == rhs_ext;
+}
+
+template <size_t W1, bool S1, size_t W2, bool S2>
+bool operator!=(const Int<W1, S1>& lhs, const Int<W2, S2>& rhs) {
+  return !(lhs == rhs);
+}
+
+// --- Ordered comparison (relaxed: any width/signedness combination) ---
+
+template <size_t W1, bool S1, size_t W2, bool S2>
+bool operator<(const Int<W1, S1>& lhs, const Int<W2, S2>& rhs) {
+  constexpr bool kSigned = S1 || S2;
+  constexpr size_t kCommonWidth =
+      (S1 == S2) ? std::max(W1, W2) : std::max(W1, W2) + 1;
+  uint64_t lhs_ext = internal::extend<kCommonWidth, W1, S1>(lhs);
+  uint64_t rhs_ext = internal::extend<kCommonWidth, W2, S2>(rhs);
+  if constexpr (kSigned) {
+    return Int<kCommonWidth, true>::sign_extend_value(
+               static_cast<StorageType<kCommonWidth>>(lhs_ext)) <
+           Int<kCommonWidth, true>::sign_extend_value(
+               static_cast<StorageType<kCommonWidth>>(rhs_ext));
+  } else {
+    return lhs_ext < rhs_ext;
+  }
+}
+
+template <size_t W1, bool S1, size_t W2, bool S2>
+bool operator<=(const Int<W1, S1>& lhs, const Int<W2, S2>& rhs) {
+  return !(rhs < lhs);
+}
+
+template <size_t W1, bool S1, size_t W2, bool S2>
+bool operator>(const Int<W1, S1>& lhs, const Int<W2, S2>& rhs) {
+  return rhs < lhs;
+}
+
+template <size_t W1, bool S1, size_t W2, bool S2>
+bool operator>=(const Int<W1, S1>& lhs, const Int<W2, S2>& rhs) {
+  return !(lhs < rhs);
 }
 
 // checked_shl: returns {shifted, lost}.

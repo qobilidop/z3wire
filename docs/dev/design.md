@@ -220,18 +220,21 @@ auto full = z3w::concat(high, low);  // -> z3w::Ubv<32>
 To prevent silent overflows, Z3Wire adopts bit-growth semantics for arithmetic,
 inspired by
 [CIRCT HWArith](https://circt.llvm.org/docs/Dialects/HWArith/RationaleHWArith/).
-All other operations enforce strict width and signedness matching.
+Bitwise and shift operations enforce strict width and signedness matching.
+Arithmetic and comparison operations allow mixed widths and signedness,
+automatically extending operands to a common type.
 
 - **Addition / Subtraction (`+`, `-`):** Result width is `max(W1, W2) + 1`.
   Operands are automatically sign-extended or zero-extended to match before the
   operation. (Bit growth.)
 - **Bitwise logic (`&`, `|`, `^`):** Widths and signedness must match exactly.
   (Strict.)
-- **Equality (`==`, `!=`):** Widths and signedness must match exactly. (Strict.)
-- **Ordered comparison (`<`, `<=`, `>`, `>=`):** Widths and signedness must
-  match exactly. Signedness-aware: dispatches to unsigned comparisons (`bvult`,
-  `bvule`, `bvugt`, `bvuge`) for `Ubv` and signed comparisons (`bvslt`,
-  `bvsle`, `bvsgt`, `bvsge`) for `Sbv`. Returns `z3w::Bool`. (Strict.)
+- **Equality (`==`, `!=`):** Allows different widths and signedness. Operands
+  are extended to a common type before comparing. (Relaxed.)
+- **Ordered comparison (`<`, `<=`, `>`, `>=`):** Allows different widths and
+  signedness. Operands are extended to a common type. Signedness-aware:
+  dispatches to unsigned or signed comparison based on the common type (signed
+  if either operand is signed). Returns `z3w::Bool`. (Relaxed.)
 
 Example:
 

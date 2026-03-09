@@ -486,5 +486,80 @@ TEST(IntTest, SignedCheckedOverflowPositive) {
   EXPECT_TRUE(truncated);
 }
 
+// --- Cross-type comparison (different widths and/or signedness) ---
+
+TEST(IntTest, CrossTypeEqualitySameSignedness) {
+  // UInt<8>(42) == UInt<16>(42) → true
+  UInt<8> a(42);
+  UInt<16> b(42);
+  EXPECT_TRUE(a == b);
+  EXPECT_FALSE(a != b);
+}
+
+TEST(IntTest, CrossTypeEqualityDifferentValues) {
+  UInt<8> a(100);
+  UInt<16> b(200);
+  EXPECT_FALSE(a == b);
+  EXPECT_TRUE(a != b);
+}
+
+TEST(IntTest, CrossTypeLessThanDifferentWidths) {
+  // UInt<8>(100) < UInt<16>(200) → true
+  UInt<8> a(100);
+  UInt<16> b(200);
+  EXPECT_TRUE(a < b);
+  EXPECT_FALSE(b < a);
+  EXPECT_TRUE(a <= b);
+  EXPECT_FALSE(b <= a);
+  EXPECT_TRUE(b > a);
+  EXPECT_FALSE(a > b);
+  EXPECT_TRUE(b >= a);
+  EXPECT_FALSE(a >= b);
+}
+
+TEST(IntTest, CrossTypeDifferentSignednessSameWidth) {
+  // SInt<8>(0xFF) is -1 signed, UInt<8>(1) is 1 unsigned.
+  // Common type: signed, width = max(8,8)+1 = 9.
+  // -1 < 1 → true
+  SInt<8> a(0xFF);  // -1
+  UInt<8> b(1);
+  EXPECT_TRUE(a < b);
+  EXPECT_FALSE(b < a);
+  EXPECT_FALSE(a == b);
+  EXPECT_TRUE(a != b);
+}
+
+TEST(IntTest, CrossTypeDifferentSignednessAndWidth) {
+  // SInt<8>(0x80) is -128 signed, UInt<16>(200) is 200 unsigned.
+  // Common type: signed, width = max(8,16)+1 = 17.
+  // -128 < 200 → true
+  SInt<8> a(0x80);  // -128
+  UInt<16> b(200);
+  EXPECT_TRUE(a < b);
+  EXPECT_FALSE(b < a);
+}
+
+TEST(IntTest, CrossTypeUnsignedNeedsExtraSignBit) {
+  // UInt<8>(255) compared with SInt<8>(-1).
+  // Common type: signed, width = max(8,8)+1 = 9.
+  // UInt 255 zero-extends to 9 bits → 255 (positive).
+  // SInt -1 sign-extends to 9 bits → -1.
+  // 255 > -1 → true
+  UInt<8> a(255);
+  SInt<8> b(0xFF);  // -1
+  EXPECT_TRUE(a > b);
+  EXPECT_FALSE(a < b);
+  EXPECT_FALSE(a == b);
+}
+
+TEST(IntTest, CrossTypeEqualityMixedSignedness) {
+  // UInt<8>(42) == SInt<16>(42) → true
+  // Common type: signed, width = max(8,16)+1 = 17.
+  UInt<8> a(42);
+  SInt<16> b(42);
+  EXPECT_TRUE(a == b);
+  EXPECT_FALSE(a != b);
+}
+
 }  // namespace
 }  // namespace z3w

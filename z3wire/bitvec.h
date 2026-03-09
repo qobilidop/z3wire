@@ -61,50 +61,6 @@ class BitVec {
 
   BitVec operator~() const { return BitVec(~expr_); }
 
-  // --- Equality (strict: same width and signedness) ---
-
-  friend Bool operator==(const BitVec& lhs, const BitVec& rhs) {
-    return Bool(lhs.expr_ == rhs.expr_);
-  }
-
-  friend Bool operator!=(const BitVec& lhs, const BitVec& rhs) {
-    return Bool(lhs.expr_ != rhs.expr_);
-  }
-
-  // --- Ordered comparison (strict, signedness-aware) ---
-
-  friend Bool operator<(const BitVec& lhs, const BitVec& rhs) {
-    if constexpr (IsSigned) {
-      return Bool(z3::slt(lhs.expr_, rhs.expr_));
-    } else {
-      return Bool(z3::ult(lhs.expr_, rhs.expr_));
-    }
-  }
-
-  friend Bool operator<=(const BitVec& lhs, const BitVec& rhs) {
-    if constexpr (IsSigned) {
-      return Bool(z3::sle(lhs.expr_, rhs.expr_));
-    } else {
-      return Bool(z3::ule(lhs.expr_, rhs.expr_));
-    }
-  }
-
-  friend Bool operator>(const BitVec& lhs, const BitVec& rhs) {
-    if constexpr (IsSigned) {
-      return Bool(z3::sgt(lhs.expr_, rhs.expr_));
-    } else {
-      return Bool(z3::ugt(lhs.expr_, rhs.expr_));
-    }
-  }
-
-  friend Bool operator>=(const BitVec& lhs, const BitVec& rhs) {
-    if constexpr (IsSigned) {
-      return Bool(z3::sge(lhs.expr_, rhs.expr_));
-    } else {
-      return Bool(z3::uge(lhs.expr_, rhs.expr_));
-    }
-  }
-
   // --- Hardware shifts (strict: same width and signedness) ---
 
   friend BitVec operator<<(const BitVec& lhs, const BitVec& rhs) {
@@ -187,6 +143,84 @@ auto operator-(const BitVec<W1, S1>& lhs, const BitVec<W2, S2>& rhs) {
   auto lhs_ext = internal::extend<kResultWidth, W1, S1>(lhs);
   auto rhs_ext = internal::extend<kResultWidth, W2, S2>(rhs);
   return BitVec<kResultWidth, true>(lhs_ext - rhs_ext);
+}
+
+// --- Equality (relaxed: any width/signedness combination) ---
+
+template <size_t W1, bool S1, size_t W2, bool S2>
+Bool operator==(const BitVec<W1, S1>& lhs, const BitVec<W2, S2>& rhs) {
+  constexpr size_t kCommonWidth =
+      (S1 == S2) ? std::max(W1, W2) : std::max(W1, W2) + 1;
+  auto lhs_ext = internal::extend<kCommonWidth, W1, S1>(lhs);
+  auto rhs_ext = internal::extend<kCommonWidth, W2, S2>(rhs);
+  return Bool(lhs_ext == rhs_ext);
+}
+
+template <size_t W1, bool S1, size_t W2, bool S2>
+Bool operator!=(const BitVec<W1, S1>& lhs, const BitVec<W2, S2>& rhs) {
+  constexpr size_t kCommonWidth =
+      (S1 == S2) ? std::max(W1, W2) : std::max(W1, W2) + 1;
+  auto lhs_ext = internal::extend<kCommonWidth, W1, S1>(lhs);
+  auto rhs_ext = internal::extend<kCommonWidth, W2, S2>(rhs);
+  return Bool(lhs_ext != rhs_ext);
+}
+
+// --- Ordered comparison (relaxed: any width/signedness combination) ---
+
+template <size_t W1, bool S1, size_t W2, bool S2>
+Bool operator<(const BitVec<W1, S1>& lhs, const BitVec<W2, S2>& rhs) {
+  constexpr bool kSigned = S1 || S2;
+  constexpr size_t kCommonWidth =
+      (S1 == S2) ? std::max(W1, W2) : std::max(W1, W2) + 1;
+  auto lhs_ext = internal::extend<kCommonWidth, W1, S1>(lhs);
+  auto rhs_ext = internal::extend<kCommonWidth, W2, S2>(rhs);
+  if constexpr (kSigned) {
+    return Bool(z3::slt(lhs_ext, rhs_ext));
+  } else {
+    return Bool(z3::ult(lhs_ext, rhs_ext));
+  }
+}
+
+template <size_t W1, bool S1, size_t W2, bool S2>
+Bool operator<=(const BitVec<W1, S1>& lhs, const BitVec<W2, S2>& rhs) {
+  constexpr bool kSigned = S1 || S2;
+  constexpr size_t kCommonWidth =
+      (S1 == S2) ? std::max(W1, W2) : std::max(W1, W2) + 1;
+  auto lhs_ext = internal::extend<kCommonWidth, W1, S1>(lhs);
+  auto rhs_ext = internal::extend<kCommonWidth, W2, S2>(rhs);
+  if constexpr (kSigned) {
+    return Bool(z3::sle(lhs_ext, rhs_ext));
+  } else {
+    return Bool(z3::ule(lhs_ext, rhs_ext));
+  }
+}
+
+template <size_t W1, bool S1, size_t W2, bool S2>
+Bool operator>(const BitVec<W1, S1>& lhs, const BitVec<W2, S2>& rhs) {
+  constexpr bool kSigned = S1 || S2;
+  constexpr size_t kCommonWidth =
+      (S1 == S2) ? std::max(W1, W2) : std::max(W1, W2) + 1;
+  auto lhs_ext = internal::extend<kCommonWidth, W1, S1>(lhs);
+  auto rhs_ext = internal::extend<kCommonWidth, W2, S2>(rhs);
+  if constexpr (kSigned) {
+    return Bool(z3::sgt(lhs_ext, rhs_ext));
+  } else {
+    return Bool(z3::ugt(lhs_ext, rhs_ext));
+  }
+}
+
+template <size_t W1, bool S1, size_t W2, bool S2>
+Bool operator>=(const BitVec<W1, S1>& lhs, const BitVec<W2, S2>& rhs) {
+  constexpr bool kSigned = S1 || S2;
+  constexpr size_t kCommonWidth =
+      (S1 == S2) ? std::max(W1, W2) : std::max(W1, W2) + 1;
+  auto lhs_ext = internal::extend<kCommonWidth, W1, S1>(lhs);
+  auto rhs_ext = internal::extend<kCommonWidth, W2, S2>(rhs);
+  if constexpr (kSigned) {
+    return Bool(z3::sge(lhs_ext, rhs_ext));
+  } else {
+    return Bool(z3::uge(lhs_ext, rhs_ext));
+  }
 }
 
 // --- Mixed concrete + symbolic arithmetic ---
@@ -275,63 +309,63 @@ BitVec<W, S> operator>>(const Int<W, S>& lhs, const BitVec<W, S>& rhs) {
 
 // --- Mixed comparison operators ---
 
-template <size_t W, bool S>
-Bool operator==(const BitVec<W, S>& lhs, const Int<W, S>& rhs) {
+template <size_t W1, bool S1, size_t W2, bool S2>
+Bool operator==(const BitVec<W1, S1>& lhs, const Int<W2, S2>& rhs) {
   return lhs == to_symbolic(rhs, lhs.raw().ctx());
 }
 
-template <size_t W, bool S>
-Bool operator==(const Int<W, S>& lhs, const BitVec<W, S>& rhs) {
+template <size_t W1, bool S1, size_t W2, bool S2>
+Bool operator==(const Int<W1, S1>& lhs, const BitVec<W2, S2>& rhs) {
   return to_symbolic(lhs, rhs.raw().ctx()) == rhs;
 }
 
-template <size_t W, bool S>
-Bool operator!=(const BitVec<W, S>& lhs, const Int<W, S>& rhs) {
+template <size_t W1, bool S1, size_t W2, bool S2>
+Bool operator!=(const BitVec<W1, S1>& lhs, const Int<W2, S2>& rhs) {
   return lhs != to_symbolic(rhs, lhs.raw().ctx());
 }
 
-template <size_t W, bool S>
-Bool operator!=(const Int<W, S>& lhs, const BitVec<W, S>& rhs) {
+template <size_t W1, bool S1, size_t W2, bool S2>
+Bool operator!=(const Int<W1, S1>& lhs, const BitVec<W2, S2>& rhs) {
   return to_symbolic(lhs, rhs.raw().ctx()) != rhs;
 }
 
-template <size_t W, bool S>
-Bool operator<(const BitVec<W, S>& lhs, const Int<W, S>& rhs) {
+template <size_t W1, bool S1, size_t W2, bool S2>
+Bool operator<(const BitVec<W1, S1>& lhs, const Int<W2, S2>& rhs) {
   return lhs < to_symbolic(rhs, lhs.raw().ctx());
 }
 
-template <size_t W, bool S>
-Bool operator<(const Int<W, S>& lhs, const BitVec<W, S>& rhs) {
+template <size_t W1, bool S1, size_t W2, bool S2>
+Bool operator<(const Int<W1, S1>& lhs, const BitVec<W2, S2>& rhs) {
   return to_symbolic(lhs, rhs.raw().ctx()) < rhs;
 }
 
-template <size_t W, bool S>
-Bool operator<=(const BitVec<W, S>& lhs, const Int<W, S>& rhs) {
+template <size_t W1, bool S1, size_t W2, bool S2>
+Bool operator<=(const BitVec<W1, S1>& lhs, const Int<W2, S2>& rhs) {
   return lhs <= to_symbolic(rhs, lhs.raw().ctx());
 }
 
-template <size_t W, bool S>
-Bool operator<=(const Int<W, S>& lhs, const BitVec<W, S>& rhs) {
+template <size_t W1, bool S1, size_t W2, bool S2>
+Bool operator<=(const Int<W1, S1>& lhs, const BitVec<W2, S2>& rhs) {
   return to_symbolic(lhs, rhs.raw().ctx()) <= rhs;
 }
 
-template <size_t W, bool S>
-Bool operator>(const BitVec<W, S>& lhs, const Int<W, S>& rhs) {
+template <size_t W1, bool S1, size_t W2, bool S2>
+Bool operator>(const BitVec<W1, S1>& lhs, const Int<W2, S2>& rhs) {
   return lhs > to_symbolic(rhs, lhs.raw().ctx());
 }
 
-template <size_t W, bool S>
-Bool operator>(const Int<W, S>& lhs, const BitVec<W, S>& rhs) {
+template <size_t W1, bool S1, size_t W2, bool S2>
+Bool operator>(const Int<W1, S1>& lhs, const BitVec<W2, S2>& rhs) {
   return to_symbolic(lhs, rhs.raw().ctx()) > rhs;
 }
 
-template <size_t W, bool S>
-Bool operator>=(const BitVec<W, S>& lhs, const Int<W, S>& rhs) {
+template <size_t W1, bool S1, size_t W2, bool S2>
+Bool operator>=(const BitVec<W1, S1>& lhs, const Int<W2, S2>& rhs) {
   return lhs >= to_symbolic(rhs, lhs.raw().ctx());
 }
 
-template <size_t W, bool S>
-Bool operator>=(const Int<W, S>& lhs, const BitVec<W, S>& rhs) {
+template <size_t W1, bool S1, size_t W2, bool S2>
+Bool operator>=(const Int<W1, S1>& lhs, const BitVec<W2, S2>& rhs) {
   return to_symbolic(lhs, rhs.raw().ctx()) >= rhs;
 }
 

@@ -691,5 +691,99 @@ TEST_F(BitVecTest, MixedRightShift) {
 
 TEST_F(BitVecTest, IsSymbolicBool) { static_assert(is_symbolic_v<Bool>); }
 
+// --- Cross-type symbolic comparison (different widths) ---
+
+TEST_F(BitVecTest, CrossTypeEqualityDifferentWidths) {
+  Ubv<8> a(ctx_, "a");
+  Ubv<16> b(ctx_, "b");
+  Bool eq = (a == b);
+
+  // If a=42 and b=42, they should be equal.
+  z3::solver s(ctx_);
+  s.add(a.raw() == ctx_.bv_val(42, 8));
+  s.add(b.raw() == ctx_.bv_val(42, 16));
+  s.add(!eq.raw());
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(BitVecTest, CrossTypeInequalityDifferentWidths) {
+  Ubv<8> a(ctx_, "a");
+  Ubv<16> b(ctx_, "b");
+  Bool neq = (a != b);
+
+  // If a=42 and b=42, they should not be unequal.
+  z3::solver s(ctx_);
+  s.add(a.raw() == ctx_.bv_val(42, 8));
+  s.add(b.raw() == ctx_.bv_val(42, 16));
+  s.add(neq.raw());
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(BitVecTest, CrossTypeLessThanDifferentWidths) {
+  Ubv<8> a(ctx_, "a");
+  Ubv<16> b(ctx_, "b");
+  Bool lt = (a < b);
+
+  // 100 < 200 should be sat (unsigned).
+  z3::solver s(ctx_);
+  s.add(lt.raw());
+  s.add(a.raw() == ctx_.bv_val(100, 8));
+  s.add(b.raw() == ctx_.bv_val(200, 16));
+  EXPECT_EQ(s.check(), z3::sat);
+}
+
+// --- Cross-type symbolic comparison (different signedness) ---
+
+TEST_F(BitVecTest, CrossTypeLessThanDifferentSignedness) {
+  // Sbv<8> -1 (0xFF) < Ubv<8> 200 should be true.
+  // Common type: signed, width = max(8,8)+1 = 9.
+  Sbv<8> a(ctx_, "a");
+  Ubv<8> b(ctx_, "b");
+  Bool lt = (a < b);
+
+  z3::solver s(ctx_);
+  s.add(lt.raw());
+  s.add(a.raw() == ctx_.bv_val(0xFF, 8));  // -1 signed
+  s.add(b.raw() == ctx_.bv_val(200, 8));
+  EXPECT_EQ(s.check(), z3::sat);
+}
+
+TEST_F(BitVecTest, CrossTypeGreaterEqualDifferentSignedness) {
+  // Ubv<8> 200 >= Sbv<8> -1 should be true.
+  Ubv<8> a(ctx_, "a");
+  Sbv<8> b(ctx_, "b");
+  Bool ge = (a >= b);
+
+  z3::solver s(ctx_);
+  s.add(a.raw() == ctx_.bv_val(200, 8));
+  s.add(b.raw() == ctx_.bv_val(0xFF, 8));  // -1 signed
+  s.add(!ge.raw());
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+// --- Mixed concrete+symbolic cross-type comparison ---
+
+TEST_F(BitVecTest, MixedCrossTypeEquality) {
+  Ubv<8> sym(ctx_, "x");
+  UInt<16> conc(42);
+  Bool eq = (sym == conc);
+
+  z3::solver s(ctx_);
+  s.add(eq.raw());
+  s.add(sym.raw() != ctx_.bv_val(42, 8));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(BitVecTest, MixedCrossTypeLessThan) {
+  Ubv<8> sym(ctx_, "x");
+  UInt<16> conc(300);
+  Bool lt = (sym < conc);
+
+  // Any 8-bit unsigned value (0-255) is always < 300.
+  z3::solver s(ctx_);
+  s.add(!lt.raw());
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
 }  // namespace
 }  // namespace z3w
