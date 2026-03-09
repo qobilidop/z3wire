@@ -185,5 +185,52 @@ TEST(IntTest, SignedComparisonNonPowerOfTwo) {
   EXPECT_TRUE(a < b);
 }
 
+// --- Arithmetic with bit growth ---
+
+TEST(IntTest, AdditionWidens) {
+  UInt<8> a(255);
+  UInt<8> b(255);
+  auto sum = a + b;
+  static_assert(decltype(sum)::kWidth == 9);
+  static_assert(!decltype(sum)::kIsSigned);
+  EXPECT_EQ(sum.value(), 510);
+}
+
+TEST(IntTest, AdditionDifferentWidths) {
+  UInt<8> a(255);
+  UInt<4> b(15);
+  auto sum = a + b;
+  static_assert(decltype(sum)::kWidth == 9);
+  EXPECT_EQ(sum.value(), 270);
+}
+
+TEST(IntTest, AdditionMixedSignedness) {
+  UInt<8> a(100);
+  SInt<8> b(200);  // -56 signed
+  auto sum = a + b;
+  static_assert(decltype(sum)::kWidth == 9);
+  static_assert(decltype(sum)::kIsSigned);
+  // 100 + (-56) = 44
+  using SInt9 = Int<9, true>;
+  EXPECT_EQ(SInt9::Literal<44>().value(), sum.value());
+}
+
+TEST(IntTest, SubtractionIsSigned) {
+  UInt<8> a(100);
+  UInt<8> b(200);
+  auto diff = a - b;
+  static_assert(decltype(diff)::kWidth == 9);
+  static_assert(decltype(diff)::kIsSigned);
+  // 100 - 200 = -100. In 9-bit two's complement: 512 - 100 = 412.
+  EXPECT_EQ(diff.value(), 412);
+}
+
+TEST(IntTest, SubtractionPositiveResult) {
+  UInt<8> a(200);
+  UInt<8> b(100);
+  auto diff = a - b;
+  EXPECT_EQ(diff.value(), 100);
+}
+
 }  // namespace
 }  // namespace z3w

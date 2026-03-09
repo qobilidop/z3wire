@@ -1,6 +1,7 @@
 #ifndef Z3WIRE_INT_H_
 #define Z3WIRE_INT_H_
 
+#include <algorithm>
 #include <cstdint>
 #include <type_traits>
 #include <utility>
@@ -112,6 +113,11 @@ class Int {
     }
   }
 
+  // Public for use by internal::extend.
+  static constexpr int64_t sign_extend_value(Storage val) {
+    return sign_extend(val);
+  }
+
  private:
   static constexpr Storage mask(uint64_t val) {
     if constexpr (W >= 64) {
@@ -163,6 +169,41 @@ using UInt = Int<W, false>;
 
 template <unsigned W>
 using SInt = Int<W, true>;
+
+namespace internal {
+
+template <unsigned TargetW, unsigned SrcW, bool SrcS>
+uint64_t extend(const Int<SrcW, SrcS>& val) {
+  if constexpr (!SrcS) {
+    return val.value();
+  } else {
+    int64_t signed_val = Int<SrcW, SrcS>::sign_extend_value(val.value());
+    if constexpr (TargetW >= 64) {
+      return static_cast<uint64_t>(signed_val);
+    } else {
+      return static_cast<uint64_t>(signed_val) & ((uint64_t{1} << TargetW) - 1);
+    }
+  }
+}
+
+}  // namespace internal
+
+template <unsigned W1, bool S1, unsigned W2, bool S2>
+auto operator+(const Int<W1, S1>& lhs, const Int<W2, S2>& rhs) {
+  constexpr unsigned kResultWidth = std::max(W1, W2) + 1;
+  constexpr bool kResultSigned = S1 || S2;
+  uint64_t lhs_ext = internal::extend<kResultWidth, W1, S1>(lhs);
+  uint64_t rhs_ext = internal::extend<kResultWidth, W2, S2>(rhs);
+  return Int<kResultWidth, kResultSigned>(lhs_ext + rhs_ext);
+}
+
+template <unsigned W1, bool S1, unsigned W2, bool S2>
+auto operator-(const Int<W1, S1>& lhs, const Int<W2, S2>& rhs) {
+  constexpr unsigned kResultWidth = std::max(W1, W2) + 1;
+  uint64_t lhs_ext = internal::extend<kResultWidth, W1, S1>(lhs);
+  uint64_t rhs_ext = internal::extend<kResultWidth, W2, S2>(rhs);
+  return Int<kResultWidth, true>(lhs_ext - rhs_ext);
+}
 
 }  // namespace z3w
 
