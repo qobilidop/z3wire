@@ -135,5 +135,55 @@ TEST(IntTest, Inequality) {
   EXPECT_FALSE(a != a);
 }
 
+// --- Ordered comparison (unsigned) ---
+
+TEST(IntTest, UnsignedLessThan) {
+  UInt<8> a(100);
+  UInt<8> b(200);
+  EXPECT_TRUE(a < b);
+  EXPECT_FALSE(b < a);
+}
+
+TEST(IntTest, UnsignedGreaterThan) {
+  UInt<8> a(200);
+  UInt<8> b(100);
+  EXPECT_TRUE(a > b);
+  EXPECT_FALSE(b > a);
+}
+
+TEST(IntTest, UnsignedLessEqual) {
+  UInt<8> a(100);
+  UInt<8> b(100);
+  EXPECT_TRUE(a <= b);
+}
+
+TEST(IntTest, UnsignedGreaterEqual) {
+  UInt<8> a(100);
+  UInt<8> b(100);
+  EXPECT_TRUE(a >= b);
+}
+
+// --- Ordered comparison (signed) ---
+
+TEST(IntTest, SignedLessThan) {
+  // 200 as SInt<8> is -56. So -56 < 100.
+  SInt<8> a(200);  // -56
+  SInt<8> b(100);
+  EXPECT_TRUE(a < b);
+}
+
+TEST(IntTest, SignedGreaterThan) {
+  SInt<8> a(100);
+  SInt<8> b(200);  // -56
+  EXPECT_TRUE(a > b);
+}
+
+TEST(IntTest, SignedComparisonNonPowerOfTwo) {
+  // SInt<5>: range -16 to 15. Value 0x1F = 31 unsigned = -1 signed.
+  SInt<5> a(0x1F);  // -1
+  SInt<5> b(1);
+  EXPECT_TRUE(a < b);
+}
+
 }  // namespace
 }  // namespace z3w

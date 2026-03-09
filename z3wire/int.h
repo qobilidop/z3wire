@@ -78,6 +78,40 @@ class Int {
     return lhs.bits_ != rhs.bits_;
   }
 
+  // --- Ordered comparison ---
+
+  friend bool operator<(const Int& lhs, const Int& rhs) {
+    if constexpr (IsSigned) {
+      return sign_extend(lhs.bits_) < sign_extend(rhs.bits_);
+    } else {
+      return lhs.bits_ < rhs.bits_;
+    }
+  }
+
+  friend bool operator<=(const Int& lhs, const Int& rhs) {
+    if constexpr (IsSigned) {
+      return sign_extend(lhs.bits_) <= sign_extend(rhs.bits_);
+    } else {
+      return lhs.bits_ <= rhs.bits_;
+    }
+  }
+
+  friend bool operator>(const Int& lhs, const Int& rhs) {
+    if constexpr (IsSigned) {
+      return sign_extend(lhs.bits_) > sign_extend(rhs.bits_);
+    } else {
+      return lhs.bits_ > rhs.bits_;
+    }
+  }
+
+  friend bool operator>=(const Int& lhs, const Int& rhs) {
+    if constexpr (IsSigned) {
+      return sign_extend(lhs.bits_) >= sign_extend(rhs.bits_);
+    } else {
+      return lhs.bits_ >= rhs.bits_;
+    }
+  }
+
  private:
   static constexpr Storage mask(uint64_t val) {
     if constexpr (W >= 64) {
@@ -100,6 +134,16 @@ class Int {
       return INT64_MAX;
     } else {
       return (int64_t{1} << (W - 1)) - 1;
+    }
+  }
+
+  static constexpr int64_t sign_extend(Storage val) {
+    if constexpr (W >= 64) {
+      return static_cast<int64_t>(val);
+    } else {
+      uint64_t sign_bit = uint64_t{1} << (W - 1);
+      return static_cast<int64_t>((static_cast<uint64_t>(val) ^ sign_bit) -
+                                  sign_bit);
     }
   }
 
