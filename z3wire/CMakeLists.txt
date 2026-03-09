@@ -26,4 +26,8 @@ if(BUILD_TESTING)
     add_executable(bitvec_test bitvec_test.cc)
     target_link_libraries(bitvec_test PRIVATE z3wire GTest::gtest_main)
     add_test(NAME bitvec_test COMMAND bitvec_test)
+
+    add_executable(int_test int_test.cc)
+    target_link_libraries(int_test PRIVATE z3wire GTest::gtest_main)
+    add_test(NAME int_test COMMAND int_test)
 endif()
