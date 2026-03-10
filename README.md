@@ -7,40 +7,37 @@
 [![Docs](https://github.com/qobilidop/z3wire/actions/workflows/docs.yml/badge.svg)](https://qobilidop.github.io/z3wire/)
 
 <!-- docs-start -->
-Z3 bit-vectors with compile-time type safety and explicit overflow. For C++20 and above.
+Type-safe Z3 bit-vectors for hardware verification. C++20 and above.
 
 ## Why Z3Wire?
 
-Z3's C++ API represents all expressions as `z3::expr`, with no compile-time
-distinction between Booleans and bit-vectors, no width tracking, and no
-signedness information. This means:
+Using Z3 bit-vectors directly for hardware verification is error-prone:
 
-- Adding a 32-bit vector to an 8-bit vector **compiles silently** but crashes at
-  runtime with `Z3_SORT_ERROR`.
-- Comparing bit-vectors requires choosing the right function (`z3::ult` vs
-  `z3::slt`), but nothing prevents calling the wrong one.
-- Arithmetic silently discards overflow — adding two 8-bit values gives an 8-bit
-  result, losing the carry bit.
+- **Width mismatches are silent.** Adding a 32-bit vector to an 8-bit vector
+  compiles fine but crashes at runtime with `Z3_SORT_ERROR`.
+- **Signedness is unchecked.** Comparing bit-vectors requires choosing the right
+  function (`z3::ult` vs `z3::slt`), but nothing prevents calling the wrong one.
+- **Overflow requires vigilance.** Arithmetic silently wraps by default. Z3
+  provides overflow predicates (`bvadd_no_overflow`, etc.), but they are opt-in
+  and easy to forget — a missed check means a proof may pass because the formula
+  lost information, not because the design is correct.
 
-Z3Wire fixes these problems:
+Z3Wire solves these by bringing hardware semantics into the type system:
 
-- **Compile-time type safety** catches width and signedness mismatches as
-  compiler errors.
-- **Bit-growth arithmetic** widens results automatically, making every
+- **Compile-time type safety** — width and signedness mismatches become compile-time
+  errors, not runtime surprises.
+- **Bit-growth arithmetic** — results widen automatically, making every
   truncation an explicit, reviewable decision.
 
-## Who is this for?
+## What's in the name?
 
-Hardware designers, verification engineers, and security researchers who use Z3
-for formal verification of digital circuits and need type safety guarantees that
-raw Z3 does not provide.
+The name reflects the scope: hardware is built from *wires*. Every signal in a
+digital circuit is either a single bit or a bundle of bits with a known width.
+Z3Wire wraps Z3 with type-safe Booleans and fixed-width bit-vectors, covering
+the complete set of combinational logic primitives that operate on these wires.
 
 ## Features
 
-- **Compile-time type safety** — bit-width and signedness mismatches become
-  compiler errors, not runtime Z3 sort errors.
-- **Bit-growth arithmetic** — `+` and `-` automatically widen the result to
-  prevent silent overflow.
 - **Three-tier casting** — `cast` (raw hardware), `safe_cast` (compile-time
   lossless), `checked_cast` (symbolic verification).
 - **Three-tier shifting** — `<<`/`>>` (hardware), `checked_shl`/`checked_shr`

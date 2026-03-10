@@ -12,8 +12,14 @@ Future directions for Z3Wire, roughly in priority order.
 
 ## Next features
 
-- **Multiplication, division, modulo** — Deferred from MVP. Need to decide on
-  bit-growth semantics (e.g., multiplication result width = W1 + W2).
+- **Complete combinational logic primitives** — Z3Wire aims to cover the
+  complete set of combinational logic operations. Two gaps remain:
+  - *Unary negate* (`-x`) — two's complement negation.
+  - *Reduction operators* (`reduce_and`, `reduce_or`, `reduce_xor`) — collapse
+    all bits to a single `Bool`.
+- **Document the combinational logic framing** — Update design docs and README
+  to make explicit that Z3Wire's scope is the complete set of combinational
+  logic primitives.
 
 ## Release and distribution
 
