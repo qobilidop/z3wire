@@ -1,7 +1,7 @@
 site_name: Z3Wire
 site_description: >-
-  Z3 bit-vectors with compile-time width safety and overflow-proof arithmetic.
-  A C++20 template library.
+  Z3 bit-vectors with compile-time type safety and explicit overflow.
+  For C++20 and above.
 repo_url: https://github.com/qobilidop/z3wire
 repo_name: qobilidop/z3wire
 

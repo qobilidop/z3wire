@@ -7,7 +7,7 @@
 [![Docs](https://github.com/qobilidop/z3wire/actions/workflows/docs.yml/badge.svg)](https://qobilidop.github.io/z3wire/)
 
 <!-- docs-start -->
-Z3 bit-vectors with compile-time width safety and overflow-proof arithmetic. A C++20 template library.
+Z3 bit-vectors with compile-time type safety and explicit overflow. For C++20 and above.
 
 ## Why Z3Wire?
 
