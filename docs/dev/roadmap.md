@@ -17,6 +17,11 @@ Future directions for Z3Wire, roughly in priority order.
   - *Unary negate* (`-x`) — two's complement negation.
   - *Reduction operators* (`reduce_and`, `reduce_or`, `reduce_xor`) — collapse
     all bits to a single `Bool`.
+- **Single-bit extraction shorthand** — Add `z3w::bit<N>(val)` as a convenience
+  for `z3w::extract<N, N>(val)`. Extracting a single bit is common in hardware
+  and the current syntax is unnecessarily verbose. Also consider reducing
+  friction between `Ubv<1>` and `Bool` (e.g., direct comparison), while
+  respecting the "explicit over implicit" principle.
 - **Document the combinational logic framing** — Update design docs and README
   to make explicit that Z3Wire's scope is the complete set of combinational
   logic primitives.

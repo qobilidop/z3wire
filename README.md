@@ -54,17 +54,16 @@ the complete set of combinational logic primitives that operate on these wires.
 z3::context ctx;
 z3::solver solver(ctx);
 
+// Verify that a carry flag correctly detects 8-bit addition overflow.
 z3w::Ubv<8> a(ctx, "a");
 z3w::Ubv<8> b(ctx, "b");
+auto sum = a + b;  // z3w::Ubv<9>
+auto carry = z3w::to_bool(z3w::extract<8, 8>(sum));  // bit 8 = carry
+auto [truncated, overflowed] = z3w::checked_cast<z3w::Ubv<8>>(sum);
 
-auto sum = a + b;  // z3w::Ubv<9>, no overflow possible
-
-// Model hardware truncation explicitly
-auto reg = z3w::cast<z3w::Ubv<8>>(sum);
-
-// Verify the cast is safe
-auto [result, overflowed] = z3w::checked_cast<z3w::Ubv<8>>(sum);
-solver.add(!overflowed.raw());
+// Ask Z3: is there any case where carry != overflowed?
+solver.add(carry.raw() != overflowed.raw());
+assert(solver.check() == z3::unsat);  // No — carry is always correct.
 ```
 
 ## Building
