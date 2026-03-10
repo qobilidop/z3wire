@@ -15,7 +15,7 @@
 
 ## Tooling
 
-- Use `./dev.sh` to run commands inside the devcontainer.
+- Run ALL commands through `./dev.sh`. Never run build, test, or install commands directly on the host.
 - When new tools are needed, install in the devcontainer.
 
 ## Writing
