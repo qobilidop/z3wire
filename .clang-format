@@ -1,1 +1,14 @@
 BasedOnStyle: Google
+
+# Include ordering: related header (auto), C++ standard, third-party, project.
+IncludeBlocks: Regroup
+IncludeCategories:
+  # C++ standard library headers.
+  - Regex: '<[a-z_]+>'
+    Priority: 1
+  # Third-party headers (z3, gtest, etc.).
+  - Regex: '<.*>'
+    Priority: 2
+  # Project headers.
+  - Regex: '".*"'
+    Priority: 3

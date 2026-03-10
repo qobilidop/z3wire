@@ -1,14 +1,14 @@
 #ifndef Z3WIRE_BITVEC_H_
 #define Z3WIRE_BITVEC_H_
 
-#include <z3++.h>
-
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <string>
 #include <type_traits>
-#include <utility>
+#include <tuple>
+
+#include <z3++.h>
 
 #include "z3wire/bool.h"
 #include "z3wire/int.h"
@@ -24,7 +24,7 @@ class BitVec {
   static constexpr bool kIsSigned = IsSigned;
 
   // Create a symbolic bit-vector variable.
-  BitVec(z3::context& ctx, const std::string& name)
+  explicit BitVec(z3::context& ctx, const std::string& name)
       : expr_(ctx.bv_const(name.c_str(), Width)) {}
 
   // Create a BitVec from a raw z3::expr. Caller must ensure correct sort.
@@ -33,13 +33,8 @@ class BitVec {
   // Compile-time range-checked literal.
   template <uint64_t Value>
   static BitVec Literal(z3::context& ctx) {
-    if constexpr (IsSigned) {
-      static_assert(Width >= 64 || Value < (uint64_t{1} << Width),
-                    "Literal value does not fit in the specified bit-width.");
-    } else {
-      static_assert(Width >= 64 || Value < (uint64_t{1} << Width),
-                    "Literal value does not fit in the specified bit-width.");
-    }
+    static_assert(Width >= 64 || Value < (uint64_t{1} << Width),
+                  "Literal value does not fit in the specified bit-width.");
     return BitVec(ctx.bv_val(Value, Width));
   }
 
@@ -183,44 +178,17 @@ Bool operator<(const BitVec<W1, S1>& lhs, const BitVec<W2, S2>& rhs) {
 
 template <size_t W1, bool S1, size_t W2, bool S2>
 Bool operator<=(const BitVec<W1, S1>& lhs, const BitVec<W2, S2>& rhs) {
-  constexpr bool kSigned = S1 || S2;
-  constexpr size_t kCommonWidth =
-      (S1 == S2) ? std::max(W1, W2) : std::max(W1, W2) + 1;
-  auto lhs_ext = internal::extend<kCommonWidth, W1, S1>(lhs);
-  auto rhs_ext = internal::extend<kCommonWidth, W2, S2>(rhs);
-  if constexpr (kSigned) {
-    return Bool(z3::sle(lhs_ext, rhs_ext));
-  } else {
-    return Bool(z3::ule(lhs_ext, rhs_ext));
-  }
+  return !(rhs < lhs);
 }
 
 template <size_t W1, bool S1, size_t W2, bool S2>
 Bool operator>(const BitVec<W1, S1>& lhs, const BitVec<W2, S2>& rhs) {
-  constexpr bool kSigned = S1 || S2;
-  constexpr size_t kCommonWidth =
-      (S1 == S2) ? std::max(W1, W2) : std::max(W1, W2) + 1;
-  auto lhs_ext = internal::extend<kCommonWidth, W1, S1>(lhs);
-  auto rhs_ext = internal::extend<kCommonWidth, W2, S2>(rhs);
-  if constexpr (kSigned) {
-    return Bool(z3::sgt(lhs_ext, rhs_ext));
-  } else {
-    return Bool(z3::ugt(lhs_ext, rhs_ext));
-  }
+  return rhs < lhs;
 }
 
 template <size_t W1, bool S1, size_t W2, bool S2>
 Bool operator>=(const BitVec<W1, S1>& lhs, const BitVec<W2, S2>& rhs) {
-  constexpr bool kSigned = S1 || S2;
-  constexpr size_t kCommonWidth =
-      (S1 == S2) ? std::max(W1, W2) : std::max(W1, W2) + 1;
-  auto lhs_ext = internal::extend<kCommonWidth, W1, S1>(lhs);
-  auto rhs_ext = internal::extend<kCommonWidth, W2, S2>(rhs);
-  if constexpr (kSigned) {
-    return Bool(z3::sge(lhs_ext, rhs_ext));
-  } else {
-    return Bool(z3::uge(lhs_ext, rhs_ext));
-  }
+  return !(lhs < rhs);
 }
 
 // --- Mixed concrete + symbolic arithmetic ---
@@ -453,7 +421,8 @@ Target safe_cast(const BitVec<SrcW, SrcS>& val) {
 
 // checked_cast<T>(val): returns {result, overflow_flag}.
 template <typename Target, size_t SrcW, bool SrcS>
-std::pair<Target, Bool> checked_cast(const BitVec<SrcW, SrcS>& val) {
+[[nodiscard]] std::tuple<Target, Bool> checked_cast(
+    const BitVec<SrcW, SrcS>& val) {
   auto result = cast<Target>(val);
   // Round-trip: cast back to source type and check equality.
   auto roundtrip = cast<BitVec<SrcW, SrcS>>(result);
@@ -514,8 +483,8 @@ auto concat(const BitVec<W1, S1>& high, const BitVec<W2, S2>& next,
 // checked_shl: returns {shifted, lost} where lost is true if any bits were
 // shifted out.
 template <size_t W, bool S>
-std::pair<BitVec<W, S>, Bool> checked_shl(const BitVec<W, S>& val,
-                                          const BitVec<W, S>& amount) {
+[[nodiscard]] std::tuple<BitVec<W, S>, Bool> checked_shl(
+    const BitVec<W, S>& val, const BitVec<W, S>& amount) {
   auto shifted = val << amount;
   // Check by shifting back and comparing.
   auto restored = shifted >> amount;
@@ -526,8 +495,8 @@ std::pair<BitVec<W, S>, Bool> checked_shl(const BitVec<W, S>& val,
 // checked_shr: returns {shifted, lost} where lost is true if any bits were
 // shifted out.
 template <size_t W, bool S>
-std::pair<BitVec<W, S>, Bool> checked_shr(const BitVec<W, S>& val,
-                                          const BitVec<W, S>& amount) {
+[[nodiscard]] std::tuple<BitVec<W, S>, Bool> checked_shr(
+    const BitVec<W, S>& val, const BitVec<W, S>& amount) {
   auto shifted = val >> amount;
   auto restored = shifted << amount;
   Bool lost = (restored != val);

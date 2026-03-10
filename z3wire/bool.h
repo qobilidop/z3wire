@@ -1,9 +1,9 @@
 #ifndef Z3WIRE_BOOL_H_
 #define Z3WIRE_BOOL_H_
 
-#include <z3++.h>
-
 #include <string>
+
+#include <z3++.h>
 
 namespace z3w {
 
@@ -11,7 +11,7 @@ namespace z3w {
 class Bool {
  public:
   // Create a symbolic boolean variable.
-  Bool(z3::context& ctx, const std::string& name)
+  explicit Bool(z3::context& ctx, const std::string& name)
       : expr_(ctx.bool_const(name.c_str())) {}
 
   // Create a Bool from a raw z3::expr. The caller must ensure it has Bool sort.

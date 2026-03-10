@@ -1,4 +1,4 @@
-# ALU verification
+# ALU Verification
 
 This example models a simple 4-operation ALU and verifies its properties.
 

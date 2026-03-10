@@ -147,7 +147,7 @@ Only compiles if the cast is mathematically guaranteed to be lossless.
 
 #### `z3w::checked_cast<T>(val)` —The verification cast
 
-Returns `std::pair<T, z3w::Bool>`. Performs the cast and also returns a symbolic
+Returns `std::tuple<T, z3w::Bool>`. Performs the cast and also returns a symbolic
 boolean formula representing whether mathematical data loss occurred. The user
 can assert the boolean into the solver to verify safety.
 

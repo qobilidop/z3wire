@@ -1,4 +1,4 @@
-# Bit manipulation
+# Bit Manipulation
 
 This example demonstrates extract, concat, and lossless shifts by modeling the
 unpacking and repacking of a 16-bit instruction word.

@@ -1,4 +1,4 @@
-# Concrete types
+# Concrete Types
 
 Z3Wire provides concrete fixed-width integer types that mirror the symbolic
 `Ubv<W>` / `Sbv<W>` API. These are useful as standalone type-safe integers

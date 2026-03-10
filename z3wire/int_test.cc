@@ -1,8 +1,8 @@
 #include "z3wire/int.h"
 
-#include <gtest/gtest.h>
-
 #include <cstdint>
+
+#include <gtest/gtest.h>
 
 namespace z3w {
 namespace {

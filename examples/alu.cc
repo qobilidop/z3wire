@@ -4,9 +4,9 @@
 // We verify that the ADD operation never silently overflows by checking the
 // carry bit.
 
-#include <z3++.h>
-
 #include <iostream>
+
+#include <z3++.h>
 
 #include "z3wire/bitvec.h"
 

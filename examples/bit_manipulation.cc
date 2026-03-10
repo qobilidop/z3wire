@@ -3,9 +3,9 @@
 // Models unpacking a 16-bit instruction word into fields, modifying a field,
 // and repacking — then verifies the round-trip is correct.
 
-#include <z3++.h>
-
 #include <iostream>
+
+#include <z3++.h>
 
 #include "z3wire/bitvec.h"
 

@@ -4,9 +4,9 @@
 // a carry flag. Z3Wire's bit-growth arithmetic lets us verify this without
 // manually managing widths.
 
-#include <z3++.h>
-
 #include <iostream>
+
+#include <z3++.h>
 
 #include "z3wire/bitvec.h"
 

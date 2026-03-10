@@ -42,17 +42,17 @@ markdown_extensions:
 
 nav:
   - Home: index.md
-  - Getting started: getting-started.md
+  - Getting Started: getting-started.md
   - Examples:
-      - Safe adder: examples/safe-adder.md
-      - ALU verification: examples/alu.md
-      - Bit manipulation: examples/bit-manipulation.md
+      - Safe Adder: examples/safe-adder.md
+      - ALU Verification: examples/alu.md
+      - Bit Manipulation: examples/bit-manipulation.md
   - User guide:
-      - Type system: user/types.md
-      - Concrete types: user/concrete-types.md
+      - Type System: user/types.md
+      - Concrete Types: user/concrete-types.md
       - Operations: user/operations.md
       - Casting: user/casting.md
-      - Bit manipulation: user/bit-manipulation.md
+      - Bit Manipulation: user/bit-manipulation.md
       - Shifting: user/shifting.md
       - Limitations: user/limitations.md
   - Developer guide:

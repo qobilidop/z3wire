@@ -1,4 +1,4 @@
-# Type system
+# Type System
 
 Z3Wire provides three core types, all zero-overhead wrappers around `z3::expr`.
 

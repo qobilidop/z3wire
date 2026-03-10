@@ -4,8 +4,9 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <limits>
 #include <type_traits>
-#include <utility>
+#include <tuple>
 
 namespace z3w {
 
@@ -48,7 +49,7 @@ class Int {
   // Note: for signed types, pass the two's complement bit pattern, not a
   // negative integer. E.g., use SInt<8>::checked(0x80) for -128, not
   // SInt<8>::checked(-128).
-  static std::pair<Int, bool> checked(uint64_t raw) {
+  [[nodiscard]] static std::tuple<Int, bool> checked(uint64_t raw) {
     Int result(raw);
     bool truncated = (raw != result.bits_);
     return {result, truncated};
@@ -58,7 +59,7 @@ class Int {
   // Only meaningful for signed types; for unsigned, use checked(uint64_t).
   // NOLINTNEXTLINE(modernize-use-constraints)
   template <bool Signed = IsSigned, typename = std::enable_if_t<Signed>>
-  static std::pair<Int, bool> checked(int64_t raw) {
+  [[nodiscard]] static std::tuple<Int, bool> checked(int64_t raw) {
     Int result(static_cast<uint64_t>(raw));
     bool truncated = (raw < min_signed() || raw > max_signed());
     return {result, truncated};
@@ -115,7 +116,7 @@ class Int {
 
   static constexpr int64_t min_signed() {
     if constexpr (W >= 64) {
-      return INT64_MIN;
+      return std::numeric_limits<int64_t>::min();
     } else {
       return -(int64_t{1} << (W - 1));
     }
@@ -123,7 +124,7 @@ class Int {
 
   static constexpr int64_t max_signed() {
     if constexpr (W >= 64) {
-      return INT64_MAX;
+      return std::numeric_limits<int64_t>::max();
     } else {
       return (int64_t{1} << (W - 1)) - 1;
     }
@@ -141,7 +142,7 @@ class Int {
 
   static constexpr uint64_t max_unsigned() {
     if constexpr (W >= 64) {
-      return UINT64_MAX;
+      return std::numeric_limits<uint64_t>::max();
     } else {
       return (uint64_t{1} << W) - 1;
     }
@@ -253,8 +254,8 @@ bool operator>=(const Int<W1, S1>& lhs, const Int<W2, S2>& rhs) {
 
 // checked_shl: returns {shifted, lost}.
 template <size_t W, bool S>
-std::pair<Int<W, S>, bool> checked_shl(const Int<W, S>& val,
-                                       const Int<W, S>& amount) {
+[[nodiscard]] std::tuple<Int<W, S>, bool> checked_shl(const Int<W, S>& val,
+                                                     const Int<W, S>& amount) {
   auto shifted = val << amount;
   auto restored = shifted >> amount;
   bool lost = (restored != val);
@@ -263,8 +264,8 @@ std::pair<Int<W, S>, bool> checked_shl(const Int<W, S>& val,
 
 // checked_shr: returns {shifted, lost}.
 template <size_t W, bool S>
-std::pair<Int<W, S>, bool> checked_shr(const Int<W, S>& val,
-                                       const Int<W, S>& amount) {
+[[nodiscard]] std::tuple<Int<W, S>, bool> checked_shr(const Int<W, S>& val,
+                                                     const Int<W, S>& amount) {
   auto shifted = val >> amount;
   auto restored = shifted << amount;
   bool lost = (restored != val);
@@ -320,7 +321,7 @@ Target safe_cast(const Int<SrcW, SrcS>& val) {
 
 // checked_cast<T>(val): returns {result, overflowed}.
 template <typename Target, size_t SrcW, bool SrcS>
-std::pair<Target, bool> checked_cast(const Int<SrcW, SrcS>& val) {
+[[nodiscard]] std::tuple<Target, bool> checked_cast(const Int<SrcW, SrcS>& val) {
   auto result = cast<Target>(val);
   auto roundtrip = cast<Int<SrcW, SrcS>>(result);
   bool overflowed = (roundtrip != val);

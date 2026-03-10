@@ -1,4 +1,4 @@
-# Safe adder
+# Safe Adder
 
 This example verifies that an 8-bit adder with overflow detection is correct.
 
