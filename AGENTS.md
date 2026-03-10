@@ -10,6 +10,7 @@
 - TDD - Test-driven development
 - YAGNI - You aren't gonna need it
 - DRY - Don't repeat yourself
+- Local reasoning - Each piece should be understandable on its own
 
 ## Tooling
 
