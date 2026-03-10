@@ -1,8 +1,15 @@
 #!/usr/bin/env bash
-# Run clang-tidy on all C++ source files.
+# Run linters on all source files.
 set -euo pipefail
 
 cd "$(git rev-parse --show-toplevel)"
+
+# --- Shell ---
+sh_files=$(find . -name '*.sh' -not -path './.git/*')
+echo "$sh_files" | xargs shellcheck
+echo "shellcheck: all checks passed."
+
+# --- C++ ---
 
 # Build a test target to ensure external dependencies (z3, googletest) are fetched.
 bazel build //z3wire:bool_test
@@ -41,7 +48,7 @@ for f in $files; do
   }"
 done
 echo "[$entries
-]" > compile_commands.json
+]" >compile_commands.json
 
 echo "$files" | xargs clang-tidy -p .
 status=$?

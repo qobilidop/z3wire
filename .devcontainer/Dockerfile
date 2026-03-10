@@ -26,6 +26,17 @@ RUN ARCH=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/') && \
     curl -fSL "https://github.com/bazelbuild/buildtools/releases/download/${BUILDIFIER_VERSION}/buildifier-linux-${ARCH}" \
     -o /usr/local/bin/buildifier && chmod +x /usr/local/bin/buildifier
 
+# Install shfmt for shell script formatting.
+ARG SHFMT_VERSION=v3.13.0
+RUN ARCH=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/') && \
+    curl -fSL "https://github.com/mvdan/sh/releases/download/${SHFMT_VERSION}/shfmt_${SHFMT_VERSION}_linux_${ARCH}" \
+    -o /usr/local/bin/shfmt && chmod +x /usr/local/bin/shfmt
+
+# Install shellcheck for shell script linting.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    shellcheck \
+    && rm -rf /var/lib/apt/lists/*
+
 # Install MkDocs with Material theme.
 RUN pip install --break-system-packages mkdocs-material mkdocs-include-markdown-plugin
 

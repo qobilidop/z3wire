@@ -15,18 +15,17 @@ IMAGE=z3wire-dev
 
 docker build -q -t "$IMAGE" .devcontainer/ >/dev/null
 
-tty_flag=""
+docker_flags=()
 if [ -t 0 ]; then
-  tty_flag="-it"
+  docker_flags+=(-it)
 fi
 
 # Expose port 8000 for mkdocs serve.
-port_flag=""
 if [[ "${*}" == *"docs.sh serve"* ]]; then
-  port_flag="-p 8000:8000"
+  docker_flags+=(-p 8000:8000)
 fi
 
-docker run --rm $tty_flag $port_flag \
+docker run --rm ${docker_flags[@]+"${docker_flags[@]}"} \
   -v "$PWD":/workspace \
   -v bazel-cache:/home/dev/.cache/bazel \
   -w /workspace \
