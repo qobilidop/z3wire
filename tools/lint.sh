@@ -23,7 +23,7 @@ bazel build //z3wire:bool_test
 output_base=$(bazel info output_base)
 
 # Locate z3 include path from the cmake build output.
-z3_header=$(find "$output_base/execroot" \
+z3_header=$(find -L "$output_base" \
   -path "*/z3_static/include/z3++.h" -print -quit 2>/dev/null)
 if [[ -z "$z3_header" ]]; then
   echo "Error: could not find z3 include directory in Bazel build output."
@@ -32,8 +32,8 @@ fi
 z3_include_dir=$(dirname "$z3_header")
 
 # Locate googletest include path.
-gtest_header=$(find "$output_base/external" \
-  -path "*/googletest/include/gtest/gtest.h" -print -quit 2>/dev/null)
+gtest_header=$(find -L "$output_base/external" \
+  -path "*/include/gtest/gtest.h" -print -quit 2>/dev/null)
 if [[ -z "$gtest_header" ]]; then
   echo "Error: could not find googletest include directory in Bazel externals."
   exit 1

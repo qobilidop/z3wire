@@ -47,6 +47,7 @@
 
 ## Rules
 
+- Run `./dev.sh ./tools/format.sh` before every commit.
 - All tests MUST pass before commit.
 - Try your best to make sure CI will pass before commit.
 - Always confirm with me before committing. Auto-push after commit.
