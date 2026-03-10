@@ -5,8 +5,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
-#include <type_traits>
 #include <tuple>
+#include <type_traits>
 
 #include <z3++.h>
 

@@ -5,8 +5,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <limits>
-#include <type_traits>
 #include <tuple>
+#include <type_traits>
 
 namespace z3w {
 
@@ -255,7 +255,7 @@ bool operator>=(const Int<W1, S1>& lhs, const Int<W2, S2>& rhs) {
 // checked_shl: returns {shifted, lost}.
 template <size_t W, bool S>
 [[nodiscard]] std::tuple<Int<W, S>, bool> checked_shl(const Int<W, S>& val,
-                                                     const Int<W, S>& amount) {
+                                                      const Int<W, S>& amount) {
   auto shifted = val << amount;
   auto restored = shifted >> amount;
   bool lost = (restored != val);
@@ -265,7 +265,7 @@ template <size_t W, bool S>
 // checked_shr: returns {shifted, lost}.
 template <size_t W, bool S>
 [[nodiscard]] std::tuple<Int<W, S>, bool> checked_shr(const Int<W, S>& val,
-                                                     const Int<W, S>& amount) {
+                                                      const Int<W, S>& amount) {
   auto shifted = val >> amount;
   auto restored = shifted << amount;
   bool lost = (restored != val);
@@ -321,7 +321,8 @@ Target safe_cast(const Int<SrcW, SrcS>& val) {
 
 // checked_cast<T>(val): returns {result, overflowed}.
 template <typename Target, size_t SrcW, bool SrcS>
-[[nodiscard]] std::tuple<Target, bool> checked_cast(const Int<SrcW, SrcS>& val) {
+[[nodiscard]] std::tuple<Target, bool> checked_cast(
+    const Int<SrcW, SrcS>& val) {
   auto result = cast<Target>(val);
   auto roundtrip = cast<Int<SrcW, SrcS>>(result);
   bool overflowed = (roundtrip != val);
