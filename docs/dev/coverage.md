@@ -319,6 +319,46 @@ Hardware shifts require strict width and signedness matching.
 | `is_symbolic_v<Bool>`       | `BitVecTest::IsSymbolicBool`           |
 | `is_symbolic_v<int>`        | `BitVecTest::IsSymbolicV`              |
 
+## Compile-time guards
+
+Compile-fail tests verify that `static_assert` guards and SFINAE constraints
+correctly reject invalid code. See [compile-fail tests](compile-fail-tests.md)
+for the test infrastructure.
+
+### int.h guards (13 tests)
+
+| Guard | Test |
+| :---- | :--- |
+| `Int<0, S>` width too small | `int_zero_width_test` |
+| `Int<65, S>` width too large | `int_width_too_large_test` |
+| `SInt<8>::Literal<128>` overflow | `int_signed_literal_overflow_test` |
+| `SInt<8>::Literal<-129>` underflow | `int_signed_literal_underflow_test` |
+| `UInt<8>::Literal<-1>` negative | `int_unsigned_literal_negative_test` |
+| `UInt<8>::Literal<256>` overflow | `int_unsigned_literal_overflow_test` |
+| `safe_cast` signed → unsigned | `int_safe_cast_signed_to_unsigned_test` |
+| `safe_cast` unsigned narrowing | `int_safe_cast_unsigned_narrow_test` |
+| `safe_cast` signed narrowing | `int_safe_cast_signed_narrow_test` |
+| `safe_cast` unsigned → signed same width | `int_safe_cast_unsigned_to_signed_same_width_test` |
+| `extract` High < Low | `int_extract_high_lt_low_test` |
+| `extract` High >= width | `int_extract_out_of_bounds_test` |
+| `checked(int64_t)` on unsigned (SFINAE) | `int_checked_int64_on_unsigned_test` |
+
+### bitvec.h guards (11 tests)
+
+| Guard | Test |
+| :---- | :--- |
+| `BitVec<0, S>` width zero | `bitvec_zero_width_test` |
+| `Ubv<8>::Literal<256>` overflow | `bitvec_literal_overflow_test` |
+| `internal::extend` target < source | `bitvec_extend_shrink_test` |
+| `safe_cast` signed → unsigned | `bitvec_safe_cast_signed_to_unsigned_test` |
+| `safe_cast` unsigned narrowing | `bitvec_safe_cast_unsigned_narrow_test` |
+| `safe_cast` signed narrowing | `bitvec_safe_cast_signed_narrow_test` |
+| `safe_cast` unsigned → signed same width | `bitvec_safe_cast_unsigned_to_signed_same_width_test` |
+| `extract` High < Low | `bitvec_extract_high_lt_low_test` |
+| `extract` High >= width | `bitvec_extract_out_of_bounds_test` |
+| Symbolic `extract` zero width | `bitvec_symbolic_extract_zero_width_test` |
+| Symbolic `extract` too wide | `bitvec_symbolic_extract_too_wide_test` |
+
 ## Concrete-to-symbolic promotion
 
 | Case                        | Test                                   |

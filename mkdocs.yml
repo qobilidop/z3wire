@@ -58,4 +58,5 @@ nav:
   - Developer guide:
       - Design: dev/design.md
       - Coverage: dev/coverage.md
+      - Compile-Fail Tests: dev/compile-fail-tests.md
       - Roadmap: dev/roadmap.md

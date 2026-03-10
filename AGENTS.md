@@ -11,6 +11,7 @@
 - YAGNI - You aren't gonna need it
 - DRY - Don't repeat yourself
 - Local reasoning - Each piece should be understandable on its own
+- Flat structure - Prefer shallow directory hierarchies; don't nest without a reason
 
 ## Tooling
 

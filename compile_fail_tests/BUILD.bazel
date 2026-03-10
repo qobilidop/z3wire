@@ -1,0 +1,169 @@
+load(":defs.bzl", "cc_compile_fail_test")
+
+cc_compile_fail_test(
+    name = "bitvec_zero_width_test",
+    src = "bitvec_zero_width_test.cc",
+    deps = ["//z3wire:bitvec"],
+    expected_message = "Bit-vector width must be at least 1",
+)
+
+cc_compile_fail_test(
+    name = "int_zero_width_test",
+    src = "int_zero_width_test.cc",
+    deps = ["//z3wire:int"],
+    expected_message = "Bit-width must be between 1 and 64",
+)
+
+cc_compile_fail_test(
+    name = "int_width_too_large_test",
+    src = "int_width_too_large_test.cc",
+    deps = ["//z3wire:int"],
+    expected_message = "Bit-width must be between 1 and 64",
+)
+
+cc_compile_fail_test(
+    name = "int_signed_literal_overflow_test",
+    src = "int_signed_literal_overflow_test.cc",
+    deps = ["//z3wire:int"],
+    expected_message = "Literal value does not fit in signed bit-width",
+)
+
+cc_compile_fail_test(
+    name = "int_signed_literal_underflow_test",
+    src = "int_signed_literal_underflow_test.cc",
+    deps = ["//z3wire:int"],
+    expected_message = "Literal value does not fit in signed bit-width",
+)
+
+cc_compile_fail_test(
+    name = "int_unsigned_literal_negative_test",
+    src = "int_unsigned_literal_negative_test.cc",
+    deps = ["//z3wire:int"],
+    expected_message = "Unsigned literal must be non-negative",
+)
+
+cc_compile_fail_test(
+    name = "int_unsigned_literal_overflow_test",
+    src = "int_unsigned_literal_overflow_test.cc",
+    deps = ["//z3wire:int"],
+    expected_message = "Literal value does not fit in unsigned bit-width",
+)
+
+cc_compile_fail_test(
+    name = "int_safe_cast_signed_to_unsigned_test",
+    src = "int_safe_cast_signed_to_unsigned_test.cc",
+    deps = ["//z3wire:int"],
+    expected_message = "safe_cast from signed to unsigned is always forbidden",
+)
+
+cc_compile_fail_test(
+    name = "int_safe_cast_unsigned_narrow_test",
+    src = "int_safe_cast_unsigned_narrow_test.cc",
+    deps = ["//z3wire:int"],
+    expected_message = "target width too small for lossless conversion",
+)
+
+cc_compile_fail_test(
+    name = "int_safe_cast_signed_narrow_test",
+    src = "int_safe_cast_signed_narrow_test.cc",
+    deps = ["//z3wire:int"],
+    expected_message = "target width too small for lossless conversion",
+)
+
+cc_compile_fail_test(
+    name = "int_safe_cast_unsigned_to_signed_same_width_test",
+    src = "int_safe_cast_unsigned_to_signed_same_width_test.cc",
+    deps = ["//z3wire:int"],
+    expected_message = "unsigned-to-signed needs target width > source width",
+)
+
+cc_compile_fail_test(
+    name = "int_extract_high_lt_low_test",
+    src = "int_extract_high_lt_low_test.cc",
+    deps = ["//z3wire:int"],
+    expected_message = "extract: High must be >= Low",
+)
+
+cc_compile_fail_test(
+    name = "int_extract_out_of_bounds_test",
+    src = "int_extract_out_of_bounds_test.cc",
+    deps = ["//z3wire:int"],
+    expected_message = "extract: High must be < input width",
+)
+
+cc_compile_fail_test(
+    name = "int_checked_int64_on_unsigned_test",
+    src = "int_checked_int64_on_unsigned_test.cc",
+    deps = ["//z3wire:int"],
+    expected_message = "no matching",
+)
+
+cc_compile_fail_test(
+    name = "bitvec_literal_overflow_test",
+    src = "bitvec_literal_overflow_test.cc",
+    deps = ["//z3wire:bitvec"],
+    expected_message = "Literal value does not fit in the specified bit-width",
+)
+
+cc_compile_fail_test(
+    name = "bitvec_extend_shrink_test",
+    src = "bitvec_extend_shrink_test.cc",
+    deps = ["//z3wire:bitvec"],
+    expected_message = "static assertion failed",
+)
+
+cc_compile_fail_test(
+    name = "bitvec_safe_cast_signed_to_unsigned_test",
+    src = "bitvec_safe_cast_signed_to_unsigned_test.cc",
+    deps = ["//z3wire:bitvec"],
+    expected_message = "safe_cast from signed to unsigned is always forbidden",
+)
+
+cc_compile_fail_test(
+    name = "bitvec_safe_cast_unsigned_narrow_test",
+    src = "bitvec_safe_cast_unsigned_narrow_test.cc",
+    deps = ["//z3wire:bitvec"],
+    expected_message = "target width too small for lossless conversion",
+)
+
+cc_compile_fail_test(
+    name = "bitvec_safe_cast_signed_narrow_test",
+    src = "bitvec_safe_cast_signed_narrow_test.cc",
+    deps = ["//z3wire:bitvec"],
+    expected_message = "target width too small for lossless conversion",
+)
+
+cc_compile_fail_test(
+    name = "bitvec_safe_cast_unsigned_to_signed_same_width_test",
+    src = "bitvec_safe_cast_unsigned_to_signed_same_width_test.cc",
+    deps = ["//z3wire:bitvec"],
+    expected_message = "unsigned-to-signed needs target width > source width",
+)
+
+cc_compile_fail_test(
+    name = "bitvec_extract_high_lt_low_test",
+    src = "bitvec_extract_high_lt_low_test.cc",
+    deps = ["//z3wire:bitvec"],
+    expected_message = "extract: High must be >= Low",
+)
+
+cc_compile_fail_test(
+    name = "bitvec_extract_out_of_bounds_test",
+    src = "bitvec_extract_out_of_bounds_test.cc",
+    deps = ["//z3wire:bitvec"],
+    expected_message = "extract: High must be < input width",
+)
+
+cc_compile_fail_test(
+    name = "bitvec_symbolic_extract_zero_width_test",
+    src = "bitvec_symbolic_extract_zero_width_test.cc",
+    deps = ["//z3wire:bitvec"],
+    expected_message = "extract: TargetWidth must be > 0",
+)
+
+cc_compile_fail_test(
+    name = "bitvec_symbolic_extract_too_wide_test",
+    src = "bitvec_symbolic_extract_too_wide_test.cc",
+    deps = ["//z3wire:bitvec"],
+    expected_message = "extract: TargetWidth must be <= input width",
+)

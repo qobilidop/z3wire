@@ -9,7 +9,7 @@ and the test asserts that compilation fails with the expected error message.
 ## Directory structure
 
 ```
-z3wire/compile_fail_tests/
+compile_fail_tests/
   defs.bzl          # cc_compile_fail_test Starlark rule
   BUILD.bazel       # test targets
   *_test.cc         # one file per guard
@@ -43,7 +43,8 @@ cc_compile_fail_test(
 // bitvec_zero_width_test.cc
 #include "z3wire/bitvec.h"
 
-using Bad = z3w::BitVec<0, false>;
+// BitVec<0, false> should fail: "Bit-vector width must be at least 1."
+template class z3w::BitVec<0, false>;
 ```
 
 ## Coverage
