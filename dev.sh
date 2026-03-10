@@ -13,7 +13,7 @@ set -euo pipefail
 
 IMAGE=z3wire-dev
 
-docker build -q -t "$IMAGE" .devcontainer/ >/dev/null
+docker buildx build -q -t "$IMAGE" .devcontainer/ >/dev/null
 
 docker_flags=()
 if [ -t 0 ]; then
