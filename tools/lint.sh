@@ -9,6 +9,14 @@ sh_files=$(find . -name '*.sh' -not -path './.git/*')
 echo "$sh_files" | xargs shellcheck
 echo "shellcheck: all checks passed."
 
+# --- Bazel ---
+bzl_files=$(find . -name '*.bazel' -o -name '*.bzl' -o -name 'BUILD' |
+  grep -v '.git/')
+# Suppress native-cc warnings until we migrate to explicit rules_cc loads.
+echo "$bzl_files" | xargs buildifier -lint=warn \
+  -warnings=-native-cc-binary,-native-cc-library,-native-cc-test,-native-cc-common,-native-cc-info
+echo "buildifier: all checks passed."
+
 # --- C++ ---
 
 # Build a test target to ensure external dependencies (z3, googletest) are fetched.

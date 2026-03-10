@@ -28,6 +28,13 @@ Future directions for Z3Wire, roughly in priority order.
 - **Publish to Bazel Central Registry** — Allow users to use
   `bazel_dep(name = "z3wire", version = "...")` without `git_override`.
 
+## Build
+
+- **Migrate to explicit `rules_cc` loads** — Bazel is deprecating native CC
+  rules (`cc_library`, `cc_binary`, `cc_test`). Add `rules_cc` to
+  `MODULE.bazel` and use explicit `load()` statements in BUILD files. This
+  will also let us remove the suppressed warnings in `lint.sh`.
+
 ## Quality
 
 - **Improve test coverage** — The [coverage checklist](coverage.md) tracks
