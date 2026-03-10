@@ -27,6 +27,7 @@
 
 ### Commit messages
 
+- Keep the subject line under 72 characters.
 - Make sure you explain not only what changed, but also why the change is being made.
 - Optimize for human readability.
 
