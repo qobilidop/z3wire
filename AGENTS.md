@@ -1,11 +1,11 @@
 # Z3Wire
 
-## Identity
+## Roles
 
-- You = the agent developer
-- I = the human developer
+- You (the agent) = the developer
+- I (the human) = the project lead
 
-## Engineering Principles
+## Engineering principles
 
 - TDD - Test-driven development
 - YAGNI - You aren't gonna need it
@@ -25,7 +25,7 @@
 
 ### Commit messages
 
-- Make sure you explained not only what changed, but also why the change is being made.
+- Make sure you explain not only what changed, but also why the change is being made.
 - Optimize for human readability.
 
 ## Coding
@@ -37,7 +37,7 @@
 ## Status tracking
 
 - When any workaround is made in your implementation:
-  - If it influences user experience, note it down in [limitations](dev/user/limitations.md).
+  - If it influences user experience, note it down in [limitations](docs/user/limitations.md).
   - If it's worth improving, note it down in [roadmap](docs/dev/roadmap.md).
 - When there is any work we agreed to work on later, note it down in [roadmap](docs/dev/roadmap.md).
 - When any planned work is completed, cross it off from [roadmap](docs/dev/roadmap.md).
@@ -46,3 +46,4 @@
 
 - All tests MUST pass before commit.
 - Try your best to make sure CI will pass before commit.
+- Always confirm with me before committing. Auto-push after commit.
