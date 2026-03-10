@@ -1,5 +1,8 @@
 """Rule for testing that C++ code fails to compile with an expected message."""
 
+load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
+load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
+
 def _cc_compile_fail_test_impl(ctx):
     src = ctx.file.src
     expected_message = ctx.attr.expected_message
