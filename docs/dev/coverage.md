@@ -331,10 +331,10 @@ for the test infrastructure.
 | :---- | :--- |
 | `Int<0, S>` width too small | `int_zero_width_test` |
 | `Int<65, S>` width too large | `int_width_too_large_test` |
-| `SInt<8>::Literal<128>` overflow | `int_signed_literal_overflow_test` |
-| `SInt<8>::Literal<-129>` underflow | `int_signed_literal_underflow_test` |
-| `UInt<8>::Literal<-1>` negative | `int_unsigned_literal_negative_test` |
-| `UInt<8>::Literal<256>` overflow | `int_unsigned_literal_overflow_test` |
+| `SInt<8>::Literal<128>` above max | `int_signed_literal_above_max_test` |
+| `SInt<8>::Literal<-129>` below min | `int_signed_literal_below_min_test` |
+| `UInt<8>::Literal<-1>` below min | `int_unsigned_literal_below_min_test` |
+| `UInt<8>::Literal<256>` above max | `int_unsigned_literal_above_max_test` |
 | `safe_cast` signed → unsigned | `int_safe_cast_signed_to_unsigned_test` |
 | `safe_cast` unsigned narrowing | `int_safe_cast_unsigned_narrow_test` |
 | `safe_cast` signed narrowing | `int_safe_cast_signed_narrow_test` |
@@ -348,7 +348,7 @@ for the test infrastructure.
 | Guard | Test |
 | :---- | :--- |
 | `BitVec<0, S>` width zero | `bitvec_zero_width_test` |
-| `Ubv<8>::Literal<256>` overflow | `bitvec_literal_overflow_test` |
+| `Ubv<8>::Literal<256>` above max | `bitvec_literal_above_max_test` |
 | `internal::extend` target < source | `bitvec_extend_shrink_test` |
 | `safe_cast` signed → unsigned | `bitvec_safe_cast_signed_to_unsigned_test` |
 | `safe_cast` unsigned narrowing | `bitvec_safe_cast_unsigned_narrow_test` |

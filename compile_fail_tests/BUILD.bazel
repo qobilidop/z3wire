@@ -22,29 +22,29 @@ cc_compile_fail_test(
 )
 
 cc_compile_fail_test(
-    name = "int_signed_literal_overflow_test",
-    src = "int_signed_literal_overflow_test.cc",
+    name = "int_signed_literal_above_max_test",
+    src = "int_signed_literal_above_max_test.cc",
     deps = ["//z3wire:int"],
     expected_message = "Literal value does not fit in signed bit-width",
 )
 
 cc_compile_fail_test(
-    name = "int_signed_literal_underflow_test",
-    src = "int_signed_literal_underflow_test.cc",
+    name = "int_signed_literal_below_min_test",
+    src = "int_signed_literal_below_min_test.cc",
     deps = ["//z3wire:int"],
     expected_message = "Literal value does not fit in signed bit-width",
 )
 
 cc_compile_fail_test(
-    name = "int_unsigned_literal_negative_test",
-    src = "int_unsigned_literal_negative_test.cc",
+    name = "int_unsigned_literal_below_min_test",
+    src = "int_unsigned_literal_below_min_test.cc",
     deps = ["//z3wire:int"],
     expected_message = "Unsigned literal must be non-negative",
 )
 
 cc_compile_fail_test(
-    name = "int_unsigned_literal_overflow_test",
-    src = "int_unsigned_literal_overflow_test.cc",
+    name = "int_unsigned_literal_above_max_test",
+    src = "int_unsigned_literal_above_max_test.cc",
     deps = ["//z3wire:int"],
     expected_message = "Literal value does not fit in unsigned bit-width",
 )
@@ -99,8 +99,8 @@ cc_compile_fail_test(
 )
 
 cc_compile_fail_test(
-    name = "bitvec_literal_overflow_test",
-    src = "bitvec_literal_overflow_test.cc",
+    name = "bitvec_literal_above_max_test",
+    src = "bitvec_literal_above_max_test.cc",
     deps = ["//z3wire:bitvec"],
     expected_message = "Literal value does not fit in the specified bit-width",
 )
