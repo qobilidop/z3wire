@@ -22,8 +22,8 @@ template <unsigned W> using SInt = Int<W, true>;
 ```
 
 !!! info
-    Unlike symbolic types, concrete types do not require a `z3::context`.
-    They store plain native integers, not Z3 expressions.
+Unlike symbolic types, concrete types do not require a `z3::context`.
+They store plain native integers, not Z3 expressions.
 
 ## Construction
 
@@ -49,8 +49,8 @@ auto [val2, truncated2] = z3w::UInt<8>::checked(200);
 ```
 
 !!! note
-    `checked()` takes a `uint64_t` raw bit pattern. For signed types, pass
-    the two's complement representation, not a negative integer.
+`checked()` takes a `uint64_t` raw bit pattern. For signed types, pass
+the two's complement representation, not a negative integer.
 
 ### Raw constructor
 
@@ -70,7 +70,7 @@ uint8_t v = x.value();  // 42
 ```
 
 The return type is the smallest unsigned integer that fits the width
-(`uint8_t` for W <= 8, `uint16_t` for W <= 16, etc.).
+(`uint8_t` for W \<= 8, `uint16_t` for W \<= 16, etc.).
 
 ## Operations
 
@@ -78,7 +78,7 @@ All operations mirror the [symbolic API](operations.md), with two
 differences:
 
 1. **Comparison operators return `bool`**, not `z3w::Bool`.
-2. **Checked operations return `bool` flags**, not symbolic `z3w::Bool`
+1. **Checked operations return `bool` flags**, not symbolic `z3w::Bool`
    flags.
 
 ### Arithmetic (bit-growth)
@@ -129,9 +129,9 @@ The promotion grabs the `z3::context` from the symbolic operand, so no
 context needs to be passed explicitly.
 
 !!! note
-    This is the one exception to the "explicit over implicit" rule: concrete-
-    to-symbolic promotion is always lossless and unambiguous (same width,
-    same signedness), so it is allowed implicitly.
+This is the one exception to the "explicit over implicit" rule: concrete-
+to-symbolic promotion is always lossless and unambiguous (same width,
+same signedness), so it is allowed implicitly.
 
 ### Mixed ite
 
@@ -160,8 +160,8 @@ Both `UInt` and `SInt` use unsigned storage internally. For `SInt`, values
 are stored in two's complement representation.
 
 !!! info "Why unsigned storage?"
-    Signed integer overflow is undefined behavior in C++, while unsigned
-    overflow is well-defined (wraps mod 2^N). A bit-vector library performs
-    intermediate arithmetic with masking, and unsigned storage avoids UB.
-    The bits are the same either way; signed interpretation happens only at
-    comparison and sign-extension boundaries.
+Signed integer overflow is undefined behavior in C++, while unsigned
+overflow is well-defined (wraps mod 2^N). A bit-vector library performs
+intermediate arithmetic with masking, and unsigned storage avoids UB.
+The bits are the same either way; signed interpretation happens only at
+comparison and sign-extension boundaries.

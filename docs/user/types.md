@@ -21,8 +21,8 @@ template <size_t W> using Sbv = BitVec<W, true>;
 ```
 
 !!! info
-    `BitVec<0, S>` is forbidden via `static_assert`. A zero-width bit-vector has
-    no meaning in hardware or SMT.
+`BitVec<0, S>` is forbidden via `static_assert`. A zero-width bit-vector has
+no meaning in hardware or SMT.
 
 ## Creating symbolic variables
 
@@ -65,10 +65,10 @@ solver.add(x.raw() > 0);  // Pass to Z3 solver directly
 ```
 
 !!! note
-    Z3Wire does not wrap `z3::context` or `z3::solver`. You interact with these
-    directly.
+Z3Wire does not wrap `z3::context` or `z3::solver`. You interact with these
+directly.
 
-## Bool / Ubv<1> conversion
+## Bool / Ubv\<1> conversion
 
 In Z3, `Bool` and a 1-bit bit-vector are distinct sorts. Hardware frequently
 needs to convert between them. Z3Wire provides explicit conversion functions:

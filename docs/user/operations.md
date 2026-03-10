@@ -37,12 +37,14 @@ auto diff = a - b;  // z3w::Sbv<9>
 ```
 
 !!! tip
-    To model hardware-style fixed-width arithmetic, use `cast` to explicitly
-    truncate the result:
+To model hardware-style fixed-width arithmetic, use `cast` to explicitly
+truncate the result:
 
-    ```cpp
-    auto reg = z3w::cast<z3w::Ubv<8>>(a + b);  // Truncate to 8 bits
-    ```
+````
+```cpp
+auto reg = z3w::cast<z3w::Ubv<8>>(a + b);  // Truncate to 8 bits
+```
+````
 
 ## Bitwise operations (strict)
 

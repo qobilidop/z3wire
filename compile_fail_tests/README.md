@@ -20,9 +20,9 @@ compile_fail_tests/
 `cc_compile_fail_test` is a custom Starlark rule defined in `defs.bzl` that:
 
 1. Gets the C++ toolchain and include paths from `deps` via `CcInfo`.
-2. Runs the compiler on the source file as a build action.
-3. Inverts the exit code — compilation failure = test passes.
-4. Matches `expected_message` in compiler stderr to prevent false positives.
+1. Runs the compiler on the source file as a build action.
+1. Inverts the exit code — compilation failure = test passes.
+1. Matches `expected_message` in compiler stderr to prevent false positives.
 
 ## Usage
 

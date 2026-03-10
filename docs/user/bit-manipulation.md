@@ -25,8 +25,8 @@ auto bit5 = z3w::extract<5, 5>(instruction);       // Ubv<1>
 ```
 
 !!! note
-    The result is always `Ubv` (unsigned). Extracted bits have no inherent
-    signedness.
+The result is always `Ubv` (unsigned). Extracted bits have no inherent
+signedness.
 
 ### Symbolic-offset extract
 
@@ -69,12 +69,14 @@ auto packed = z3w::concat(a, b, c);  // Ubv<16>
 ```
 
 !!! tip
-    `concat` and `extract` are complementary. A common hardware pattern is
-    unpacking a word into fields, modifying a field, and repacking:
+`concat` and `extract` are complementary. A common hardware pattern is
+unpacking a word into fields, modifying a field, and repacking:
 
-    ```cpp
-    z3w::Ubv<16> word(ctx, "word");
-    auto hi = z3w::extract<15, 8>(word);  // Ubv<8>
-    auto lo = z3w::extract<7, 0>(word);   // Ubv<8>
-    auto repacked = z3w::concat(hi, lo);  // Ubv<16>
-    ```
+````
+```cpp
+z3w::Ubv<16> word(ctx, "word");
+auto hi = z3w::extract<15, 8>(word);  // Ubv<8>
+auto lo = z3w::extract<7, 0>(word);   // Ubv<8>
+auto repacked = z3w::concat(hi, lo);  // Ubv<16>
+```
+````

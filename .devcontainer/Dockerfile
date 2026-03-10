@@ -23,6 +23,9 @@ RUN ARCH=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/') && \
 # Install MkDocs with Material theme.
 RUN pip install --break-system-packages mkdocs-material mkdocs-include-markdown-plugin
 
+# Install mdformat for Markdown formatting.
+RUN pip install --break-system-packages mdformat
+
 # Non-root user (required by rules_python for bazel coverage).
 RUN useradd -m -s /bin/bash dev
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh

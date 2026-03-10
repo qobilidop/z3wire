@@ -29,7 +29,7 @@ and bit-growth arithmetic makes overflow explicit.
 1. **Compile-time type safety:** Move Z3 "Sort Errors" (bit-width/type
    mismatches) from runtime exceptions to compile-time errors using C++20
    template metaprogramming.
-2. **Bit-growth arithmetic:** Automatically widen arithmetic result types to
+1. **Bit-growth arithmetic:** Automatically widen arithmetic result types to
    prevent silent overflow, making every truncation an explicit, reviewable
    decision.
 
@@ -46,11 +46,13 @@ types do not correspond to physical hardware and are irrelevant to RTL modeling
 and verification.
 
 By targeting only the QF_BV logic (Quantifier-Free Bit-Vectors), Z3Wire can:
+
 - Provide a tight, ergonomic API with no unused abstractions.
 - Enforce hardware-meaningful constraints (fixed widths, explicit truncation).
 - Keep the library small and auditable.
 
 **Out of scope for this project:**
+
 - Non-hardware SMT theories (unbounded integers, reals, arrays, floating-point,
   uninterpreted functions).
 - Wrapping `z3::context` or `z3::solver`.
@@ -70,11 +72,11 @@ By targeting only the QF_BV logic (Quantifier-Free Bit-Vectors), Z3Wire can:
 The library centers around a zero-overhead wrapper class that holds a single
 `z3::expr` by value, adding no runtime overhead.
 
-| Type Alias    | Mapping               | Description                      |
+| Type Alias | Mapping | Description |
 | :------------ | :-------------------- | :------------------------------- |
-| `z3w::Ubv<W>` | `BitVec<W, false>`   | Unsigned fixed-width bit-vector. |
-| `z3w::Sbv<W>` | `BitVec<W, true>`    | Signed fixed-width bit-vector.   |
-| `z3w::Bool`   | wrapper over `z3::expr` (Bool sort) | Symbolic boolean.  |
+| `z3w::Ubv<W>` | `BitVec<W, false>` | Unsigned fixed-width bit-vector. |
+| `z3w::Sbv<W>` | `BitVec<W, true>` | Signed fixed-width bit-vector. |
+| `z3w::Bool` | wrapper over `z3::expr` (Bool sort) | Symbolic boolean. |
 
 The core template is:
 
@@ -128,6 +130,7 @@ target types. No safety checks. Use when you intentionally want hardware-style
 overflow or wrap behavior.
 
 Under the hood, uses `if constexpr` to select:
+
 - Target width < source width: `z3::extract` (truncation).
 - Target width > source width: `z3::zext` or `z3::sext` based on source
   signedness.
@@ -137,13 +140,13 @@ Under the hood, uses `if constexpr` to select:
 
 Only compiles if the cast is mathematically guaranteed to be lossless.
 
-| Source      | Target      | Allowed?                                       |
+| Source | Target | Allowed? |
 | :---------- | :---------- | :--------------------------------------------- |
-| `Ubv<W1>`   | `Ubv<W2>`   | Yes, if `W2 >= W1`.                            |
-| `Sbv<W1>`   | `Sbv<W2>`   | Yes, if `W2 >= W1`.                            |
-| `Ubv<W1>`   | `Sbv<W2>`   | Yes, if `W2 > W1` (needs 1 extra bit for sign).|
-| `Sbv<W1>`   | `Ubv<W2>`   | **Always forbidden.** Negative values corrupt.  |
-| Any         | Smaller     | **Always forbidden.** Truncation is not safe.   |
+| `Ubv<W1>` | `Ubv<W2>` | Yes, if `W2 >= W1`. |
+| `Sbv<W1>` | `Sbv<W2>` | Yes, if `W2 >= W1`. |
+| `Ubv<W1>` | `Sbv<W2>` | Yes, if `W2 > W1` (needs 1 extra bit for sign).|
+| `Sbv<W1>` | `Ubv<W2>` | **Always forbidden.** Negative values corrupt. |
+| Any | Smaller | **Always forbidden.** Truncation is not safe. |
 
 #### `z3w::checked_cast<T>(val)` —The verification cast
 
@@ -156,7 +159,7 @@ auto [result, overflowed] = z3w::checked_cast<z3w::Ubv<8>>(my_32bit_val);
 solver.add(!overflowed.raw());  // Assert: this cast never loses data
 ```
 
-### Bool / Ubv<1> conversion
+### Bool / Ubv\<1> conversion
 
 In Z3, `Bool` and a 1-bit bit-vector are distinct sorts. Hardware frequently
 needs to convert between them (e.g., a condition flag in a register vs. a
@@ -342,7 +345,7 @@ serving two purposes:
 
 1. **Mixed expressions.** Users can write `symbolic_x + concrete_y` without
    manually creating Z3 constants.
-2. **Standalone type-safe integers.** `UInt<5>` or `SInt<12>` enforce
+1. **Standalone type-safe integers.** `UInt<5>` or `SInt<12>` enforce
    bit-width at the type level, even without Z3.
 
 `Bool` does not need a concrete counterpart — native C++ `bool` is sufficient.

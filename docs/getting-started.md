@@ -25,8 +25,8 @@ cd z3wire
 with a persistent Bazel cache.
 
 !!! note
-    The first build takes several minutes (compiling Z3 from source). Subsequent
-    builds use the cached result and complete in seconds.
+The first build takes several minutes (compiling Z3 from source). Subsequent
+builds use the cached result and complete in seconds.
 
 ## Adding Z3Wire to your project
 

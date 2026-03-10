@@ -7,6 +7,7 @@
 [![Docs](https://github.com/qobilidop/z3wire/actions/workflows/docs.yml/badge.svg)](https://qobilidop.github.io/z3wire/)
 
 <!-- docs-start -->
+
 Type-safe Z3 bit-vectors for hardware verification. C++20 and above.
 
 ## Why Z3Wire?
@@ -112,4 +113,5 @@ full documentation, including getting started guide, user guide, and examples.
 ## License
 
 See [LICENSE](https://github.com/qobilidop/z3wire/blob/main/LICENSE).
+
 <!-- docs-end -->
