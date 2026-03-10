@@ -7,8 +7,10 @@ We verify that the AND operation never exceeds its inputs, and find an example
 of ADD overflow.
 
 ```cpp title="examples/alu.cc"
-#include <z3++.h>
 #include <iostream>
+
+#include <z3++.h>
+
 #include "z3wire/bitvec.h"
 
 int main() {

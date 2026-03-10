@@ -4,8 +4,10 @@ This example demonstrates extract, concat, and lossless shifts by modeling the
 unpacking and repacking of a 16-bit instruction word.
 
 ```cpp title="examples/bit_manipulation.cc"
-#include <z3++.h>
 #include <iostream>
+
+#include <z3++.h>
+
 #include "z3wire/bitvec.h"
 
 int main() {

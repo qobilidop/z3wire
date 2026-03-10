@@ -62,47 +62,19 @@ auto carry = z3w::to_bool(z3w::extract<8, 8>(sum));  // bit 8 = carry
 auto [truncated, overflowed] = z3w::checked_cast<z3w::Ubv<8>>(sum);
 
 // Ask Z3: is there any case where carry != overflowed?
-solver.add(carry.raw() != overflowed.raw());
+solver.add((carry != overflowed).raw());
 assert(solver.check() == z3::unsat);  // No — carry is always correct.
 ```
 
-## Building
+See the [safe adder example](https://qobilidop.github.io/z3wire/examples/safe-adder/) for a full walkthrough.
 
-Z3Wire supports both **Bazel** and **CMake** build systems.
+## Getting started
 
-### Devcontainer (recommended)
-
-The easiest way to build and test is with the included devcontainer, which has
-all dependencies pre-installed:
+Requires [Docker](https://www.docker.com/). Clone the repo and run:
 
 ```sh
-./dev.sh bazel build //...
-./dev.sh bazel test //...
 ./dev.sh bazel run //examples:safe_adder
 ```
-
-`dev.sh` builds the devcontainer image on first use and runs commands inside it
-with a persistent Bazel cache.
-
-### Bazel
-
-```sh
-bazel build //...
-bazel test //...
-```
-
-The first build takes several minutes (compiling Z3 from source). Subsequent
-builds use the cached result and complete in seconds.
-
-### CMake
-
-```sh
-cmake -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build
-ctest --test-dir build
-```
-
-Requires clang and Z3 to be installed on your system (e.g., `apt install clang libz3-dev`).
 
 ## Documentation
 
