@@ -44,6 +44,8 @@
         `is_symbolic_v`, `is_concrete_v` (not `IsSymbolic`, etc.).
 - Follow Google Abseil [C++ Tips of the Week](https://abseil.io/tips/).
 - Follow [BUILD Style Guide](https://bazel.build/build/style-guide).
+- Tests live next to the code they test: `foo.h` → `foo_test.cc` in the same
+    directory. Compile-fail tests go in `compile_fail_tests/`.
 
 ## Documentation
 
@@ -65,6 +67,9 @@
 ## Rules
 
 - Run `./dev.sh ./tools/format.sh` before every commit.
+- Run `./dev.sh ./tools/docs.sh build` before committing doc changes.
+- Run `./dev.sh ./tools/lint.sh` to catch clang-tidy and shellcheck issues
+    (not required before every commit, but fix any issues before pushing).
 - All tests MUST pass before commit.
 - Try your best to make sure CI will pass before commit.
 - Always confirm with me before committing. Auto-push after commit.
