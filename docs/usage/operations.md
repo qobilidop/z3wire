@@ -250,6 +250,60 @@ auto packed = z3w::concat(a, b, c);  // Ubv<16>
     auto repacked = z3w::concat(hi, lo);  // Ubv<16>
     ```
 
+## Bit field
+
+`bitfield_eq` returns a symbolic constraint (`z3w::Bool`) asserting that a
+bit-vector buffer equals the LSB-first concatenation of its fields:
+
+```cpp
+z3w::Ubv<8> md(ctx, "md");
+z3w::Bool x(ctx, "x");       // bit 0
+z3w::Ubv<3> y(ctx, "y");     // bits 3..1
+z3w::Sbv<4> z(ctx, "z");     // bits 7..4
+
+solver.add(z3w::bitfield_eq(md, x, y, z).raw());
+```
+
+Fields are mapped starting from the least-significant bit, matching the
+convention used by [Amaranth](https://amaranth-lang.org/) and
+[Chisel](https://www.chisel-lang.org/). This is the opposite order from
+`concat`, which places the first argument in the most-significant position.
+
+!!! note
+
+    `bitfield_eq` is LSB-first while `concat` is MSB-first. Given
+    `bitfield_eq(buf, a, b, c)`, the equivalent manual expression is
+    `buf == concat(c, b, to_ubv1(a))` (reversed, with type conversions).
+
+Each field type is handled as follows:
+
+- **`Bool`** — converted to `Ubv<1>` via `to_ubv1`.
+- **`Sbv<W>`** — reinterpreted as `Ubv<W>` (bitcast, no value change).
+- **`Ubv<W>`** — used as-is.
+
+The total width of all fields must equal the buffer width. This is enforced by a
+`static_assert` at compile time.
+
+Z3 handles bidirectional reasoning automatically: you can constrain the buffer
+and solve for individual fields, constrain the fields and solve for the buffer,
+or any combination.
+
+For multi-level decomposition, you can chain `bitfield_eq` calls. For example,
+to decompose a 16-bit word into two 8-bit halves and further decompose each
+half:
+
+```cpp
+z3w::Ubv<16> word(ctx, "word");
+z3w::Ubv<8> lo(ctx, "lo");
+z3w::Ubv<8> hi(ctx, "hi");
+
+z3w::Ubv<4> lo_nib(ctx, "lo_nib");
+z3w::Ubv<4> hi_nib(ctx, "hi_nib");
+
+solver.add(z3w::bitfield_eq(word, lo, hi).raw());
+solver.add(z3w::bitfield_eq(lo, lo_nib, hi_nib).raw());
+```
+
 ## Mux
 
 Symbolic If-Then-Else. Both branches must be the exact same type.
