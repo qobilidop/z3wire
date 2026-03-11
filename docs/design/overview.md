@@ -63,19 +63,19 @@ Z3Wire's API is organized around the complete set of combinational logic
 primitives — the operations a hardware designer uses to build circuits from
 wires. The table below lists every category, its operations, and their status.
 
-| Category         | Operations                              | Status |
-| :--------------- | :-------------------------------------- | :----- |
-| Logic (Bool)     | AND, OR, NOT, equality                  | Done   |
-| Logic (Bool)     | XOR                                     | Gap (expressible as `!=`) |
-| Bitwise          | AND, OR, XOR, NOT                       | Done   |
-| Arithmetic       | Add, subtract, negate                   | Done   |
-| Comparison       | Equality, ordered                       | Done   |
-| Shifting         | Hardware, checked, lossless             | Done   |
-| Bit manipulation | Extract, single-bit extract, concat     | Done   |
-| Bit field        | Field equality constraint               | Done   |
-| Mux              | If-then-else                            | Done   |
-| Type conversion  | Cast (3-tier), Bool/Ubv\<1\>            | Done   |
-| Reduction        | AND, OR, XOR across all bits            | Future |
+| Category         | Operations                          | Status                    |
+| :--------------- | :---------------------------------- | :------------------------ |
+| Logic (Bool)     | AND, OR, NOT, equality              | Done                      |
+| Logic (Bool)     | XOR                                 | Gap (expressible as `!=`) |
+| Bitwise          | AND, OR, XOR, NOT                   | Done                      |
+| Arithmetic       | Add, subtract, negate               | Done                      |
+| Comparison       | Equality, ordered                   | Done                      |
+| Shifting         | Hardware, checked, lossless         | Done                      |
+| Bit manipulation | Extract, single-bit extract, concat | Done                      |
+| Bit field        | Field equality constraint           | Done                      |
+| Mux              | If-then-else                        | Done                      |
+| Type conversion  | Cast (3-tier), Bool/Ubv\<1>         | Done                      |
+| Reduction        | AND, OR, XOR across all bits        | Future                    |
 
 This framing guides what belongs in Z3Wire and what does not. If an operation is
 a standard combinational logic primitive, it should be here. If it requires
