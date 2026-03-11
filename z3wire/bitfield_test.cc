@@ -97,5 +97,24 @@ TEST_F(BitFieldTest, SbvField) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
+TEST_F(BitFieldTest, MixedFieldTypes) {
+  // The motivating example from the design doc.
+  Ubv<8> md(ctx_, "md");
+  Bool x(ctx_, "x");    // bit 0
+  Ubv<3> y(ctx_, "y");  // bits 3..1
+  Sbv<4> z(ctx_, "z");  // bits 7..4
+
+  z3::solver s(ctx_);
+  s.add(bitfield_eq(md, x, y, z).raw());
+
+  // x=true(1), y=0b110, z=0b1010 (signed -6)
+  // md = 0b1010_110_1 = 0xAD
+  s.add(x.raw() == ctx_.bool_val(true));
+  s.add(y.raw() == ctx_.bv_val(0b110, 3));
+  s.add(z.raw() == ctx_.bv_val(0b1010, 4));
+  s.add(md.raw() != ctx_.bv_val(0xAD, 8));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
 }  // namespace
 }  // namespace z3w
