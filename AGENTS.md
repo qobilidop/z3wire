@@ -20,6 +20,7 @@
 
 ## Writing
 
+- Project name: "Z3Wire" in prose, `z3wire` in code/paths/URLs.
 - For file titles, use Title Case.
 - For non-title section headings, use Sentence case.
 - Use terminologies that best suit our intended audience.
@@ -43,6 +44,15 @@
         `is_symbolic_v`, `is_concrete_v` (not `IsSymbolic`, etc.).
 - Follow Google Abseil [C++ Tips of the Week](https://abseil.io/tips/).
 - Follow [BUILD Style Guide](https://bazel.build/build/style-guide).
+
+## Documentation
+
+- Docs use mkdocs Material theme. Run `./dev.sh ./tools/docs.sh build` to
+    verify docs build before committing doc changes.
+- New features should have a design doc in `docs/design/`.
+- Update `docs/usage/cheatsheet.md` when adding new API surface.
+- Don't place non-doc files (plans, specs) inside `docs/` — mkdocs strict mode
+    will reject broken links in any file under that directory.
 
 ## Status tracking
 
