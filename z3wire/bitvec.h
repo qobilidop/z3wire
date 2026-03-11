@@ -140,6 +140,15 @@ auto operator-(const BitVec<W1, S1>& lhs, const BitVec<W2, S2>& rhs) {
   return BitVec<kResultWidth, true>(lhs_ext - rhs_ext);
 }
 
+// --- Unary negate (bit-growth) ---
+// Result width = W + 1, always signed. Consistent with binary subtraction.
+
+template <size_t W, bool S>
+BitVec<W + 1, true> operator-(const BitVec<W, S>& val) {
+  auto ext = internal::extend<W + 1, W, S>(val);
+  return BitVec<W + 1, true>(-ext);
+}
+
 // --- Equality (relaxed: any width/signedness combination) ---
 
 template <size_t W1, bool S1, size_t W2, bool S2>

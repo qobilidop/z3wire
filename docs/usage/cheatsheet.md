@@ -48,6 +48,7 @@ See [Operations](operations.md).
 | :-- | :--------- | :---------------- | :------------------------- |
 | Add | `a + b`    | `max(W1, W2) + 1` | Signed if either is signed |
 | Sub | `a - b`    | `max(W1, W2) + 1` | Always signed              |
+| Neg | `-a`       | `W + 1`           | Always signed              |
 
 Operands are auto-extended. Mixed widths and signedness allowed.
 See [Operations](operations.md).

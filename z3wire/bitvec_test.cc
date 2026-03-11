@@ -785,5 +785,59 @@ TEST_F(BitVecTest, MixedCrossTypeLessThan) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
+// --- Unary negate ---
+
+TEST_F(BitVecTest, NegateUnsigned) {
+  Ubv<8> a(ctx_, "a");
+  auto neg = -a;
+
+  // Result: width = 9, always signed.
+  static_assert(decltype(neg)::kWidth == 9);
+  static_assert(decltype(neg)::kIsSigned);
+
+  // -100 in 9-bit two's complement = 412.
+  z3::solver s(ctx_);
+  s.add(a.raw() == ctx_.bv_val(100, 8));
+  s.add(neg.raw() != ctx_.bv_val(412, 9));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(BitVecTest, NegateSigned) {
+  Sbv<8> a(ctx_, "a");
+  auto neg = -a;
+
+  static_assert(decltype(neg)::kWidth == 9);
+  static_assert(decltype(neg)::kIsSigned);
+
+  // Negate -128 → 128, which fits in Sbv<9>.
+  z3::solver s(ctx_);
+  s.add(a.raw() == ctx_.bv_val(0x80, 8));  // -128 signed
+  s.add(neg.raw() != ctx_.bv_val(128, 9));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(BitVecTest, NegateZero) {
+  Ubv<8> a(ctx_, "a");
+  auto neg = -a;
+
+  z3::solver s(ctx_);
+  s.add(a.raw() == ctx_.bv_val(0, 8));
+  s.add(neg.raw() != ctx_.bv_val(0, 9));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+// --- Mixed unary negate ---
+
+TEST_F(BitVecTest, NegateConsistentWithBinarySub) {
+  Ubv<8> a(ctx_, "a");
+  auto neg = -a;
+  auto zero_minus_a = Ubv<8>::Literal<0>(ctx_) - a;
+
+  // -a should equal 0 - a for all values.
+  z3::solver s(ctx_);
+  s.add(neg.raw() != zero_minus_a.raw());
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
 }  // namespace
 }  // namespace z3w

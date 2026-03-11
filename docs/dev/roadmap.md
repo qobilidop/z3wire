@@ -9,14 +9,15 @@ Future directions for Z3Wire, roughly in priority order.
     See the [types guide](../usage/types.md#concrete-types).
 - **Relaxed comparisons** — Comparison operators now allow different widths
     and signedness, automatically extending operands to a common type.
+- **Unary negate** (`-x`) — Two's complement negation with bit-growth
+    (width + 1, always signed), consistent with binary subtraction.
 
 ## Next features
 
-- **Complete combinational logic primitives** — Z3Wire aims to cover the
-    complete set of combinational logic operations. Two gaps remain:
-    - *Unary negate* (`-x`) — two's complement negation.
-    - *Reduction operators* (`reduce_and`, `reduce_or`, `reduce_xor`) — collapse
-        all bits to a single `Bool`.
+- **Reduction operators** (`reduce_and`, `reduce_or`, `reduce_xor`) — collapse
+    all bits to a single `Bool`. Low priority: `reduce_and` and `reduce_or` are
+    expressible via comparisons (`x == ~0`, `x != 0`); `reduce_xor` (parity) is
+    the only one that's hard to express today. Defer until a use case arises.
 - **Single-bit extraction shorthand** — Add `z3w::bit<N>(val)` as a convenience
     for `z3w::extract<N, N>(val)`. Extracting a single bit is common in hardware
     and the current syntax is unnecessarily verbose. Also consider reducing

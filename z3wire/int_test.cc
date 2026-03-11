@@ -561,5 +561,40 @@ TEST(IntTest, CrossTypeEqualityMixedSignedness) {
   EXPECT_FALSE(a != b);
 }
 
+// --- Unary negate ---
+
+TEST(IntTest, NegateUnsigned) {
+  UInt<8> a(100);
+  auto neg = -a;
+  // Result: width = 9, always signed.
+  static_assert(decltype(neg)::kWidth == 9);
+  static_assert(decltype(neg)::kIsSigned);
+  // -100 in 9-bit two's complement = 512 - 100 = 412.
+  EXPECT_EQ(neg.value(), 412);
+}
+
+TEST(IntTest, NegateSigned) {
+  SInt<8> a(100);
+  auto neg = -a;
+  static_assert(decltype(neg)::kWidth == 9);
+  static_assert(decltype(neg)::kIsSigned);
+  // -100 in 9-bit two's complement = 512 - 100 = 412.
+  EXPECT_EQ(neg.value(), 412);
+}
+
+TEST(IntTest, NegateZero) {
+  UInt<8> a(0);
+  auto neg = -a;
+  EXPECT_EQ(neg.value(), 0);
+}
+
+TEST(IntTest, NegateMinSigned) {
+  // SInt<8>(-128) → -(-128) = 128, which fits in SInt<9>.
+  SInt<8> a(0x80);  // -128
+  auto neg = -a;
+  static_assert(decltype(neg)::kWidth == 9);
+  EXPECT_EQ(neg.value(), 128);
+}
+
 }  // namespace
 }  // namespace z3w

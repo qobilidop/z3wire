@@ -352,6 +352,20 @@ auto concat(const Int<W1, S1>& high, const Int<W2, S2>& next,
   return concat(concat(high, next), rest...);
 }
 
+// --- Unary negate (bit-growth) ---
+// Result width = W + 1, always signed. Consistent with binary subtraction.
+
+template <size_t W, bool S>
+Int<W + 1, true> operator-(const Int<W, S>& val) {
+  uint64_t ext = internal::extend<W + 1, W, S>(val);
+  // Two's complement negate: ~x + 1, masked to W+1 bits.
+  if constexpr (W + 1 >= 64) {
+    return Int<W + 1, true>(~ext + 1);
+  } else {
+    return Int<W + 1, true>((~ext + 1) & ((uint64_t{1} << (W + 1)) - 1));
+  }
+}
+
 // Bool / UInt<1> conversion.
 inline UInt<1> to_uint1(bool b) { return UInt<1>(b ? 1 : 0); }
 

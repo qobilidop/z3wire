@@ -69,6 +69,16 @@ z3w::Ubv<8> b(ctx, "b");
 auto diff = a - b;  // z3w::Sbv<9>
 ```
 
+### Unary negate (`-`)
+
+Result width = `W + 1`. Result is always signed. Consistent with subtraction
+(`-x` is equivalent to `0 - x`).
+
+```cpp
+z3w::Ubv<8> a(ctx, "a");
+auto neg = -a;  // z3w::Sbv<9>
+```
+
 !!! tip
 
     To model hardware-style fixed-width arithmetic, use `cast` to explicitly
