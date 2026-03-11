@@ -33,7 +33,14 @@
 
 ## Coding
 
-- Follow [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html).
+- Follow [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html),
+    with the following deliberate deviations:
+    - **Functions use `snake_case`** (not `CamelCase`). This matches the Z3 C++
+        API that users call alongside Z3Wire, keeping mixed code readable. Static
+        factory methods (`True()`, `False()`, `Literal()`) use `CamelCase` as they
+        act as named constructors.
+    - **Type traits follow STL convention**: `is_symbolic`, `is_concrete`,
+        `is_symbolic_v`, `is_concrete_v` (not `IsSymbolic`, etc.).
 - Follow Google Abseil [C++ Tips of the Week](https://abseil.io/tips/).
 - Follow [BUILD Style Guide](https://bazel.build/build/style-guide).
 
