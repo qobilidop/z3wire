@@ -596,5 +596,19 @@ TEST(IntTest, NegateMinSigned) {
   EXPECT_EQ(neg.value(), 128);
 }
 
+// --- Single-bit extraction ---
+
+TEST(IntTest, BitExtract) {
+  UInt<8> a(0xA5);  // 10100101
+  auto b0 = bit<0>(a);
+  auto b1 = bit<1>(a);
+  auto b7 = bit<7>(a);
+
+  static_assert(decltype(b0)::kWidth == 1);
+  EXPECT_EQ(b0.value(), 1);  // bit 0 = 1
+  EXPECT_EQ(b1.value(), 0);  // bit 1 = 0
+  EXPECT_EQ(b7.value(), 1);  // bit 7 = 1
+}
+
 }  // namespace
 }  // namespace z3w

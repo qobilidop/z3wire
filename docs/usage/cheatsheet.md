@@ -81,6 +81,7 @@ See [Operations](operations.md#shifting).
 ## Bit manipulation
 
 ```cpp
+bit<N>(val)                    // -> Ubv<1>            (single bit)
 extract<High, Low>(val)        // -> Ubv<High-Low+1>  (static bounds)
 extract<Width>(val, offset)    // -> Ubv<Width>        (symbolic offset)
 concat(high, low)              // -> Ubv<W1+W2>

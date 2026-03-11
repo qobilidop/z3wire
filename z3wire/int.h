@@ -366,6 +366,12 @@ Int<W + 1, true> operator-(const Int<W, S>& val) {
   }
 }
 
+// Single-bit extraction: bit<N>(val) -> UInt<1>.
+template <size_t N, size_t W, bool S>
+UInt<1> bit(const Int<W, S>& val) {
+  return extract<N, N>(val);
+}
+
 // Bool / UInt<1> conversion.
 inline UInt<1> to_uint1(bool b) { return UInt<1>(b ? 1 : 0); }
 

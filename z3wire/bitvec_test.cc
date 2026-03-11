@@ -839,5 +839,20 @@ TEST_F(BitVecTest, NegateConsistentWithBinarySub) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
+// --- Single-bit extraction ---
+
+TEST_F(BitVecTest, BitExtract) {
+  Ubv<8> a(ctx_, "a");
+  auto b5 = bit<5>(a);
+
+  static_assert(decltype(b5)::kWidth == 1);
+
+  // 0xA5 = 10100101, bit 5 = 1.
+  z3::solver s(ctx_);
+  s.add(a.raw() == ctx_.bv_val(0xA5, 8));
+  s.add(b5.raw() != ctx_.bv_val(1, 1));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
 }  // namespace
 }  // namespace z3w

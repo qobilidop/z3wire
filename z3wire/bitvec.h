@@ -472,6 +472,12 @@ Ubv<TargetWidth> extract(const BitVec<W, S>& val, const Ubv<IdxW>& start_idx) {
   return Ubv<TargetWidth>(shifted.extract(TargetWidth - 1, 0));
 }
 
+// Single-bit extraction: bit<N>(val) -> Ubv<1>.
+template <size_t N, size_t W, bool S>
+Ubv<1> bit(const BitVec<W, S>& val) {
+  return extract<N, N>(val);
+}
+
 // --- Concatenation ---
 
 // concat(a, b): result width = W1 + W2, always Ubv.

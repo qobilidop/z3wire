@@ -199,6 +199,19 @@ auto r = z3w::lossless_shl(a, n);  // Ubv<15> (8 + 2^3 - 1)
 
 ## Bit manipulation
 
+### Single-bit extraction
+
+Shorthand for extracting a single bit:
+
+```cpp
+z3w::Ubv<32> instruction(ctx, "instruction");
+
+auto sign = z3w::bit<31>(instruction);  // Ubv<1>
+auto lsb  = z3w::bit<0>(instruction);   // Ubv<1>
+```
+
+Equivalent to `z3w::extract<N, N>(val)`.
+
 ### Extract (bit slicing)
 
 **Static extract** — compile-time bounds, checked at compile time (`High >= Low`
