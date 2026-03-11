@@ -40,7 +40,7 @@
 ## Status tracking
 
 - When any workaround is made in your implementation:
-  - If it influences user experience, note it down in [limitations](docs/user/limitations.md).
+  - If it influences user experience, note it down in [limitations](docs/usage/limitations.md).
   - If it's worth improving, note it down in [roadmap](docs/dev/roadmap.md).
 - When there is any work we agreed to work on later, note it down in [roadmap](docs/dev/roadmap.md).
 - When any planned work is completed, cross it off from [roadmap](docs/dev/roadmap.md).

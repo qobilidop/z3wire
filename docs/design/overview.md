@@ -1,4 +1,4 @@
-# Design
+# Design Overview
 
 ## Motivation
 
@@ -84,7 +84,7 @@ The core template is:
 template <size_t Width, bool IsSigned>
 class BitVec {
     static_assert(Width > 0, "Bit-vector width must be at least 1.");
-    z3::expr m_expr;
+    z3::expr expr_;
     // ...
 };
 

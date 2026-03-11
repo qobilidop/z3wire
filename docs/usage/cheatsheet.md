@@ -12,7 +12,7 @@ namespace. Links point to detailed documentation.
 | `Sbv<W>` | `SInt<W>` | Signed bit-vector of width W |
 
 Concrete values auto-promote to symbolic in mixed expressions.
-See [Type System](types.md) and [Concrete Types](concrete-types.md).
+See [Types](types.md).
 
 ## Construction
 
@@ -75,7 +75,7 @@ See [Operations](operations.md).
 
 Hardware shifts require strict width/signedness match. Right shift is logical
 for unsigned, arithmetic for signed.
-See [Shifting](shifting.md).
+See [Operations](operations.md#shifting).
 
 ## Bit manipulation
 
@@ -86,7 +86,7 @@ concat(high, low)              // -> Ubv<W1+W2>
 concat(a, b, c, ...)           // -> Ubv<W1+W2+W3+...> (variadic)
 ```
 
-See [Bit Manipulation](bit-manipulation.md).
+See [Operations](operations.md#bit-manipulation).
 
 ## Casting
 
@@ -96,7 +96,7 @@ See [Bit Manipulation](bit-manipulation.md).
 | Safe | `safe_cast<T>(val)` | Compile error if lossy |
 | Checked | `checked_cast<T>(val)` | Returns `{result, overflow_flag}` |
 
-See [Casting](casting.md).
+See [Types](types.md#casting).
 
 ## Conversion
 

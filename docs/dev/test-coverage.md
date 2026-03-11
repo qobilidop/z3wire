@@ -1,4 +1,4 @@
-# Test Coverage Checklist
+# Test Coverage
 
 Line coverage is not a useful metric for a template-heavy library like Z3Wire.
 Different template instantiations (e.g., `Ubv<8> + Ubv<8>` vs `Sbv<8> + Ubv<4>`)
