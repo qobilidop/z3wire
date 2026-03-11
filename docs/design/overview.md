@@ -57,6 +57,30 @@ By targeting only the QF_BV logic (Quantifier-Free Bit-Vectors), Z3Wire can:
     uninterpreted functions).
 - Wrapping `z3::context` or `z3::solver`.
 
+## Combinational logic primitives
+
+Z3Wire's API is organized around the complete set of combinational logic
+primitives — the operations a hardware designer uses to build circuits from
+wires. The table below lists every category, its operations, and their status.
+
+| Category         | Operations                              | Status |
+| :--------------- | :-------------------------------------- | :----- |
+| Logic (Bool)     | AND, OR, NOT, equality                  | Done   |
+| Logic (Bool)     | XOR                                     | Gap (expressible as `!=`) |
+| Bitwise          | AND, OR, XOR, NOT                       | Done   |
+| Arithmetic       | Add, subtract, negate                   | Done   |
+| Comparison       | Equality, ordered                       | Done   |
+| Shifting         | Hardware, checked, lossless             | Done   |
+| Bit manipulation | Extract, single-bit extract, concat     | Done   |
+| Bit field        | Field equality constraint               | Done   |
+| Mux              | If-then-else                            | Done   |
+| Type conversion  | Cast (3-tier), Bool/Ubv\<1\>            | Done   |
+| Reduction        | AND, OR, XOR across all bits            | Future |
+
+This framing guides what belongs in Z3Wire and what does not. If an operation is
+a standard combinational logic primitive, it should be here. If it requires
+sequential semantics (clocks, state, memory), it is out of scope.
+
 ## Design philosophy
 
 - **Zero overhead:** Each wrapper stores only a `z3::expr`. No virtual
@@ -217,6 +241,9 @@ auto full = z3w::concat(high, low);  // -> z3w::Ubv<32>
 ```
 
 ## Operations
+
+This section covers design decisions for each category of
+[combinational logic primitives](#combinational-logic-primitives).
 
 ### Arithmetic and bitwise
 

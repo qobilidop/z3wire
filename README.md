@@ -35,7 +35,7 @@ Z3Wire solves these by bringing hardware semantics into the type system:
 The name reflects the scope: hardware is built from *wires*. Every signal in a
 digital circuit is either a single bit or a bundle of bits with a known width.
 Z3Wire wraps Z3 with type-safe Booleans and fixed-width bit-vectors, covering
-the complete set of combinational logic primitives that operate on these wires.
+the complete set of [combinational logic primitives](https://qobilidop.github.io/z3wire/design/overview/#combinational-logic-primitives) that operate on these wires.
 
 ## Features
 
