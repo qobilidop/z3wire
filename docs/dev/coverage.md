@@ -322,7 +322,7 @@ Hardware shifts require strict width and signedness matching.
 ## Compile-time guards
 
 Compile-fail tests verify that `static_assert` guards and SFINAE constraints
-correctly reject invalid code. See [compile-fail tests](compile-fail-tests.md)
+correctly reject invalid code. See [compile-fail tests](../design/compile-fail-tests.md)
 for the test infrastructure.
 
 ### int.h guards (13 tests)

@@ -48,6 +48,7 @@ nav:
       - ALU Verification: examples/alu.md
       - Bit Manipulation: examples/bit-manipulation.md
   - User guide:
+      - Cheatsheet: user/cheatsheet.md
       - Type System: user/types.md
       - Concrete Types: user/concrete-types.md
       - Operations: user/operations.md
@@ -55,8 +56,9 @@ nav:
       - Bit Manipulation: user/bit-manipulation.md
       - Shifting: user/shifting.md
       - Limitations: user/limitations.md
+  - Design:
+      - Overview: design/overview.md
+      - Compile-Fail Tests: design/compile-fail-tests.md
   - Developer guide:
-      - Design: dev/design.md
       - Coverage: dev/coverage.md
-      - Compile-Fail Tests: dev/compile-fail-tests.md
       - Roadmap: dev/roadmap.md
