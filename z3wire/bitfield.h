@@ -4,6 +4,7 @@
 #include <cstddef>
 
 #include "z3wire/bitvec.h"
+#include "z3wire/bool.h"
 
 namespace z3w {
 
@@ -15,11 +16,20 @@ constexpr size_t field_width() {
   return T::kWidth;
 }
 
+// Bool has width 1.
+template <>
+constexpr size_t field_width<Bool>() {
+  return 1;
+}
+
 // Convert a field to Ubv for concatenation. Returns by value.
 template <size_t W, bool S>
 Ubv<W> to_ubv_field(const BitVec<W, S>& field) {
   return cast<Ubv<W>>(field);
 }
+
+// Bool -> Ubv<1> conversion.
+inline Ubv<1> to_ubv_field(const Bool& field) { return to_ubv1(field); }
 
 // Base case: single field.
 template <typename Field>

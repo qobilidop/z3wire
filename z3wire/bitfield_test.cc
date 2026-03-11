@@ -65,5 +65,21 @@ TEST_F(BitFieldTest, ThreeUbvFieldsBidirectional) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
+TEST_F(BitFieldTest, BoolField) {
+  Ubv<4> buf(ctx_, "buf");
+  Bool flag(ctx_, "flag");
+  Ubv<3> data(ctx_, "data");
+
+  z3::solver s(ctx_);
+  s.add(bitfield_eq(buf, flag, data).raw());
+
+  // flag=true (bit 0 = 1), data=0b101 (bits 3..1)
+  // buf = 0b101_1 = 0xB
+  s.add(flag.raw() == ctx_.bool_val(true));
+  s.add(data.raw() == ctx_.bv_val(0b101, 3));
+  s.add(buf.raw() != ctx_.bv_val(0xB, 4));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
 }  // namespace
 }  // namespace z3w
