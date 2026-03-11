@@ -88,6 +88,14 @@ concat(a, b, c, ...)           // -> Ubv<W1+W2+W3+...> (variadic)
 
 See [Operations](operations.md#bit-manipulation).
 
+## Bit field
+
+```cpp
+bitfield_eq(buf, f1, f2, ...)  // -> Bool (LSB-first field equality constraint)
+```
+
+See [Operations](operations.md#bit-field).
+
 ## Casting
 
 | Tier     | Expression             | Behavior                          |
