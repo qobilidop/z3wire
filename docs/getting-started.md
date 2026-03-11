@@ -7,8 +7,8 @@ Z3Wire requires:
 - A C++20-compatible compiler (clang is the only supported compiler; GCC may work but is untested)
 - [Z3](https://github.com/Z3Prover/z3)
 - Either [Bazel](https://bazel.build/) (via
-  [Bazelisk](https://github.com/bazelbuild/bazelisk)) or
-  [CMake](https://cmake.org/) 3.16+
+    [Bazelisk](https://github.com/bazelbuild/bazelisk)) or
+    [CMake](https://cmake.org/) 3.16+
 
 ## Using the devcontainer
 
@@ -25,8 +25,9 @@ cd z3wire
 with a persistent Bazel cache.
 
 !!! note
-The first build takes several minutes (compiling Z3 from source). Subsequent
-builds use the cached result and complete in seconds.
+
+    The first build takes several minutes (compiling Z3 from source). Subsequent
+    builds use the cached result and complete in seconds.
 
 ## Adding Z3Wire to your project
 

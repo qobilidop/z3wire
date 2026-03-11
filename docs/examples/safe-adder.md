@@ -43,11 +43,11 @@ int main() {
 ## What this demonstrates
 
 - **Bit-growth arithmetic:** `a + b` produces a 9-bit result, so no information
-  is lost.
+    is lost.
 - **`extract`:** Pulling out the carry bit.
 - **`checked_cast`:** Getting a symbolic overflow flag.
 - **Verification pattern:** Assert a property and check for `unsat` to prove it
-  holds for all possible inputs.
+    holds for all possible inputs.
 
 ## Running
 

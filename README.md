@@ -15,20 +15,20 @@ Type-safe Z3 bit-vectors for hardware verification. C++20 and above.
 Using Z3 bit-vectors directly for hardware verification is error-prone:
 
 - **Width mismatches are silent.** Adding a 32-bit vector to an 8-bit vector
-  compiles fine but crashes at runtime with `Z3_SORT_ERROR`.
+    compiles fine but crashes at runtime with `Z3_SORT_ERROR`.
 - **Signedness is unchecked.** Comparing bit-vectors requires choosing the right
-  function (`z3::ult` vs `z3::slt`), but nothing prevents calling the wrong one.
+    function (`z3::ult` vs `z3::slt`), but nothing prevents calling the wrong one.
 - **Overflow requires vigilance.** Arithmetic silently wraps by default. Z3
-  provides overflow predicates (`bvadd_no_overflow`, etc.), but they are opt-in
-  and easy to forget — a missed check means a proof may pass because the formula
-  lost information, not because the design is correct.
+    provides overflow predicates (`bvadd_no_overflow`, etc.), but they are opt-in
+    and easy to forget — a missed check means a proof may pass because the formula
+    lost information, not because the design is correct.
 
 Z3Wire solves these by bringing hardware semantics into the type system:
 
 - **Compile-time type safety** — width and signedness mismatches become compile-time
-  errors, not runtime surprises.
+    errors, not runtime surprises.
 - **Bit-growth arithmetic** — results widen automatically, making every
-  truncation an explicit, reviewable decision.
+    truncation an explicit, reviewable decision.
 
 ## What's in the name?
 
@@ -40,9 +40,9 @@ the complete set of combinational logic primitives that operate on these wires.
 ## Features
 
 - **Three-tier casting** — `cast` (raw hardware), `safe_cast` (compile-time
-  lossless), `checked_cast` (symbolic verification).
+    lossless), `checked_cast` (symbolic verification).
 - **Three-tier shifting** — `<<`/`>>` (hardware), `checked_shl`/`checked_shr`
-  (detect lost bits), `lossless_shl` (auto-widen result).
+    (detect lost bits), `lossless_shl` (auto-widen result).
 - **Zero overhead** — each wrapper holds only a `z3::expr`.
 
 ## Quick example

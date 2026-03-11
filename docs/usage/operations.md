@@ -23,11 +23,11 @@ Bitwise operators require operands of the **exact same width and signedness**.
 Mismatches are compile errors.
 
 | Operator | Description |
-|:---------|:------------|
-| `a & b` | Bitwise AND |
-| `a \| b` | Bitwise OR |
-| `a ^ b` | Bitwise XOR |
-| `~a` | Bitwise NOT |
+| :------- | :---------- |
+| `a & b`  | Bitwise AND |
+| `a \| b` | Bitwise OR  |
+| `a ^ b`  | Bitwise XOR |
+| `~a`     | Bitwise NOT |
 
 ```cpp
 z3w::Ubv<8> a(ctx, "a");
@@ -70,14 +70,13 @@ auto diff = a - b;  // z3w::Sbv<9>
 ```
 
 !!! tip
-To model hardware-style fixed-width arithmetic, use `cast` to explicitly
-truncate the result:
 
-````
-```cpp
-auto reg = z3w::cast<z3w::Ubv<8>>(a + b);  // Truncate to 8 bits
-```
-````
+    To model hardware-style fixed-width arithmetic, use `cast` to explicitly
+    truncate the result:
+
+    ```cpp
+    auto reg = z3w::cast<z3w::Ubv<8>>(a + b);  // Truncate to 8 bits
+    ```
 
 ## Comparison
 
@@ -103,12 +102,12 @@ Allows different widths and signedness. Automatically dispatches to unsigned or
 signed comparison based on the common type (signed if either operand is signed).
 Returns `z3w::Bool`.
 
-| Operator | Unsigned | Signed |
-|:---------|:---------|:-------|
-| `a < b` | `bvult` | `bvslt` |
-| `a <= b` | `bvule` | `bvsle` |
-| `a > b` | `bvugt` | `bvsgt` |
-| `a >= b` | `bvuge` | `bvsge` |
+| Operator | Unsigned | Signed  |
+| :------- | :------- | :------ |
+| `a < b`  | `bvult`  | `bvslt` |
+| `a <= b` | `bvule`  | `bvsle` |
+| `a > b`  | `bvugt`  | `bvsgt` |
+| `a >= b` | `bvuge`  | `bvsge` |
 
 ```cpp
 z3w::Ubv<8> a(ctx, "a");
@@ -135,7 +134,7 @@ Operands must have the same width and signedness.
 
 - **Left shift (`<<`):** Logical shift for both `Ubv` and `Sbv`.
 - **Right shift (`>>`):** Logical shift (`lshr`) for `Ubv`, arithmetic shift
-  (`ashr`) for `Sbv` (preserves the sign bit).
+    (`ashr`) for `Sbv` (preserves the sign bit).
 
 ```cpp
 z3w::Ubv<8> a(ctx, "a");
@@ -182,11 +181,11 @@ auto r = z3w::lossless_shl(a, n);  // Ubv<15> (8 + 2^3 - 1)
 
 ### Choosing the right shift tier
 
-| Situation | Use |
-|:----------|:----|
-| Modeling hardware shift registers (intentional truncation) | `<<`, `>>` |
-| Need to prove no bits are lost symbolically | `checked_shl`, `checked_shr` |
-| Want the compiler to guarantee no loss | `lossless_shl` |
+| Situation                                                  | Use                          |
+| :--------------------------------------------------------- | :--------------------------- |
+| Modeling hardware shift registers (intentional truncation) | `<<`, `>>`                   |
+| Need to prove no bits are lost symbolically                | `checked_shl`, `checked_shr` |
+| Want the compiler to guarantee no loss                     | `lossless_shl`               |
 
 ## Bit manipulation
 
@@ -204,8 +203,9 @@ auto bit5 = z3w::extract<5, 5>(instruction);       // Ubv<1>
 ```
 
 !!! note
-The result is always `Ubv` (unsigned). Extracted bits have no inherent
-signedness.
+
+    The result is always `Ubv` (unsigned). Extracted bits have no inherent
+    signedness.
 
 **Symbolic-offset extract** — fixed number of bits starting at a symbolic
 position:
@@ -239,17 +239,16 @@ auto packed = z3w::concat(a, b, c);  // Ubv<16>
 ```
 
 !!! tip
-`concat` and `extract` are complementary. A common hardware pattern is
-unpacking a word into fields, modifying a field, and repacking:
 
-````
-```cpp
-z3w::Ubv<16> word(ctx, "word");
-auto hi = z3w::extract<15, 8>(word);  // Ubv<8>
-auto lo = z3w::extract<7, 0>(word);   // Ubv<8>
-auto repacked = z3w::concat(hi, lo);  // Ubv<16>
-```
-````
+    `concat` and `extract` are complementary. A common hardware pattern is
+    unpacking a word into fields, modifying a field, and repacking:
+
+    ```cpp
+    z3w::Ubv<16> word(ctx, "word");
+    auto hi = z3w::extract<15, 8>(word);  // Ubv<8>
+    auto lo = z3w::extract<7, 0>(word);   // Ubv<8>
+    auto repacked = z3w::concat(hi, lo);  // Ubv<16>
+    ```
 
 ## Mux
 

@@ -60,9 +60,9 @@ int main() {
 - **`extract`:** Slicing a word into fields with compile-time bounds checking.
 - **`concat`:** Variadic concatenation to repack fields.
 - **`lossless_shl`:** Shifting without losing bits (result type widens
-  automatically).
+    automatically).
 - **Round-trip verification:** Proving that unpack/repack preserves all
-  information.
+    information.
 
 ## Running
 

@@ -7,12 +7,12 @@ distinction between Booleans and bit-vectors, no width tracking, and no
 signedness information. This means:
 
 - Adding a 32-bit vector to an 8-bit vector compiles silently but crashes at
-  runtime with `Z3_SORT_ERROR`.
+    runtime with `Z3_SORT_ERROR`.
 - Comparing bit-vectors requires choosing the right function (`z3::ult` vs
-  `z3::slt` for unsigned vs signed less-than), but nothing prevents calling
-  the wrong one.
+    `z3::slt` for unsigned vs signed less-than), but nothing prevents calling
+    the wrong one.
 - A Bool passed where a bit-vector is expected is only caught when Z3 evaluates
-  the expression.
+    the expression.
 
 Furthermore, Z3's arithmetic operates at fixed widths — adding two 8-bit vectors
 produces an 8-bit result, silently discarding the carry bit. In hardware
@@ -27,11 +27,11 @@ and bit-growth arithmetic makes overflow explicit.
 ## Core goals
 
 1. **Compile-time type safety:** Move Z3 "Sort Errors" (bit-width/type
-   mismatches) from runtime exceptions to compile-time errors using C++20
-   template metaprogramming.
+    mismatches) from runtime exceptions to compile-time errors using C++20
+    template metaprogramming.
 1. **Bit-growth arithmetic:** Automatically widen arithmetic result types to
-   prevent silent overflow, making every truncation an explicit, reviewable
-   decision.
+    prevent silent overflow, making every truncation an explicit, reviewable
+    decision.
 
 ## Scope
 
@@ -54,29 +54,29 @@ By targeting only the QF_BV logic (Quantifier-Free Bit-Vectors), Z3Wire can:
 **Out of scope for this project:**
 
 - Non-hardware SMT theories (unbounded integers, reals, arrays, floating-point,
-  uninterpreted functions).
+    uninterpreted functions).
 - Wrapping `z3::context` or `z3::solver`.
 
 ## Design philosophy
 
 - **Zero overhead:** Each wrapper stores only a `z3::expr`. No virtual
-  functions, no extra data members.
+    functions, no extra data members.
 - **Explicit over implicit:** No implicit conversions between signed/unsigned or
-  different widths. Users must use the casting API to express intent.
+    different widths. Users must use the casting API to express intent.
 - **Header-based template library.** The core types and operators are templates
-  and must live in headers. Any non-template utilities should go in `.cc` files
-  per Google C++ style guide conventions.
+    and must live in headers. Any non-template utilities should go in `.cc` files
+    per Google C++ style guide conventions.
 
 ## Type system
 
 The library centers around a zero-overhead wrapper class that holds a single
 `z3::expr` by value, adding no runtime overhead.
 
-| Type Alias | Mapping | Description |
-| :------------ | :-------------------- | :------------------------------- |
-| `z3w::Ubv<W>` | `BitVec<W, false>` | Unsigned fixed-width bit-vector. |
-| `z3w::Sbv<W>` | `BitVec<W, true>` | Signed fixed-width bit-vector. |
-| `z3w::Bool` | wrapper over `z3::expr` (Bool sort) | Symbolic boolean. |
+| Type Alias    | Mapping                             | Description                      |
+| :------------ | :---------------------------------- | :------------------------------- |
+| `z3w::Ubv<W>` | `BitVec<W, false>`                  | Unsigned fixed-width bit-vector. |
+| `z3w::Sbv<W>` | `BitVec<W, true>`                   | Signed fixed-width bit-vector.   |
+| `z3w::Bool`   | wrapper over `z3::expr` (Bool sort) | Symbolic boolean.                |
 
 The core template is:
 
@@ -133,20 +133,20 @@ Under the hood, uses `if constexpr` to select:
 
 - Target width < source width: `z3::extract` (truncation).
 - Target width > source width: `z3::zext` or `z3::sext` based on source
-  signedness.
+    signedness.
 - Target width == source width: zero-overhead type reinterpretation (bitcast).
 
 #### `z3w::safe_cast<T>(val)` —The compiler guard
 
 Only compiles if the cast is mathematically guaranteed to be lossless.
 
-| Source | Target | Allowed? |
-| :---------- | :---------- | :--------------------------------------------- |
-| `Ubv<W1>` | `Ubv<W2>` | Yes, if `W2 >= W1`. |
-| `Sbv<W1>` | `Sbv<W2>` | Yes, if `W2 >= W1`. |
-| `Ubv<W1>` | `Sbv<W2>` | Yes, if `W2 > W1` (needs 1 extra bit for sign).|
-| `Sbv<W1>` | `Ubv<W2>` | **Always forbidden.** Negative values corrupt. |
-| Any | Smaller | **Always forbidden.** Truncation is not safe. |
+| Source    | Target    | Allowed?                                        |
+| :-------- | :-------- | :---------------------------------------------- |
+| `Ubv<W1>` | `Ubv<W2>` | Yes, if `W2 >= W1`.                             |
+| `Sbv<W1>` | `Sbv<W2>` | Yes, if `W2 >= W1`.                             |
+| `Ubv<W1>` | `Sbv<W2>` | Yes, if `W2 > W1` (needs 1 extra bit for sign). |
+| `Sbv<W1>` | `Ubv<W2>` | **Always forbidden.** Negative values corrupt.  |
+| Any       | Smaller   | **Always forbidden.** Truncation is not safe.   |
 
 #### `z3w::checked_cast<T>(val)` —The verification cast
 
@@ -166,9 +166,9 @@ needs to convert between them (e.g., a condition flag in a register vs. a
 logical condition). Z3Wire provides explicit conversion functions:
 
 - **`z3w::to_bool(Ubv<1>)`** — converts a 1-bit vector to Bool (true if bit is
-  1).
+    1).
 - **`z3w::to_ubv1(Bool)`** — converts a Bool to `Ubv<1>` (1 if true, 0 if
-  false).
+    false).
 
 ```cpp
 z3w::Ubv<32> status(ctx, "status");
@@ -228,16 +228,16 @@ Arithmetic and comparison operations allow mixed widths and signedness,
 automatically extending operands to a common type.
 
 - **Addition / Subtraction (`+`, `-`):** Result width is `max(W1, W2) + 1`.
-  Operands are automatically sign-extended or zero-extended to match before the
-  operation. (Bit growth.)
+    Operands are automatically sign-extended or zero-extended to match before the
+    operation. (Bit growth.)
 - **Bitwise logic (`&`, `|`, `^`):** Widths and signedness must match exactly.
-  (Strict.)
+    (Strict.)
 - **Equality (`==`, `!=`):** Allows different widths and signedness. Operands
-  are extended to a common type before comparing. (Relaxed.)
+    are extended to a common type before comparing. (Relaxed.)
 - **Ordered comparison (`<`, `<=`, `>`, `>=`):** Allows different widths and
-  signedness. Operands are extended to a common type. Signedness-aware:
-  dispatches to unsigned or signed comparison based on the common type (signed
-  if either operand is signed). Returns `z3w::Bool`. (Relaxed.)
+    signedness. Operands are extended to a common type. Signedness-aware:
+    dispatches to unsigned or signed comparison based on the common type (signed
+    if either operand is signed). Returns `z3w::Bool`. (Relaxed.)
 
 Example:
 
@@ -278,7 +278,7 @@ Widths and signedness must match exactly (strict, like bitwise ops).
 
 - **Left shift (`<<`):** Logical shift for both `Ubv` and `Sbv`.
 - **Right shift (`>>`):** Logical shift (`lshr`) for `Ubv`, arithmetic shift
-  (`ashr`) for `Sbv` (preserves the sign bit).
+    (`ashr`) for `Sbv` (preserves the sign bit).
 
 ```cpp
 z3w::Ubv<8> a(ctx, "a");
@@ -303,7 +303,7 @@ compile-time constant and symbolic shift amounts.
 
 - **Constant shift `N`:** result width = `W + N`.
 - **Symbolic shift `Ubv<K>`:** result width = `W + 2^K - 1` (assumes the
-  maximum representable shift amount).
+    maximum representable shift amount).
 
 ```cpp
 z3w::Ubv<8> a(ctx, "a");
@@ -344,9 +344,9 @@ bit-growth semantics. Concrete types (`UInt<W>`, `SInt<W>`) fill this gap,
 serving two purposes:
 
 1. **Mixed expressions.** Users can write `symbolic_x + concrete_y` without
-   manually creating Z3 constants.
+    manually creating Z3 constants.
 1. **Standalone type-safe integers.** `UInt<5>` or `SInt<12>` enforce
-   bit-width at the type level, even without Z3.
+    bit-width at the type level, even without Z3.
 
 `Bool` does not need a concrete counterpart — native C++ `bool` is sufficient.
 
@@ -379,6 +379,6 @@ All operations mirror the symbolic API. The key difference is that flags
 ## Boundary layer
 
 - **`val.raw()`**: Returns the underlying `z3::expr` for interop with raw Z3
-  APIs (e.g., passing to `z3::solver`).
+    APIs (e.g., passing to `z3::solver`).
 - Users interact with `z3::context` and `z3::solver` directly; Z3Wire does not
-  wrap these.
+    wrap these.

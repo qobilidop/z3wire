@@ -40,8 +40,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Install MkDocs with Material theme.
 RUN pip install --break-system-packages mkdocs-material mkdocs-include-markdown-plugin
 
-# Install mdformat for Markdown formatting.
-RUN pip install --break-system-packages mdformat
+# Install mdformat for Markdown formatting (mdformat-mkdocs adds mkdocs
+# admonition support so mdformat preserves !!! blocks correctly).
+RUN pip install --break-system-packages mdformat-mkdocs
 
 # Non-root user (required by rules_python for bazel coverage).
 RUN useradd -m -s /bin/bash dev

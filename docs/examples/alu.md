@@ -74,7 +74,7 @@ int main() {
 - **`checked_cast`:** Detecting overflow symbolically.
 - **`push`/`pop`:** Using Z3's solver stack to check multiple properties.
 - **Verification vs. finding examples:** `unsat` proves a property;
-  `sat` finds a concrete witness.
+    `sat` finds a concrete witness.
 
 ## Running
 

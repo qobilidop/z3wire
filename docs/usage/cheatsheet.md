@@ -5,11 +5,11 @@ namespace. Links point to detailed documentation.
 
 ## Types
 
-| Symbolic | Concrete | Description |
-|:---------|:---------|:------------|
-| `Bool` | `bool` | Boolean |
+| Symbolic | Concrete  | Description                    |
+| :------- | :-------- | :----------------------------- |
+| `Bool`   | `bool`    | Boolean                        |
 | `Ubv<W>` | `UInt<W>` | Unsigned bit-vector of width W |
-| `Sbv<W>` | `SInt<W>` | Signed bit-vector of width W |
+| `Sbv<W>` | `SInt<W>` | Signed bit-vector of width W   |
 
 Concrete values auto-promote to symbolic in mixed expressions.
 See [Types](types.md).
@@ -30,34 +30,34 @@ auto [val, truncated] = UInt<8>::checked(999);  // Runtime checked
 
 ## Logic
 
-| Op | Symbolic | Concrete | Width rule |
-|:---|:---------|:---------|:-----------|
-| AND | `a && b` | `a && b` | Bool only |
-| OR | `a \|\| b` | `a \|\| b` | Bool only |
-| NOT | `!a` | `!a` | Bool only |
-| AND | `a & b` | `a & b` | Strict match |
-| OR | `a \| b` | `a \| b` | Strict match |
-| XOR | `a ^ b` | `a ^ b` | Strict match |
-| NOT | `~a` | `~a` | Strict match |
+| Op  | Symbolic   | Concrete   | Width rule   |
+| :-- | :--------- | :--------- | :----------- |
+| AND | `a && b`   | `a && b`   | Bool only    |
+| OR  | `a \|\| b` | `a \|\| b` | Bool only    |
+| NOT | `!a`       | `!a`       | Bool only    |
+| AND | `a & b`    | `a & b`    | Strict match |
+| OR  | `a \| b`   | `a \| b`   | Strict match |
+| XOR | `a ^ b`    | `a ^ b`    | Strict match |
+| NOT | `~a`       | `~a`       | Strict match |
 
 See [Operations](operations.md).
 
 ## Arithmetic
 
-| Op | Expression | Result width | Result signedness |
-|:---|:-----------|:-------------|:------------------|
-| Add | `a + b` | `max(W1, W2) + 1` | Signed if either is signed |
-| Sub | `a - b` | `max(W1, W2) + 1` | Always signed |
+| Op  | Expression | Result width      | Result signedness          |
+| :-- | :--------- | :---------------- | :------------------------- |
+| Add | `a + b`    | `max(W1, W2) + 1` | Signed if either is signed |
+| Sub | `a - b`    | `max(W1, W2) + 1` | Always signed              |
 
 Operands are auto-extended. Mixed widths and signedness allowed.
 See [Operations](operations.md).
 
 ## Comparison
 
-| Op | Expression | Width rule |
-|:---|:-----------|:-----------|
-| `==` `!=` | `a == b` | Relaxed (any width/signedness) |
-| `<` `<=` `>` `>=` | `a < b` | Relaxed (any width/signedness) |
+| Op                | Expression | Width rule                     |
+| :---------------- | :--------- | :----------------------------- |
+| `==` `!=`         | `a == b`   | Relaxed (any width/signedness) |
+| `<` `<=` `>` `>=` | `a < b`    | Relaxed (any width/signedness) |
 
 Returns `Bool` (symbolic) or `bool` (concrete). Signedness-aware: uses signed
 comparison if either operand is signed.
@@ -65,13 +65,13 @@ See [Operations](operations.md).
 
 ## Shifting
 
-| Tier | Expression | Result width |
-|:-----|:-----------|:-------------|
-| Hardware | `a << b`, `a >> b` | Same (bits may be lost) |
-| Checked | `checked_shl(a, b)` | Same + loss flag |
-| Checked | `checked_shr(a, b)` | Same + loss flag |
-| Lossless | `lossless_shl<N>(a)` | `W + N` |
-| Lossless | `lossless_shl(a, n)` | `W + 2^K - 1` |
+| Tier     | Expression           | Result width            |
+| :------- | :------------------- | :---------------------- |
+| Hardware | `a << b`, `a >> b`   | Same (bits may be lost) |
+| Checked  | `checked_shl(a, b)`  | Same + loss flag        |
+| Checked  | `checked_shr(a, b)`  | Same + loss flag        |
+| Lossless | `lossless_shl<N>(a)` | `W + N`                 |
+| Lossless | `lossless_shl(a, n)` | `W + 2^K - 1`           |
 
 Hardware shifts require strict width/signedness match. Right shift is logical
 for unsigned, arithmetic for signed.
@@ -90,11 +90,11 @@ See [Operations](operations.md#bit-manipulation).
 
 ## Casting
 
-| Tier | Expression | Behavior |
-|:-----|:-----------|:---------|
-| Hardware | `cast<T>(val)` | Raw truncation/extension/bitcast |
-| Safe | `safe_cast<T>(val)` | Compile error if lossy |
-| Checked | `checked_cast<T>(val)` | Returns `{result, overflow_flag}` |
+| Tier     | Expression             | Behavior                          |
+| :------- | :--------------------- | :-------------------------------- |
+| Hardware | `cast<T>(val)`         | Raw truncation/extension/bitcast  |
+| Safe     | `safe_cast<T>(val)`    | Compile error if lossy            |
+| Checked  | `checked_cast<T>(val)` | Returns `{result, overflow_flag}` |
 
 See [Types](types.md#casting).
 
