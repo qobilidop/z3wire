@@ -81,5 +81,21 @@ TEST_F(BitFieldTest, BoolField) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
+TEST_F(BitFieldTest, SbvField) {
+  Ubv<8> buf(ctx_, "buf");
+  Ubv<3> lo(ctx_, "lo");
+  Sbv<5> hi(ctx_, "hi");
+
+  z3::solver s(ctx_);
+  s.add(bitfield_eq(buf, lo, hi).raw());
+
+  // lo=0b010 (bits 2..0), hi=-1 as Sbv<5> = 0b11111 (bits 7..3)
+  // buf = 0b11111_010 = 0xFA
+  s.add(lo.raw() == ctx_.bv_val(0b010, 3));
+  s.add(hi.raw() == ctx_.bv_val(0b11111, 5));
+  s.add(buf.raw() != ctx_.bv_val(0xFA, 8));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
 }  // namespace
 }  // namespace z3w
