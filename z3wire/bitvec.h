@@ -107,7 +107,8 @@ namespace internal {
 
 template <size_t TargetWidth, size_t SrcWidth, bool SrcSigned>
 z3::expr extend(const BitVec<SrcWidth, SrcSigned>& val) {
-  static_assert(TargetWidth >= SrcWidth);
+  static_assert(TargetWidth >= SrcWidth,
+                "extend: target width must be >= source width.");
   if constexpr (TargetWidth == SrcWidth) {
     return val.raw();
   } else if constexpr (SrcSigned) {
