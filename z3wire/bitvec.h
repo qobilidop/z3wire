@@ -2,6 +2,7 @@
 #define Z3WIRE_BITVEC_H_
 
 #include <algorithm>
+#include <concepts>
 #include <cstddef>
 #include <cstdint>
 #include <string>
@@ -98,6 +99,39 @@ template <size_t W, bool S>
 BitVec<W, S> to_symbolic(const Int<W, S>& val, z3::context& ctx) {
   return BitVec<W, S>(ctx.bv_val(static_cast<uint64_t>(val.bits()), W));
 }
+
+// --- Mixed operand support ---
+// Promotes concrete operands to symbolic, delegating to the pure-symbolic
+// operators. Requires exactly one of the two operands to be concrete.
+
+namespace internal {
+
+// Get the z3::context from whichever operand is symbolic.
+template <typename L, typename R>
+z3::context& get_ctx(const L& lhs, const R& rhs) {
+  if constexpr (is_symbolic_v<L>) {
+    return lhs.raw().ctx();
+  } else {
+    return rhs.raw().ctx();
+  }
+}
+
+// Promote a value to symbolic if it isn't already.
+template <typename T>
+decltype(auto) promote(const T& val, z3::context& ctx) {
+  if constexpr (is_symbolic_v<T>) {
+    return val;
+  } else {
+    return to_symbolic(val, ctx);
+  }
+}
+
+}  // namespace internal
+
+// True when exactly one operand is concrete and the other is symbolic.
+template <typename L, typename R>
+concept mixed_operands = (is_symbolic_v<L> && is_concrete_v<R>) ||
+                         (is_concrete_v<L> && is_symbolic_v<R>);
 
 // --- Bit-growth arithmetic ---
 // Result width = max(W1, W2) + 1. Operands are extended to the result width
@@ -208,150 +242,98 @@ Bool operator>=(const BitVec<W1, S1>& lhs, const BitVec<W2, S2>& rhs) {
   return !(lhs < rhs);
 }
 
-// --- Mixed concrete + symbolic arithmetic ---
+// --- Mixed concrete + symbolic operators ---
+// A single template per operator handles both sym+conc and conc+sym.
 
-// Addition: symbolic + concrete.
-template <size_t W1, bool S1, size_t W2, bool S2>
-auto operator+(const BitVec<W1, S1>& lhs, const Int<W2, S2>& rhs) {
-  auto& ctx = lhs.raw().ctx();
-  return lhs + to_symbolic(rhs, ctx);
+template <typename L, typename R>
+  requires mixed_operands<L, R>
+auto operator+(const L& lhs, const R& rhs) {
+  auto& ctx = internal::get_ctx(lhs, rhs);
+  return internal::promote(lhs, ctx) + internal::promote(rhs, ctx);
 }
 
-// Addition: concrete + symbolic.
-template <size_t W1, bool S1, size_t W2, bool S2>
-auto operator+(const Int<W1, S1>& lhs, const BitVec<W2, S2>& rhs) {
-  auto& ctx = rhs.raw().ctx();
-  return to_symbolic(lhs, ctx) + rhs;
+template <typename L, typename R>
+  requires mixed_operands<L, R>
+auto operator-(const L& lhs, const R& rhs) {
+  auto& ctx = internal::get_ctx(lhs, rhs);
+  return internal::promote(lhs, ctx) - internal::promote(rhs, ctx);
 }
 
-// Subtraction: symbolic - concrete.
-template <size_t W1, bool S1, size_t W2, bool S2>
-auto operator-(const BitVec<W1, S1>& lhs, const Int<W2, S2>& rhs) {
-  auto& ctx = lhs.raw().ctx();
-  return lhs - to_symbolic(rhs, ctx);
+template <typename L, typename R>
+  requires mixed_operands<L, R>
+auto operator&(const L& lhs, const R& rhs) {
+  auto& ctx = internal::get_ctx(lhs, rhs);
+  return internal::promote(lhs, ctx) & internal::promote(rhs, ctx);
 }
 
-// Subtraction: concrete - symbolic.
-template <size_t W1, bool S1, size_t W2, bool S2>
-auto operator-(const Int<W1, S1>& lhs, const BitVec<W2, S2>& rhs) {
-  auto& ctx = rhs.raw().ctx();
-  return to_symbolic(lhs, ctx) - rhs;
+template <typename L, typename R>
+  requires mixed_operands<L, R>
+auto operator|(const L& lhs, const R& rhs) {
+  auto& ctx = internal::get_ctx(lhs, rhs);
+  return internal::promote(lhs, ctx) | internal::promote(rhs, ctx);
 }
 
-// --- Mixed bitwise operators ---
-
-template <size_t W, bool S>
-BitVec<W, S> operator&(const BitVec<W, S>& lhs, const Int<W, S>& rhs) {
-  return lhs & to_symbolic(rhs, lhs.raw().ctx());
+template <typename L, typename R>
+  requires mixed_operands<L, R>
+auto operator^(const L& lhs, const R& rhs) {
+  auto& ctx = internal::get_ctx(lhs, rhs);
+  return internal::promote(lhs, ctx) ^ internal::promote(rhs, ctx);
 }
 
-template <size_t W, bool S>
-BitVec<W, S> operator&(const Int<W, S>& lhs, const BitVec<W, S>& rhs) {
-  return to_symbolic(lhs, rhs.raw().ctx()) & rhs;
+template <typename L, typename R>
+  requires mixed_operands<L, R>
+auto operator<<(const L& lhs, const R& rhs) {
+  auto& ctx = internal::get_ctx(lhs, rhs);
+  return internal::promote(lhs, ctx) << internal::promote(rhs, ctx);
 }
 
-template <size_t W, bool S>
-BitVec<W, S> operator|(const BitVec<W, S>& lhs, const Int<W, S>& rhs) {
-  return lhs | to_symbolic(rhs, lhs.raw().ctx());
+template <typename L, typename R>
+  requires mixed_operands<L, R>
+auto operator>>(const L& lhs, const R& rhs) {
+  auto& ctx = internal::get_ctx(lhs, rhs);
+  return internal::promote(lhs, ctx) >> internal::promote(rhs, ctx);
 }
 
-template <size_t W, bool S>
-BitVec<W, S> operator|(const Int<W, S>& lhs, const BitVec<W, S>& rhs) {
-  return to_symbolic(lhs, rhs.raw().ctx()) | rhs;
+template <typename L, typename R>
+  requires mixed_operands<L, R>
+auto operator==(const L& lhs, const R& rhs) {
+  auto& ctx = internal::get_ctx(lhs, rhs);
+  return internal::promote(lhs, ctx) == internal::promote(rhs, ctx);
 }
 
-template <size_t W, bool S>
-BitVec<W, S> operator^(const BitVec<W, S>& lhs, const Int<W, S>& rhs) {
-  return lhs ^ to_symbolic(rhs, lhs.raw().ctx());
+template <typename L, typename R>
+  requires mixed_operands<L, R>
+auto operator!=(const L& lhs, const R& rhs) {
+  auto& ctx = internal::get_ctx(lhs, rhs);
+  return internal::promote(lhs, ctx) != internal::promote(rhs, ctx);
 }
 
-template <size_t W, bool S>
-BitVec<W, S> operator^(const Int<W, S>& lhs, const BitVec<W, S>& rhs) {
-  return to_symbolic(lhs, rhs.raw().ctx()) ^ rhs;
+template <typename L, typename R>
+  requires mixed_operands<L, R>
+auto operator<(const L& lhs, const R& rhs) {
+  auto& ctx = internal::get_ctx(lhs, rhs);
+  return internal::promote(lhs, ctx) < internal::promote(rhs, ctx);
 }
 
-// --- Mixed shift operators ---
-
-template <size_t W, bool S>
-BitVec<W, S> operator<<(const BitVec<W, S>& lhs, const Int<W, S>& rhs) {
-  return lhs << to_symbolic(rhs, lhs.raw().ctx());
+template <typename L, typename R>
+  requires mixed_operands<L, R>
+auto operator<=(const L& lhs, const R& rhs) {
+  auto& ctx = internal::get_ctx(lhs, rhs);
+  return internal::promote(lhs, ctx) <= internal::promote(rhs, ctx);
 }
 
-template <size_t W, bool S>
-BitVec<W, S> operator<<(const Int<W, S>& lhs, const BitVec<W, S>& rhs) {
-  return to_symbolic(lhs, rhs.raw().ctx()) << rhs;
+template <typename L, typename R>
+  requires mixed_operands<L, R>
+auto operator>(const L& lhs, const R& rhs) {
+  auto& ctx = internal::get_ctx(lhs, rhs);
+  return internal::promote(lhs, ctx) > internal::promote(rhs, ctx);
 }
 
-template <size_t W, bool S>
-BitVec<W, S> operator>>(const BitVec<W, S>& lhs, const Int<W, S>& rhs) {
-  return lhs >> to_symbolic(rhs, lhs.raw().ctx());
-}
-
-template <size_t W, bool S>
-BitVec<W, S> operator>>(const Int<W, S>& lhs, const BitVec<W, S>& rhs) {
-  return to_symbolic(lhs, rhs.raw().ctx()) >> rhs;
-}
-
-// --- Mixed comparison operators ---
-
-template <size_t W1, bool S1, size_t W2, bool S2>
-Bool operator==(const BitVec<W1, S1>& lhs, const Int<W2, S2>& rhs) {
-  return lhs == to_symbolic(rhs, lhs.raw().ctx());
-}
-
-template <size_t W1, bool S1, size_t W2, bool S2>
-Bool operator==(const Int<W1, S1>& lhs, const BitVec<W2, S2>& rhs) {
-  return to_symbolic(lhs, rhs.raw().ctx()) == rhs;
-}
-
-template <size_t W1, bool S1, size_t W2, bool S2>
-Bool operator!=(const BitVec<W1, S1>& lhs, const Int<W2, S2>& rhs) {
-  return lhs != to_symbolic(rhs, lhs.raw().ctx());
-}
-
-template <size_t W1, bool S1, size_t W2, bool S2>
-Bool operator!=(const Int<W1, S1>& lhs, const BitVec<W2, S2>& rhs) {
-  return to_symbolic(lhs, rhs.raw().ctx()) != rhs;
-}
-
-template <size_t W1, bool S1, size_t W2, bool S2>
-Bool operator<(const BitVec<W1, S1>& lhs, const Int<W2, S2>& rhs) {
-  return lhs < to_symbolic(rhs, lhs.raw().ctx());
-}
-
-template <size_t W1, bool S1, size_t W2, bool S2>
-Bool operator<(const Int<W1, S1>& lhs, const BitVec<W2, S2>& rhs) {
-  return to_symbolic(lhs, rhs.raw().ctx()) < rhs;
-}
-
-template <size_t W1, bool S1, size_t W2, bool S2>
-Bool operator<=(const BitVec<W1, S1>& lhs, const Int<W2, S2>& rhs) {
-  return lhs <= to_symbolic(rhs, lhs.raw().ctx());
-}
-
-template <size_t W1, bool S1, size_t W2, bool S2>
-Bool operator<=(const Int<W1, S1>& lhs, const BitVec<W2, S2>& rhs) {
-  return to_symbolic(lhs, rhs.raw().ctx()) <= rhs;
-}
-
-template <size_t W1, bool S1, size_t W2, bool S2>
-Bool operator>(const BitVec<W1, S1>& lhs, const Int<W2, S2>& rhs) {
-  return lhs > to_symbolic(rhs, lhs.raw().ctx());
-}
-
-template <size_t W1, bool S1, size_t W2, bool S2>
-Bool operator>(const Int<W1, S1>& lhs, const BitVec<W2, S2>& rhs) {
-  return to_symbolic(lhs, rhs.raw().ctx()) > rhs;
-}
-
-template <size_t W1, bool S1, size_t W2, bool S2>
-Bool operator>=(const BitVec<W1, S1>& lhs, const Int<W2, S2>& rhs) {
-  return lhs >= to_symbolic(rhs, lhs.raw().ctx());
-}
-
-template <size_t W1, bool S1, size_t W2, bool S2>
-Bool operator>=(const Int<W1, S1>& lhs, const BitVec<W2, S2>& rhs) {
-  return to_symbolic(lhs, rhs.raw().ctx()) >= rhs;
+template <typename L, typename R>
+  requires mixed_operands<L, R>
+auto operator>=(const L& lhs, const R& rhs) {
+  auto& ctx = internal::get_ctx(lhs, rhs);
+  return internal::promote(lhs, ctx) >= internal::promote(rhs, ctx);
 }
 
 // --- Mixed ite ---
