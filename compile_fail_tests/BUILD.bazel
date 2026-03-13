@@ -50,13 +50,6 @@ cc_compile_fail_test(
 )
 
 cc_compile_fail_test(
-    name = "int_checked_int64_on_unsigned_test",
-    src = "int_checked_int64_on_unsigned_test.cc",
-    expected_message = "no matching",
-    deps = ["//z3wire:int"],
-)
-
-cc_compile_fail_test(
     name = "bitvec_literal_above_max_test",
     src = "bitvec_literal_above_max_test.cc",
     expected_message = "Literal value does not fit in the specified bit-width",

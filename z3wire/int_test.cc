@@ -46,23 +46,6 @@ TEST(IntTest, IsConcreteV) {
   static_assert(!is_concrete_v<int>);
 }
 
-// --- Raw constructor (masking) ---
-
-TEST(IntTest, RawConstructorMasks) {
-  UInt<8> a(300);
-  EXPECT_EQ(a.bits(), 44);  // 300 & 0xFF
-}
-
-TEST(IntTest, RawConstructorNonPowerOfTwo) {
-  UInt<5> a(0xFF);
-  EXPECT_EQ(a.bits(), 0x1F);  // 0xFF & 0x1F
-}
-
-TEST(IntTest, RawConstructorSigned) {
-  SInt<8> a(300);
-  EXPECT_EQ(a.bits(), 44);  // Same underlying bits
-}
-
 // --- Literal (compile-time checked) ---
 
 TEST(IntTest, LiteralUnsigned) {
@@ -104,10 +87,38 @@ TEST(IntTest, CheckedWithTruncation) {
   EXPECT_TRUE(truncated);
 }
 
+TEST(IntTest, CheckedNegativeOnUnsigned) {
+  auto [val, truncated] = UInt<8>::checked(-1);
+  EXPECT_TRUE(truncated);
+}
+
+TEST(IntTest, SignedCheckedNoTruncation) {
+  auto [val, truncated] = SInt<8>::checked(-128);
+  EXPECT_EQ(val.bits(), 0x80);   // Bit pattern
+  EXPECT_EQ(val.value(), -128);  // Interpreted value
+  EXPECT_FALSE(truncated);
+}
+
+TEST(IntTest, SignedCheckedPositive) {
+  auto [val, truncated] = SInt<8>::checked(127);
+  EXPECT_EQ(val.value(), 127);
+  EXPECT_FALSE(truncated);
+}
+
+TEST(IntTest, SignedCheckedOverflowNegative) {
+  auto [val, truncated] = SInt<8>::checked(-200);
+  EXPECT_TRUE(truncated);
+}
+
+TEST(IntTest, SignedCheckedOverflowPositive) {
+  auto [val, truncated] = SInt<8>::checked(200);
+  EXPECT_TRUE(truncated);
+}
+
 // --- bits() vs value() ---
 
 TEST(IntTest, UnsignedBitsAndValueMatch) {
-  UInt<8> a(200);
+  auto a = UInt<8>::Literal<200>();
   EXPECT_EQ(a.bits(), 200);
   EXPECT_EQ(a.value(), 200);
   static_assert(std::is_same_v<decltype(a.bits()), uint8_t>);
@@ -115,7 +126,7 @@ TEST(IntTest, UnsignedBitsAndValueMatch) {
 }
 
 TEST(IntTest, SignedBitsVsValue) {
-  SInt<8> a(0xFF);  // -1 in two's complement
+  auto a = SInt<8>::Literal<-1>();
   EXPECT_EQ(a.bits(), 0xFF);
   EXPECT_EQ(a.value(), -1);
   static_assert(std::is_same_v<decltype(a.bits()), uint8_t>);
@@ -123,18 +134,18 @@ TEST(IntTest, SignedBitsVsValue) {
 }
 
 TEST(IntTest, SignedBitsVsValueMinMax) {
-  SInt<8> min_val(0x80);  // -128
+  auto min_val = SInt<8>::Literal<-128>();
   EXPECT_EQ(min_val.bits(), 0x80);
   EXPECT_EQ(min_val.value(), -128);
 
-  SInt<8> max_val(0x7F);  // 127
+  auto max_val = SInt<8>::Literal<127>();
   EXPECT_EQ(max_val.bits(), 0x7F);
   EXPECT_EQ(max_val.value(), 127);
 }
 
 TEST(IntTest, SignedNonPowerOfTwoBitsVsValue) {
   // SInt<5>: range -16 to 15. Value 0x1F = 31 unsigned = -1 signed.
-  SInt<5> a(0x1F);
+  auto a = SInt<5>::Literal<-1>();
   EXPECT_EQ(a.bits(), 0x1F);
   EXPECT_EQ(a.value(), -1);
 }
@@ -142,16 +153,16 @@ TEST(IntTest, SignedNonPowerOfTwoBitsVsValue) {
 // --- Equality ---
 
 TEST(IntTest, Equality) {
-  UInt<8> a(42);
-  UInt<8> b(42);
-  UInt<8> c(99);
+  auto a = UInt<8>::Literal<42>();
+  auto b = UInt<8>::Literal<42>();
+  auto c = UInt<8>::Literal<99>();
   EXPECT_TRUE(a == b);
   EXPECT_FALSE(a == c);
 }
 
 TEST(IntTest, Inequality) {
-  UInt<8> a(42);
-  UInt<8> b(99);
+  auto a = UInt<8>::Literal<42>();
+  auto b = UInt<8>::Literal<99>();
   EXPECT_TRUE(a != b);
   EXPECT_FALSE(a != a);
 }
@@ -159,55 +170,29 @@ TEST(IntTest, Inequality) {
 // --- W=64 boundary ---
 
 TEST(IntTest, Width64Construction) {
-  UInt<64> a(UINT64_MAX);
-  EXPECT_EQ(a.bits(), UINT64_MAX);
   auto [val, truncated] = UInt<64>::checked(UINT64_MAX);
+  EXPECT_EQ(val.bits(), UINT64_MAX);
   EXPECT_FALSE(truncated);
 }
 
 TEST(IntTest, Width1) {
-  UInt<1> a(3);
-  EXPECT_EQ(a.bits(), 1);  // 3 & 0x1
-}
-
-// --- Signed checked construction ---
-
-TEST(IntTest, SignedCheckedNoTruncation) {
-  auto [val, truncated] = SInt<8>::checked(int64_t{-128});
-  EXPECT_EQ(val.bits(), 0x80);   // Bit pattern
-  EXPECT_EQ(val.value(), -128);  // Interpreted value
-  EXPECT_FALSE(truncated);
-}
-
-TEST(IntTest, SignedCheckedPositive) {
-  auto [val, truncated] = SInt<8>::checked(int64_t{127});
-  EXPECT_EQ(val.value(), 127);
-  EXPECT_FALSE(truncated);
-}
-
-TEST(IntTest, SignedCheckedOverflowNegative) {
-  auto [val, truncated] = SInt<8>::checked(int64_t{-200});
-  EXPECT_TRUE(truncated);
-}
-
-TEST(IntTest, SignedCheckedOverflowPositive) {
-  auto [val, truncated] = SInt<8>::checked(int64_t{200});
+  auto [val, truncated] = UInt<1>::checked(3);
+  EXPECT_EQ(val.bits(), 1);  // 3 & 0x1
   EXPECT_TRUE(truncated);
 }
 
 // --- Cross-type equality (different widths and/or signedness) ---
 
 TEST(IntTest, CrossTypeEqualitySameSignedness) {
-  // UInt<8>(42) == UInt<16>(42) → true
-  UInt<8> a(42);
-  UInt<16> b(42);
+  auto a = UInt<8>::Literal<42>();
+  auto b = UInt<16>::Literal<42>();
   EXPECT_TRUE(a == b);
   EXPECT_FALSE(a != b);
 }
 
 TEST(IntTest, CrossTypeEqualityDifferentValues) {
-  UInt<8> a(100);
-  UInt<16> b(200);
+  auto a = UInt<8>::Literal<100>();
+  auto b = UInt<16>::Literal<200>();
   EXPECT_FALSE(a == b);
   EXPECT_TRUE(a != b);
 }
@@ -215,8 +200,8 @@ TEST(IntTest, CrossTypeEqualityDifferentValues) {
 TEST(IntTest, CrossTypeEqualityMixedSignedness) {
   // UInt<8>(42) == SInt<16>(42) → true
   // Common type: signed, width = max(8,16)+1 = 17.
-  UInt<8> a(42);
-  SInt<16> b(42);
+  auto a = UInt<8>::Literal<42>();
+  auto b = SInt<16>::Literal<42>();
   EXPECT_TRUE(a == b);
   EXPECT_FALSE(a != b);
 }

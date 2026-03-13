@@ -541,7 +541,7 @@ TEST_F(BitVecTest, IsSymbolicV) {
 // --- Concrete to symbolic promotion ---
 
 TEST_F(BitVecTest, ConcreteToSymbolic) {
-  UInt<8> concrete(42);
+  auto concrete = UInt<8>::Literal<42>();
   Ubv<8> symbolic = to_symbolic(concrete, ctx_);
 
   z3::solver s(ctx_);
@@ -550,7 +550,7 @@ TEST_F(BitVecTest, ConcreteToSymbolic) {
 }
 
 TEST_F(BitVecTest, SignedConcreteToSymbolic) {
-  SInt<8> concrete(0x80);  // -128
+  auto concrete = SInt<8>::Literal<-128>();
   Sbv<8> symbolic = to_symbolic(concrete, ctx_);
 
   z3::solver s(ctx_);
@@ -562,7 +562,7 @@ TEST_F(BitVecTest, SignedConcreteToSymbolic) {
 
 TEST_F(BitVecTest, MixedAddSymbolicPlusConcrete) {
   Ubv<8> sym(ctx_, "x");
-  UInt<8> conc(42);
+  auto conc = UInt<8>::Literal<42>();
   auto result = sym + conc;
 
   static_assert(decltype(result)::kWidth == 9);
@@ -575,7 +575,7 @@ TEST_F(BitVecTest, MixedAddSymbolicPlusConcrete) {
 }
 
 TEST_F(BitVecTest, MixedAddConcretePlusSymbolic) {
-  UInt<8> conc(42);
+  auto conc = UInt<8>::Literal<42>();
   Ubv<8> sym(ctx_, "x");
   auto result = conc + sym;
 
@@ -585,7 +585,7 @@ TEST_F(BitVecTest, MixedAddConcretePlusSymbolic) {
 
 TEST_F(BitVecTest, MixedSubSymbolicMinusConcrete) {
   Ubv<8> sym(ctx_, "x");
-  UInt<8> conc(50);
+  auto conc = UInt<8>::Literal<50>();
   auto result = sym - conc;
 
   static_assert(decltype(result)::kWidth == 9);
@@ -595,7 +595,7 @@ TEST_F(BitVecTest, MixedSubSymbolicMinusConcrete) {
 
 TEST_F(BitVecTest, MixedAddDifferentWidths) {
   Ubv<8> sym(ctx_, "x");
-  UInt<4> conc(15);
+  auto conc = UInt<4>::Literal<15>();
   auto result = sym + conc;
 
   static_assert(decltype(result)::kWidth == 9);
@@ -605,7 +605,7 @@ TEST_F(BitVecTest, MixedAddDifferentWidths) {
 
 TEST_F(BitVecTest, MixedBitwiseAnd) {
   Ubv<8> sym(ctx_, "x");
-  UInt<8> conc(0x0F);
+  auto conc = UInt<8>::Literal<0x0F>();
   Ubv<8> result = sym & conc;
 
   z3::solver s(ctx_);
@@ -618,7 +618,7 @@ TEST_F(BitVecTest, MixedBitwiseAnd) {
 
 TEST_F(BitVecTest, MixedEquality) {
   Ubv<8> sym(ctx_, "x");
-  UInt<8> conc(42);
+  auto conc = UInt<8>::Literal<42>();
   Bool eq = (sym == conc);
 
   z3::solver s(ctx_);
@@ -629,7 +629,7 @@ TEST_F(BitVecTest, MixedEquality) {
 
 TEST_F(BitVecTest, MixedLessThan) {
   Ubv<8> sym(ctx_, "x");
-  UInt<8> conc(100);
+  auto conc = UInt<8>::Literal<100>();
   Bool lt = (sym < conc);
 
   z3::solver s(ctx_);
@@ -642,8 +642,8 @@ TEST_F(BitVecTest, MixedLessThan) {
 
 TEST_F(BitVecTest, MixedIteSymbolicCondConcreteValues) {
   Bool cond(ctx_, "c");
-  UInt<8> a(42);
-  UInt<8> b(99);
+  auto a = UInt<8>::Literal<42>();
+  auto b = UInt<8>::Literal<99>();
   auto result = ite(cond, a, b);
 
   static_assert(is_symbolic_v<decltype(result)>);
@@ -657,7 +657,7 @@ TEST_F(BitVecTest, MixedIteSymbolicCondConcreteValues) {
 TEST_F(BitVecTest, MixedIteSymbolicCondMixedValues) {
   Bool cond(ctx_, "c");
   Ubv<8> sym(ctx_, "x");
-  UInt<8> conc(99);
+  auto conc = UInt<8>::Literal<99>();
   auto result = ite(cond, sym, conc);
 
   static_assert(is_symbolic_v<decltype(result)>);
@@ -667,7 +667,7 @@ TEST_F(BitVecTest, MixedIteSymbolicCondMixedValues) {
 
 TEST_F(BitVecTest, MixedLeftShift) {
   Ubv<8> sym(ctx_, "x");
-  UInt<8> conc(4);
+  auto conc = UInt<8>::Literal<4>();
   auto result = sym << conc;
 
   z3::solver s(ctx_);
@@ -678,7 +678,7 @@ TEST_F(BitVecTest, MixedLeftShift) {
 
 TEST_F(BitVecTest, MixedRightShift) {
   Ubv<8> sym(ctx_, "x");
-  UInt<8> conc(4);
+  auto conc = UInt<8>::Literal<4>();
   auto result = sym >> conc;
 
   z3::solver s(ctx_);
@@ -765,7 +765,7 @@ TEST_F(BitVecTest, CrossTypeGreaterEqualDifferentSignedness) {
 
 TEST_F(BitVecTest, MixedCrossTypeEquality) {
   Ubv<8> sym(ctx_, "x");
-  UInt<16> conc(42);
+  auto conc = UInt<16>::Literal<42>();
   Bool eq = (sym == conc);
 
   z3::solver s(ctx_);
@@ -776,7 +776,7 @@ TEST_F(BitVecTest, MixedCrossTypeEquality) {
 
 TEST_F(BitVecTest, MixedCrossTypeLessThan) {
   Ubv<8> sym(ctx_, "x");
-  UInt<16> conc(300);
+  auto conc = UInt<16>::Literal<300>();
   Bool lt = (sym < conc);
 
   // Any 8-bit unsigned value (0-255) is always < 300.

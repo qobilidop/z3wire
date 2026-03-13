@@ -2,6 +2,7 @@
 #define Z3WIRE_INT_H_
 
 #include <algorithm>
+#include <concepts>
 #include <cstddef>
 #include <cstdint>
 #include <limits>
@@ -33,16 +34,12 @@ class Int {
   static constexpr bool kIsSigned = IsSigned;
   using Storage = UnsignedStorageType<W>;
 
-  // Raw constructor: masks to W bits.
-  explicit Int(uint64_t raw) : bits_(mask(raw)) {}
-
   // Compile-time range-checked literal.
   template <int64_t Value>
   static Int Literal() {
     if constexpr (IsSigned) {
       static_assert(Value >= min_signed() && Value <= max_signed(),
                     "Literal value does not fit in signed bit-width.");
-      // Store as two's complement.
       return Int(static_cast<uint64_t>(Value));
     } else {
       static_assert(Value >= 0, "Unsigned literal must be non-negative.");
@@ -52,24 +49,26 @@ class Int {
     }
   }
 
-  // Runtime checked construction. Takes an unsigned raw bit pattern.
-  // Note: for signed types, pass the two's complement bit pattern, not a
-  // negative integer. E.g., use SInt<8>::checked(0x80) for -128, not
-  // SInt<8>::checked(-128).
-  [[nodiscard]] static std::tuple<Int, bool> checked(uint64_t raw) {
-    Int result(raw);
-    bool truncated = (raw != result.bits_);
-    return {result, truncated};
-  }
-
-  // Runtime checked construction from a signed value.
-  // Only meaningful for signed types; for unsigned, use checked(uint64_t).
-  // NOLINTNEXTLINE(modernize-use-constraints)
-  template <bool Signed = IsSigned, typename = std::enable_if_t<Signed>>
-  [[nodiscard]] static std::tuple<Int, bool> checked(int64_t raw) {
-    Int result(static_cast<uint64_t>(raw));
-    bool truncated = (raw < min_signed() || raw > max_signed());
-    return {result, truncated};
+  // Runtime checked construction. Returns {value, truncated}.
+  // Accepts any integer type; no implicit conversions.
+  template <std::integral T>
+  [[nodiscard]] static std::tuple<Int, bool> checked(T raw) {
+    if constexpr (IsSigned) {
+      auto val = static_cast<int64_t>(raw);
+      Int result(static_cast<uint64_t>(val));
+      bool truncated = (val < min_signed() || val > max_signed());
+      return {result, truncated};
+    } else {
+      if constexpr (std::is_signed_v<T>) {
+        if (raw < 0) {
+          return {Int(static_cast<uint64_t>(raw)), true};
+        }
+      }
+      auto val = static_cast<uint64_t>(raw);
+      Int result(val);
+      bool truncated = (val != result.bits_);
+      return {result, truncated};
+    }
   }
 
   // Access the raw bit pattern (always unsigned).
@@ -92,6 +91,9 @@ class Int {
   }
 
  private:
+  // Raw constructor: masks to W bits. Private to prevent silent truncation.
+  explicit Int(uint64_t raw) : bits_(mask(raw)) {}
+
   static constexpr Storage mask(uint64_t val) {
     if constexpr (W >= 64) {
       return static_cast<Storage>(val);

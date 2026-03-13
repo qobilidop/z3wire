@@ -112,36 +112,34 @@ auto w = z3w::SInt<8>::Literal<128>();   // Compile error: out of range
 
 ```cpp
 auto [val, truncated] = z3w::UInt<8>::checked(300);
-// val.value() == 44, truncated == true
+// val.bits() == 44, truncated == true
 
 auto [val2, truncated2] = z3w::UInt<8>::checked(200);
-// val2.value() == 200, truncated2 == false
+// val2.bits() == 200, truncated2 == false
+
+auto [val3, truncated3] = z3w::SInt<8>::checked(-128);
+// val3.value() == -128, truncated3 == false
 ```
 
-!!! note
-
-    `checked()` takes a `uint64_t` raw bit pattern. For signed types, pass
-    the two's complement representation, not a negative integer.
-
-**Raw constructor:**
-
-```cpp
-z3w::UInt<8> x(300);  // Stores 300 & 0xFF = 44
-```
-
-The constructor is `explicit` to prevent accidental narrowing.
+`checked()` accepts any integer type and reports whether the value was
+truncated to fit. Negative values on unsigned types are flagged as truncated.
 
 ### Accessing the value
 
-Use `.value()` to get the stored integer:
+Two accessors:
+
+- `.bits()` — raw unsigned bit pattern (always `UnsignedStorageType<W>`)
+- `.value()` — interpreted value (unsigned for `UInt`, signed for `SInt`)
 
 ```cpp
-z3w::UInt<8> x(42);
-uint8_t v = x.value();  // 42
-```
+auto x = z3w::UInt<8>::Literal<200>();
+x.bits();   // 200 (uint8_t)
+x.value();  // 200 (uint8_t) — same as bits() for unsigned
 
-The return type is the smallest unsigned integer that fits the width
-(`uint8_t` for W \<= 8, `uint16_t` for W \<= 16, etc.).
+auto y = z3w::SInt<8>::Literal<-1>();
+y.bits();   // 0xFF (uint8_t) — raw two's complement
+y.value();  // -1   (int8_t)  — interpreted signed value
+```
 
 ### Mixing with symbolic types
 
@@ -151,7 +149,7 @@ with symbolic operands:
 ```cpp
 z3::context ctx;
 z3w::Ubv<8> sym(ctx, "x");
-z3w::UInt<8> conc(42);
+auto conc = z3w::UInt<8>::Literal<42>();
 
 auto result = sym + conc;  // Ubv<9> — concrete promoted automatically
 z3w::Bool eq = (sym == conc);  // Symbolic equality check
@@ -169,7 +167,7 @@ context needs to be passed explicitly.
 To convert a concrete value to symbolic manually:
 
 ```cpp
-z3w::UInt<8> conc(42);
+auto conc = z3w::UInt<8>::Literal<42>();
 z3w::Ubv<8> sym = z3w::to_symbolic(conc, ctx);
 ```
 

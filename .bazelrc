@@ -1,3 +1,6 @@
+# C++20 for concepts, constexpr improvements, etc.
+build --cxxopt=-std=c++20
+
 # Use LLVM tools for coverage (required when CC=clang).
 coverage --repo_env=BAZEL_USE_LLVM_NATIVE_COVERAGE=1
 coverage --repo_env=GCOV=llvm-profdata

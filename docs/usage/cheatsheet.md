@@ -24,8 +24,8 @@ auto lit = Ubv<8>::Literal<255>(ctx);  // Compile-time checked literal
 Bool::True(ctx);                       // Boolean literals
 Bool::False(ctx);
 
-UInt<8> c(42);                         // Concrete (masks to width)
-auto [val, truncated] = UInt<8>::checked(999);  // Runtime checked
+auto c = UInt<8>::Literal<42>();              // Compile-time checked concrete
+auto [val, truncated] = UInt<8>::checked(999); // Runtime checked
 ```
 
 ## Logic
@@ -130,5 +130,5 @@ in mixed expressions.
 val.raw()     // Access underlying z3::expr (symbolic)
 ```
 
-Concrete types use `.value()` to access the stored integer.
+Concrete types use `.bits()` (raw unsigned) and `.value()` (interpreted).
 Users interact with `z3::context` and `z3::solver` directly.
