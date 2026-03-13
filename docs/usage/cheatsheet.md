@@ -30,15 +30,15 @@ auto [val, truncated] = UInt<8>::checked(999);  // Runtime checked
 
 ## Logic
 
-| Op  | Symbolic   | Concrete   | Width rule   |
-| :-- | :--------- | :--------- | :----------- |
-| AND | `a && b`   | `a && b`   | Bool only    |
-| OR  | `a \|\| b` | `a \|\| b` | Bool only    |
-| NOT | `!a`       | `!a`       | Bool only    |
-| AND | `a & b`    | `a & b`    | Strict match |
-| OR  | `a \| b`   | `a \| b`   | Strict match |
-| XOR | `a ^ b`    | `a ^ b`    | Strict match |
-| NOT | `~a`       | `~a`       | Strict match |
+| Op  | Expression | Width rule   |
+| :-- | :--------- | :----------- |
+| AND | `a && b`   | Bool only    |
+| OR  | `a \|\| b` | Bool only    |
+| NOT | `!a`       | Bool only    |
+| AND | `a & b`    | Strict match |
+| OR  | `a \| b`   | Strict match |
+| XOR | `a ^ b`    | Strict match |
+| NOT | `~a`       | Strict match |
 
 See [Operations](operations.md).
 
@@ -60,8 +60,8 @@ See [Operations](operations.md).
 | `==` `!=`         | `a == b`   | Relaxed (any width/signedness) |
 | `<` `<=` `>` `>=` | `a < b`    | Relaxed (any width/signedness) |
 
-Returns `Bool` (symbolic) or `bool` (concrete). Signedness-aware: uses signed
-comparison if either operand is signed.
+Returns `z3w::Bool`. Signedness-aware: uses signed comparison if either operand
+is signed. Concrete types support `==` and `!=` only (returning `bool`).
 See [Operations](operations.md).
 
 ## Shifting
@@ -111,8 +111,8 @@ See [Types](types.md#casting).
 ## Conversion
 
 ```cpp
-to_bool(Ubv<1>)    // -> Bool        to_bool(UInt<1>)   // -> bool
-to_ubv1(Bool)       // -> Ubv<1>      to_uint1(bool)     // -> UInt<1>
+to_bool(Ubv<1>)     // -> Bool
+to_ubv1(Bool)        // -> Ubv<1>
 ```
 
 ## Conditional selection
@@ -121,12 +121,14 @@ to_ubv1(Bool)       // -> Ubv<1>      to_uint1(bool)     // -> UInt<1>
 ite(cond, true_val, false_val)    // Both branches must be the same type
 ```
 
-Works with `Bool`/`bool` conditions and any Z3Wire type.
+Works with `z3w::Bool` condition. Concrete values auto-promote to symbolic
+in mixed expressions.
 
 ## Interop
 
 ```cpp
-val.raw()     // Access underlying z3::expr (symbolic) or storage value (concrete)
+val.raw()     // Access underlying z3::expr (symbolic)
 ```
 
+Concrete types use `.value()` to access the stored integer.
 Users interact with `z3::context` and `z3::solver` directly.

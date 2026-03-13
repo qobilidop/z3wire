@@ -1,8 +1,10 @@
 # Operations
 
 Z3Wire operations are organized by combinational logic category. All operations
-work for both symbolic and concrete types unless noted otherwise. For concrete
-types, flags (`lost`, `overflowed`) are plain `bool` instead of `z3w::Bool`.
+work on symbolic types (`Bool`, `Ubv<W>`, `Sbv<W>`). Concrete types
+(`UInt<W>`, `SInt<W>`) support only equality (`==`, `!=`); for all other
+operations, use symbolic types or access `.value()` for native C++ arithmetic.
+Concrete values auto-promote to symbolic in mixed expressions.
 
 ## Logic
 
@@ -339,7 +341,7 @@ z3w::Bool sel(ctx, "sel");
 auto result = z3w::ite(sel, a, b);  // z3w::Ubv<8>
 ```
 
-Works with any combination of symbolic and concrete arguments:
+Works with concrete values in mixed expressions (they auto-promote to symbolic):
 
 ```cpp
 z3w::Bool cond(ctx, "c");

@@ -366,14 +366,12 @@ auto flag = z3w::ite(sel, z3w::Bool::True(ctx), z3w::Bool::False(ctx));
 
 ### Motivation
 
-Native C++ types like `uint8_t` only cover power-of-two widths and lack
-bit-growth semantics. Concrete types (`UInt<W>`, `SInt<W>`) fill this gap,
-serving two purposes:
+Concrete types (`UInt<W>`, `SInt<W>`) serve as type-safe value holders:
 
 1. **Mixed expressions.** Users can write `symbolic_x + concrete_y` without
-    manually creating Z3 constants.
-1. **Standalone type-safe integers.** `UInt<5>` or `SInt<12>` enforce
-    bit-width at the type level, even without Z3.
+    manually creating Z3 constants. The concrete value auto-promotes.
+1. **Type-safe storage.** `UInt<5>` or `SInt<12>` enforce bit-width at the
+    type level, even without Z3.
 
 `Bool` does not need a concrete counterpart — native C++ `bool` is sufficient.
 
@@ -400,8 +398,11 @@ to allow implicitly. The Z3 context is grabbed from the symbolic operand's
 
 ### Operations
 
-All operations mirror the symbolic API. The key difference is that flags
-(`truncated`, `overflowed`, `lost`) are plain `bool`, not symbolic `Bool`.
+Concrete types support construction (raw, `Literal`, `checked`), value access
+(`.value()`), and equality (`==`, `!=`). All other operations (arithmetic,
+bitwise, shifts, casting, etc.) are available only on symbolic types. Concrete
+values auto-promote to symbolic in mixed expressions, so users can write
+`sym + UInt<8>(5)` without manual conversion.
 
 ## Boundary layer
 

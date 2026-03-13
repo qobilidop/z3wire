@@ -72,8 +72,8 @@ solver.add(x.raw() > 0);  // Pass to Z3 solver directly
 
 ## Concrete types
 
-Fixed-width integer types that mirror the symbolic API. Useful as standalone
-type-safe integers and for mixing concrete values into symbolic expressions.
+Fixed-width integer value holders. Useful for storing typed values and mixing
+concrete values into symbolic expressions.
 
 | Type           | Description                                    |
 | :------------- | :--------------------------------------------- |
@@ -188,9 +188,8 @@ are stored in two's complement representation.
 
 ## Casting
 
-Z3Wire provides a three-tier casting API, giving you explicit control over how
-bit-vectors change width or signedness. The same API works for both symbolic
-and concrete types.
+Z3Wire provides a three-tier casting API for symbolic types, giving you explicit
+control over how bit-vectors change width or signedness.
 
 ### `cast<T>(val)` — Hardware cast
 
@@ -270,13 +269,6 @@ z3w::Bool ready = z3w::to_bool(z3w::extract<0, 0>(status));
 // Bool to bit-vector
 z3w::Bool cond(ctx, "cond");
 z3w::Ubv<1> flag = z3w::to_ubv1(cond);
-```
-
-Concrete equivalents:
-
-```cpp
-z3w::UInt<1> one = z3w::to_uint1(true);   // UInt<1>(1)
-bool b = z3w::to_bool(z3w::UInt<1>(1));   // true
 ```
 
 ## Design principle: explicit over implicit
