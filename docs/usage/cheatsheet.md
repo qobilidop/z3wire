@@ -34,6 +34,7 @@ auto [val, truncated] = UInt<8>::checked(999); // Runtime checked
 | :-- | :--------- | :----------- |
 | AND | `a && b`   | Bool only    |
 | OR  | `a \|\| b` | Bool only    |
+| XOR | `a ^ b`    | Bool only    |
 | NOT | `!a`       | Bool only    |
 | AND | `a & b`    | Strict match |
 | OR  | `a \| b`   | Strict match |

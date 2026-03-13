@@ -57,6 +57,19 @@ TEST_F(BoolTest, LogicalNot) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
+TEST_F(BoolTest, Xor) {
+  Bool a(ctx_, "a");
+  Bool b(ctx_, "b");
+  Bool c = a ^ b;
+
+  // XOR: if both are true, result is false.
+  z3::solver s(ctx_);
+  s.add(a.raw());
+  s.add(b.raw());
+  s.add(c.raw());
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
 TEST_F(BoolTest, Equality) {
   Bool a(ctx_, "a");
   Bool b(ctx_, "b");

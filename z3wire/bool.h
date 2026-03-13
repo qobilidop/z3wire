@@ -33,6 +33,10 @@ class Bool {
     return Bool(lhs.expr_ || rhs.expr_);
   }
 
+  friend Bool operator^(const Bool& lhs, const Bool& rhs) {
+    return Bool(lhs.expr_ != rhs.expr_);  // XOR is boolean inequality.
+  }
+
   Bool operator!() const { return Bool(!expr_); }
 
   // Equality.
