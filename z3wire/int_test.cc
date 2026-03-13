@@ -7,17 +7,28 @@
 namespace z3w {
 namespace {
 
-// --- Storage type ---
+// --- Storage types ---
 
-TEST(IntTest, StorageType) {
-  static_assert(std::is_same_v<StorageType<1>, uint8_t>);
-  static_assert(std::is_same_v<StorageType<8>, uint8_t>);
-  static_assert(std::is_same_v<StorageType<9>, uint16_t>);
-  static_assert(std::is_same_v<StorageType<16>, uint16_t>);
-  static_assert(std::is_same_v<StorageType<17>, uint32_t>);
-  static_assert(std::is_same_v<StorageType<32>, uint32_t>);
-  static_assert(std::is_same_v<StorageType<33>, uint64_t>);
-  static_assert(std::is_same_v<StorageType<64>, uint64_t>);
+TEST(IntTest, UnsignedStorageType) {
+  static_assert(std::is_same_v<UnsignedStorageType<1>, uint8_t>);
+  static_assert(std::is_same_v<UnsignedStorageType<8>, uint8_t>);
+  static_assert(std::is_same_v<UnsignedStorageType<9>, uint16_t>);
+  static_assert(std::is_same_v<UnsignedStorageType<16>, uint16_t>);
+  static_assert(std::is_same_v<UnsignedStorageType<17>, uint32_t>);
+  static_assert(std::is_same_v<UnsignedStorageType<32>, uint32_t>);
+  static_assert(std::is_same_v<UnsignedStorageType<33>, uint64_t>);
+  static_assert(std::is_same_v<UnsignedStorageType<64>, uint64_t>);
+}
+
+TEST(IntTest, SignedStorageType) {
+  static_assert(std::is_same_v<SignedStorageType<1>, int8_t>);
+  static_assert(std::is_same_v<SignedStorageType<8>, int8_t>);
+  static_assert(std::is_same_v<SignedStorageType<9>, int16_t>);
+  static_assert(std::is_same_v<SignedStorageType<16>, int16_t>);
+  static_assert(std::is_same_v<SignedStorageType<17>, int32_t>);
+  static_assert(std::is_same_v<SignedStorageType<32>, int32_t>);
+  static_assert(std::is_same_v<SignedStorageType<33>, int64_t>);
+  static_assert(std::is_same_v<SignedStorageType<64>, int64_t>);
 }
 
 // --- Type traits ---
@@ -39,17 +50,17 @@ TEST(IntTest, IsConcreteV) {
 
 TEST(IntTest, RawConstructorMasks) {
   UInt<8> a(300);
-  EXPECT_EQ(a.value(), 44);  // 300 & 0xFF
+  EXPECT_EQ(a.bits(), 44);  // 300 & 0xFF
 }
 
 TEST(IntTest, RawConstructorNonPowerOfTwo) {
   UInt<5> a(0xFF);
-  EXPECT_EQ(a.value(), 0x1F);  // 0xFF & 0x1F
+  EXPECT_EQ(a.bits(), 0x1F);  // 0xFF & 0x1F
 }
 
 TEST(IntTest, RawConstructorSigned) {
   SInt<8> a(300);
-  EXPECT_EQ(a.value(), 44);  // Same underlying bits
+  EXPECT_EQ(a.bits(), 44);  // Same underlying bits
 }
 
 // --- Literal (compile-time checked) ---
@@ -72,23 +83,60 @@ TEST(IntTest, LiteralSigned) {
 
 TEST(IntTest, LiteralSignedNegative) {
   auto a = SInt<8>::Literal<-128>();
-  EXPECT_EQ(a.value(), 0x80);  // -128 in 8-bit two's complement
+  EXPECT_EQ(a.bits(), 0x80);   // Bit pattern
+  EXPECT_EQ(a.value(), -128);  // Interpreted value
   auto b = SInt<8>::Literal<-1>();
-  EXPECT_EQ(b.value(), 0xFF);  // -1 in 8-bit two's complement
+  EXPECT_EQ(b.bits(), 0xFF);  // Bit pattern
+  EXPECT_EQ(b.value(), -1);   // Interpreted value
 }
 
 // --- Checked construction ---
 
 TEST(IntTest, CheckedNoTruncation) {
   auto [val, truncated] = UInt<8>::checked(200);
-  EXPECT_EQ(val.value(), 200);
+  EXPECT_EQ(val.bits(), 200);
   EXPECT_FALSE(truncated);
 }
 
 TEST(IntTest, CheckedWithTruncation) {
   auto [val, truncated] = UInt<8>::checked(300);
-  EXPECT_EQ(val.value(), 44);
+  EXPECT_EQ(val.bits(), 44);
   EXPECT_TRUE(truncated);
+}
+
+// --- bits() vs value() ---
+
+TEST(IntTest, UnsignedBitsAndValueMatch) {
+  UInt<8> a(200);
+  EXPECT_EQ(a.bits(), 200);
+  EXPECT_EQ(a.value(), 200);
+  static_assert(std::is_same_v<decltype(a.bits()), uint8_t>);
+  static_assert(std::is_same_v<decltype(a.value()), uint8_t>);
+}
+
+TEST(IntTest, SignedBitsVsValue) {
+  SInt<8> a(0xFF);  // -1 in two's complement
+  EXPECT_EQ(a.bits(), 0xFF);
+  EXPECT_EQ(a.value(), -1);
+  static_assert(std::is_same_v<decltype(a.bits()), uint8_t>);
+  static_assert(std::is_same_v<decltype(a.value()), int8_t>);
+}
+
+TEST(IntTest, SignedBitsVsValueMinMax) {
+  SInt<8> min_val(0x80);  // -128
+  EXPECT_EQ(min_val.bits(), 0x80);
+  EXPECT_EQ(min_val.value(), -128);
+
+  SInt<8> max_val(0x7F);  // 127
+  EXPECT_EQ(max_val.bits(), 0x7F);
+  EXPECT_EQ(max_val.value(), 127);
+}
+
+TEST(IntTest, SignedNonPowerOfTwoBitsVsValue) {
+  // SInt<5>: range -16 to 15. Value 0x1F = 31 unsigned = -1 signed.
+  SInt<5> a(0x1F);
+  EXPECT_EQ(a.bits(), 0x1F);
+  EXPECT_EQ(a.value(), -1);
 }
 
 // --- Equality ---
@@ -112,21 +160,22 @@ TEST(IntTest, Inequality) {
 
 TEST(IntTest, Width64Construction) {
   UInt<64> a(UINT64_MAX);
-  EXPECT_EQ(a.value(), UINT64_MAX);
+  EXPECT_EQ(a.bits(), UINT64_MAX);
   auto [val, truncated] = UInt<64>::checked(UINT64_MAX);
   EXPECT_FALSE(truncated);
 }
 
 TEST(IntTest, Width1) {
   UInt<1> a(3);
-  EXPECT_EQ(a.value(), 1);  // 3 & 0x1
+  EXPECT_EQ(a.bits(), 1);  // 3 & 0x1
 }
 
 // --- Signed checked construction ---
 
 TEST(IntTest, SignedCheckedNoTruncation) {
   auto [val, truncated] = SInt<8>::checked(int64_t{-128});
-  EXPECT_EQ(val.value(), 0x80);  // -128 in two's complement
+  EXPECT_EQ(val.bits(), 0x80);   // Bit pattern
+  EXPECT_EQ(val.value(), -128);  // Interpreted value
   EXPECT_FALSE(truncated);
 }
 

@@ -12,10 +12,17 @@ namespace z3w {
 
 // Storage: smallest unsigned integer type that fits W bits.
 template <size_t W>
-using StorageType = std::conditional_t<
+using UnsignedStorageType = std::conditional_t<
     (W <= 8), uint8_t,
     std::conditional_t<(W <= 16), uint16_t,
                        std::conditional_t<(W <= 32), uint32_t, uint64_t>>>;
+
+// Storage: smallest signed integer type that fits W bits.
+template <size_t W>
+using SignedStorageType = std::conditional_t<
+    (W <= 8), int8_t,
+    std::conditional_t<(W <= 16), int16_t,
+                       std::conditional_t<(W <= 32), int32_t, int64_t>>>;
 
 template <size_t W, bool IsSigned>
 class Int {
@@ -24,7 +31,7 @@ class Int {
  public:
   static constexpr size_t kWidth = W;
   static constexpr bool kIsSigned = IsSigned;
-  using Storage = StorageType<W>;
+  using Storage = UnsignedStorageType<W>;
 
   // Raw constructor: masks to W bits.
   explicit Int(uint64_t raw) : bits_(mask(raw)) {}
@@ -65,8 +72,19 @@ class Int {
     return {result, truncated};
   }
 
-  // Access the underlying value (always unsigned representation).
-  [[nodiscard]] Storage value() const { return bits_; }
+  // Access the raw bit pattern (always unsigned).
+  [[nodiscard]] Storage bits() const { return bits_; }
+
+  // Access the interpreted value.
+  // For unsigned types, same as bits(). For signed types, sign-extends to
+  // the corresponding signed storage type.
+  [[nodiscard]] auto value() const {
+    if constexpr (IsSigned) {
+      return static_cast<SignedStorageType<W>>(sign_extend(bits_));
+    } else {
+      return bits_;
+    }
+  }
 
   // Public for use by internal::extend.
   static constexpr int64_t sign_extend_value(Storage val) {
@@ -140,9 +158,9 @@ namespace internal {
 template <size_t TargetW, size_t SrcW, bool SrcS>
 uint64_t extend(const Int<SrcW, SrcS>& val) {
   if constexpr (!SrcS) {
-    return val.value();
+    return val.bits();
   } else {
-    int64_t signed_val = Int<SrcW, SrcS>::sign_extend_value(val.value());
+    int64_t signed_val = Int<SrcW, SrcS>::sign_extend_value(val.bits());
     if constexpr (TargetW >= 64) {
       return static_cast<uint64_t>(signed_val);
     } else {

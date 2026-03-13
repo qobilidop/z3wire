@@ -96,7 +96,7 @@ inline constexpr bool is_symbolic_v = is_symbolic<T>::value;
 // Convert a concrete Int to a symbolic BitVec.
 template <size_t W, bool S>
 BitVec<W, S> to_symbolic(const Int<W, S>& val, z3::context& ctx) {
-  return BitVec<W, S>(ctx.bv_val(static_cast<uint64_t>(val.value()), W));
+  return BitVec<W, S>(ctx.bv_val(static_cast<uint64_t>(val.bits()), W));
 }
 
 // --- Bit-growth arithmetic ---
