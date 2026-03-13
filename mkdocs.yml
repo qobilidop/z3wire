@@ -54,7 +54,6 @@ nav:
       - Bit Manipulation: examples/bit-manipulation.md
   - Design:
       - Overview: design/overview.md
-      - Bit-Field Equality: design/bitfield-eq.md
       - Compile-Fail Tests: design/compile-fail-tests.md
   - Development:
       - Test Coverage: dev/test-coverage.md

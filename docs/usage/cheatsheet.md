@@ -55,10 +55,11 @@ See [Operations](operations.md).
 
 ## Comparison
 
-| Op                | Expression | Width rule                     |
-| :---------------- | :--------- | :----------------------------- |
-| `==` `!=`         | `a == b`   | Relaxed (any width/signedness) |
-| `<` `<=` `>` `>=` | `a < b`    | Relaxed (any width/signedness) |
+| Op                | Expression      | Width rule                     |
+| :---------------- | :-------------- | :----------------------------- |
+| `==` `!=`         | `a == b`        | Relaxed (any width/signedness) |
+| `<` `<=` `>` `>=` | `a < b`         | Relaxed (any width/signedness) |
+| Exact             | `exact_eq(a,b)` | Strict (same width/signedness) |
 
 Returns `z3w::Bool`. Signedness-aware: uses signed comparison if either operand
 is signed. Concrete types support `==` and `!=` only (returning `bool`).
@@ -89,14 +90,6 @@ concat(a, b, c, ...)           // -> Ubv<W1+W2+W3+...> (variadic)
 ```
 
 See [Operations](operations.md#bit-manipulation).
-
-## Bit field
-
-```cpp
-bitfield_eq(buf, f1, f2, ...)  // -> Bool (LSB-first field equality constraint)
-```
-
-See [Operations](operations.md#bit-field).
 
 ## Casting
 

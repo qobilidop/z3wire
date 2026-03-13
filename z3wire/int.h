@@ -173,6 +173,13 @@ uint64_t extend(const Int<SrcW, SrcS>& val) {
 
 }  // namespace internal
 
+// --- Exact equality (strict: same width and signedness) ---
+
+template <size_t W, bool S>
+bool exact_eq(const Int<W, S>& lhs, const Int<W, S>& rhs) {
+  return lhs.bits() == rhs.bits();
+}
+
 // --- Equality (relaxed: any width/signedness combination) ---
 
 template <size_t W1, bool S1, size_t W2, bool S2>

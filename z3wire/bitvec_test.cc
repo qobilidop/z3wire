@@ -82,6 +82,20 @@ TEST_F(BitVecTest, BitwiseNot) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
+// --- Exact equality ---
+
+TEST_F(BitVecTest, ExactEq) {
+  Ubv<8> a(ctx_, "a");
+  Ubv<8> b(ctx_, "b");
+  Bool eq = exact_eq(a, b);
+
+  z3::solver s(ctx_);
+  s.add(eq.raw());
+  s.add(a.raw() == ctx_.bv_val(42, 8));
+  s.add(b.raw() != ctx_.bv_val(42, 8));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
 // --- Equality ---
 
 TEST_F(BitVecTest, Equality) {

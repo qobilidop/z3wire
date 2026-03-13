@@ -150,6 +150,13 @@ BitVec<W + 1, true> operator-(const BitVec<W, S>& val) {
   return BitVec<W + 1, true>(-ext);
 }
 
+// --- Exact equality (strict: same width and signedness) ---
+
+template <size_t W, bool S>
+Bool exact_eq(const BitVec<W, S>& lhs, const BitVec<W, S>& rhs) {
+  return Bool(lhs.raw() == rhs.raw());
+}
+
 // --- Equality (relaxed: any width/signedness combination) ---
 
 template <size_t W1, bool S1, size_t W2, bool S2>

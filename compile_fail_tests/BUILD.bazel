@@ -118,10 +118,3 @@ cc_compile_fail_test(
     expected_message = "extract: TargetWidth must be <= input width",
     deps = ["//z3wire:bitvec"],
 )
-
-cc_compile_fail_test(
-    name = "bitfield_eq_width_mismatch_test",
-    src = "bitfield_eq_width_mismatch_test.cc",
-    expected_message = "Field widths must sum to the buffer width",
-    deps = ["//z3wire:bitfield"],
-)
