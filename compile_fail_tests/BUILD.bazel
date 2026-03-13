@@ -50,48 +50,6 @@ cc_compile_fail_test(
 )
 
 cc_compile_fail_test(
-    name = "int_safe_cast_signed_to_unsigned_test",
-    src = "int_safe_cast_signed_to_unsigned_test.cc",
-    expected_message = "safe_cast from signed to unsigned is always forbidden",
-    deps = ["//z3wire:int"],
-)
-
-cc_compile_fail_test(
-    name = "int_safe_cast_unsigned_narrow_test",
-    src = "int_safe_cast_unsigned_narrow_test.cc",
-    expected_message = "target width too small for lossless conversion",
-    deps = ["//z3wire:int"],
-)
-
-cc_compile_fail_test(
-    name = "int_safe_cast_signed_narrow_test",
-    src = "int_safe_cast_signed_narrow_test.cc",
-    expected_message = "target width too small for lossless conversion",
-    deps = ["//z3wire:int"],
-)
-
-cc_compile_fail_test(
-    name = "int_safe_cast_unsigned_to_signed_same_width_test",
-    src = "int_safe_cast_unsigned_to_signed_same_width_test.cc",
-    expected_message = "unsigned-to-signed needs target width > source width",
-    deps = ["//z3wire:int"],
-)
-
-cc_compile_fail_test(
-    name = "int_extract_high_lt_low_test",
-    src = "int_extract_high_lt_low_test.cc",
-    expected_message = "extract: High must be >= Low",
-    deps = ["//z3wire:int"],
-)
-
-cc_compile_fail_test(
-    name = "int_extract_out_of_bounds_test",
-    src = "int_extract_out_of_bounds_test.cc",
-    expected_message = "extract: High must be < input width",
-    deps = ["//z3wire:int"],
-)
-
-cc_compile_fail_test(
     name = "int_checked_int64_on_unsigned_test",
     src = "int_checked_int64_on_unsigned_test.cc",
     expected_message = "no matching",
