@@ -7,27 +7,27 @@ target_include_directories(z3wire_int INTERFACE
     $<INSTALL_INTERFACE:include>
 )
 
-# Bool wrapper.
-add_library(z3wire_bool INTERFACE)
-add_library(z3wire::bool ALIAS z3wire_bool)
+# SymBool wrapper.
+add_library(z3wire_sym_bool INTERFACE)
+add_library(z3wire::sym_bool ALIAS z3wire_sym_bool)
 
-target_include_directories(z3wire_bool INTERFACE
+target_include_directories(z3wire_sym_bool INTERFACE
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
     $<INSTALL_INTERFACE:include>
 )
 
-target_link_libraries(z3wire_bool INTERFACE z3::libz3)
+target_link_libraries(z3wire_sym_bool INTERFACE z3::libz3)
 
-# Bit-vector wrapper.
-add_library(z3wire_bitvec INTERFACE)
-add_library(z3wire::bitvec ALIAS z3wire_bitvec)
+# Symbolic integer wrapper.
+add_library(z3wire_sym_int INTERFACE)
+add_library(z3wire::sym_int ALIAS z3wire_sym_int)
 
-target_include_directories(z3wire_bitvec INTERFACE
+target_include_directories(z3wire_sym_int INTERFACE
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
     $<INSTALL_INTERFACE:include>
 )
 
-target_link_libraries(z3wire_bitvec INTERFACE z3wire_bool z3wire_int z3::libz3)
+target_link_libraries(z3wire_sym_int INTERFACE z3wire_sym_bool z3wire_int z3::libz3)
 
 # Tests
 include(CTest)
@@ -44,11 +44,11 @@ if(BUILD_TESTING)
     target_link_libraries(int_test PRIVATE z3wire_int GTest::gtest_main)
     add_test(NAME int_test COMMAND int_test)
 
-    add_executable(bool_test bool_test.cc)
-    target_link_libraries(bool_test PRIVATE z3wire_bool GTest::gtest_main)
-    add_test(NAME bool_test COMMAND bool_test)
+    add_executable(sym_bool_test sym_bool_test.cc)
+    target_link_libraries(sym_bool_test PRIVATE z3wire_sym_bool GTest::gtest_main)
+    add_test(NAME sym_bool_test COMMAND sym_bool_test)
 
-    add_executable(bitvec_test bitvec_test.cc)
-    target_link_libraries(bitvec_test PRIVATE z3wire_bitvec GTest::gtest_main)
-    add_test(NAME bitvec_test COMMAND bitvec_test)
+    add_executable(sym_int_test sym_int_test.cc)
+    target_link_libraries(sym_int_test PRIVATE z3wire_sym_int GTest::gtest_main)
+    add_test(NAME sym_int_test COMMAND sym_int_test)
 endif()

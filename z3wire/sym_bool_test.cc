@@ -1,4 +1,4 @@
-#include "z3wire/bool.h"
+#include "z3wire/sym_bool.h"
 
 #include <gtest/gtest.h>
 #include <z3++.h>
@@ -6,27 +6,27 @@
 namespace z3w {
 namespace {
 
-class BoolTest : public ::testing::Test {
+class SymBoolTest : public ::testing::Test {
  protected:
   z3::context ctx_;
 };
 
-TEST_F(BoolTest, SymbolicVariable) {
-  Bool a(ctx_, "a");
+TEST_F(SymBoolTest, SymbolicVariable) {
+  SymBool a(ctx_, "a");
   EXPECT_TRUE(a.raw().is_bool());
 }
 
-TEST_F(BoolTest, Literals) {
-  Bool t = Bool::True(ctx_);
-  Bool f = Bool::False(ctx_);
+TEST_F(SymBoolTest, Literals) {
+  SymBool t = SymBool::True(ctx_);
+  SymBool f = SymBool::False(ctx_);
   EXPECT_TRUE(t.raw().is_true());
   EXPECT_TRUE(f.raw().is_false());
 }
 
-TEST_F(BoolTest, LogicalAnd) {
-  Bool a(ctx_, "a");
-  Bool b(ctx_, "b");
-  Bool c = a && b;
+TEST_F(SymBoolTest, LogicalAnd) {
+  SymBool a(ctx_, "a");
+  SymBool b(ctx_, "b");
+  SymBool c = a && b;
 
   z3::solver s(ctx_);
   s.add(a.raw());
@@ -35,10 +35,10 @@ TEST_F(BoolTest, LogicalAnd) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-TEST_F(BoolTest, LogicalOr) {
-  Bool a(ctx_, "a");
-  Bool b(ctx_, "b");
-  Bool c = a || b;
+TEST_F(SymBoolTest, LogicalOr) {
+  SymBool a(ctx_, "a");
+  SymBool b(ctx_, "b");
+  SymBool c = a || b;
 
   z3::solver s(ctx_);
   s.add(!a.raw());
@@ -47,9 +47,9 @@ TEST_F(BoolTest, LogicalOr) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-TEST_F(BoolTest, LogicalNot) {
-  Bool a(ctx_, "a");
-  Bool b = !a;
+TEST_F(SymBoolTest, LogicalNot) {
+  SymBool a(ctx_, "a");
+  SymBool b = !a;
 
   z3::solver s(ctx_);
   s.add(a.raw());
@@ -57,10 +57,10 @@ TEST_F(BoolTest, LogicalNot) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-TEST_F(BoolTest, Xor) {
-  Bool a(ctx_, "a");
-  Bool b(ctx_, "b");
-  Bool c = a ^ b;
+TEST_F(SymBoolTest, Xor) {
+  SymBool a(ctx_, "a");
+  SymBool b(ctx_, "b");
+  SymBool c = a ^ b;
 
   // XOR: if both are true, result is false.
   z3::solver s(ctx_);
@@ -70,10 +70,10 @@ TEST_F(BoolTest, Xor) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-TEST_F(BoolTest, Equality) {
-  Bool a(ctx_, "a");
-  Bool b(ctx_, "b");
-  Bool eq = (a == b);
+TEST_F(SymBoolTest, Equality) {
+  SymBool a(ctx_, "a");
+  SymBool b(ctx_, "b");
+  SymBool eq = (a == b);
 
   // If a == b is true, and a is true, then b must be true.
   z3::solver s(ctx_);
@@ -83,10 +83,10 @@ TEST_F(BoolTest, Equality) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-TEST_F(BoolTest, Inequality) {
-  Bool a(ctx_, "a");
-  Bool b(ctx_, "b");
-  Bool neq = (a != b);
+TEST_F(SymBoolTest, Inequality) {
+  SymBool a(ctx_, "a");
+  SymBool b(ctx_, "b");
+  SymBool neq = (a != b);
 
   // If a != b is true, and both are true, that's unsat.
   z3::solver s(ctx_);

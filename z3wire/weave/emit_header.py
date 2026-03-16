@@ -6,12 +6,12 @@ from z3wire.weave.resolver import ResolvedModule, ResolvedStruct, ResolvedField
 def _symbolic_type(field: ResolvedField) -> str:
     """Return the Z3Wire symbolic C++ type for a field."""
     if field.kind == "bool":
-        return "z3w::Bool"
+        return "z3w::SymBool"
     elif field.kind == "bitvec" or field.kind == "enum_ref":
         w = field.element_width
         if field.signedness == "signed":
-            return f"z3w::Sbv<{w}>"
-        return f"z3w::Ubv<{w}>"
+            return f"z3w::SymSInt<{w}>"
+        return f"z3w::SymUInt<{w}>"
     elif field.kind == "struct_ref":
         return f"{field.struct_name}Symbolic"
     raise ValueError(f"Unknown kind: {field.kind}")
@@ -94,7 +94,7 @@ def _to_concrete_expr(field: ResolvedField, accessor: str) -> str:
 def _from_concrete_expr(field: ResolvedField, accessor: str) -> str:
     """Generate expression to create symbolic constant from concrete value."""
     if field.kind == "bool":
-        return f"({accessor} ? z3w::Bool::True(ctx) : z3w::Bool::False(ctx))"
+        return f"({accessor} ? z3w::SymBool::True(ctx) : z3w::SymBool::False(ctx))"
     elif field.kind == "bitvec" or field.kind == "enum_ref":
         return f"z3w::to_symbolic({accessor}, ctx)"
     elif field.kind == "struct_ref":
@@ -106,7 +106,7 @@ def _from_concrete_expr(field: ResolvedField, accessor: str) -> str:
 def _create_expr(field: ResolvedField, prefix_expr: str) -> str:
     """Generate expression to create a fresh symbolic variable."""
     if field.kind == "bool":
-        return f'z3w::Bool(ctx, {prefix_expr} + ".{field.name}")'
+        return f'z3w::SymBool(ctx, {prefix_expr} + ".{field.name}")'
     elif field.kind == "bitvec" or field.kind == "enum_ref":
         stype = _symbolic_type(field)
         return f'{stype}(ctx, {prefix_expr} + ".{field.name}")'
@@ -122,7 +122,7 @@ def _pack_expr(field: ResolvedField, accessor: str) -> str:
         return f"z3w::to_ubv1({accessor})"
     elif field.kind == "bitvec" or field.kind == "enum_ref":
         if field.signedness == "signed":
-            return f"z3w::cast<z3w::Ubv<{field.element_width}>>({accessor})"
+            return f"z3w::cast<z3w::SymUInt<{field.element_width}>>({accessor})"
         return accessor
     elif field.kind == "struct_ref":
         return f"{accessor}.Pack()"
@@ -171,7 +171,7 @@ def _emit_symbolic_decl(lines: list, struct: ResolvedStruct) -> None:
     lines.append("")
     lines.append(f"  static {struct.name}Symbolic Create(z3::context& ctx,")
     lines.append("      const std::string& prefix);")
-    lines.append(f"  z3w::Ubv<{struct.total_width}> Pack() const;")
+    lines.append(f"  z3w::SymUInt<{struct.total_width}> Pack() const;")
     lines.append(f"  {struct.name}Concrete ToConcrete(const z3::model& model) const;")
     lines.append(f"  static {struct.name}Symbolic FromConcrete(z3::context& ctx,")
     lines.append(f"      const {struct.name}Concrete& concrete);")
@@ -243,7 +243,7 @@ def _emit_create_impl(lines: list, struct: ResolvedStruct) -> None:
             lines.append(f"  for (size_t i = 0; i < {field.count}; ++i) {{")
             if field.kind == "bool":
                 lines.append(
-                    f"    result.{field.name}[i] = z3w::Bool(ctx,"
+                    f"    result.{field.name}[i] = z3w::SymBool(ctx,"
                     f' prefix + ".{field.name}[" + std::to_string(i) + "]");'
                 )
             elif field.kind == "struct_ref":
@@ -269,7 +269,7 @@ def _emit_create_impl(lines: list, struct: ResolvedStruct) -> None:
 def _emit_pack_impl(lines: list, struct: ResolvedStruct) -> None:
     """Generate out-of-line Pack implementation."""
     lines.append(
-        f"inline z3w::Ubv<{struct.total_width}> "
+        f"inline z3w::SymUInt<{struct.total_width}> "
         f"{struct.name}Symbolic::Pack() const {{"
     )
     pack_parts = []
@@ -356,8 +356,8 @@ def emit_header(module: ResolvedModule, proto_header: str) -> str:
     lines.append("#include <string>")
     lines.append("#include <tuple>")
     lines.append("")
-    lines.append('#include "z3wire/bool.h"')
-    lines.append('#include "z3wire/bitvec.h"')
+    lines.append('#include "z3wire/sym_bool.h"')
+    lines.append('#include "z3wire/sym_int.h"')
     lines.append('#include "z3wire/int.h"')
     lines.append(f'#include "{proto_header}"')
     lines.append("")

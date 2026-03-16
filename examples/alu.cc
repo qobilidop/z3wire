@@ -8,26 +8,26 @@
 
 #include <z3++.h>
 
-#include "z3wire/bitvec.h"
+#include "z3wire/sym_int.h"
 
 int main() {
   z3::context ctx;
   z3::solver solver(ctx);
 
-  z3w::Ubv<8> a(ctx, "a");
-  z3w::Ubv<8> b(ctx, "b");
-  z3w::Ubv<2> opcode(ctx, "opcode");
+  z3w::SymUInt<8> a(ctx, "a");
+  z3w::SymUInt<8> b(ctx, "b");
+  z3w::SymUInt<2> opcode(ctx, "opcode");
 
   // ALU operations (all truncated to 8-bit hardware width).
-  auto add_result = z3w::cast<z3w::Ubv<8>>(a + b);
-  auto sub_result = z3w::cast<z3w::Ubv<8>>(a - b);
+  auto add_result = z3w::cast<z3w::SymUInt<8>>(a + b);
+  auto sub_result = z3w::cast<z3w::SymUInt<8>>(a - b);
   auto and_result = a & b;
   auto or_result = a | b;
 
   // Mux the result based on opcode.
-  auto op0 = z3w::Ubv<2>::Literal<0>(ctx);
-  auto op1 = z3w::Ubv<2>::Literal<1>(ctx);
-  auto op2 = z3w::Ubv<2>::Literal<2>(ctx);
+  auto op0 = z3w::SymUInt<2>::Literal<0>(ctx);
+  auto op1 = z3w::SymUInt<2>::Literal<1>(ctx);
+  auto op2 = z3w::SymUInt<2>::Literal<2>(ctx);
 
   auto result =
       z3w::ite(opcode == op0, add_result,
@@ -48,7 +48,7 @@ int main() {
 
   // Property: for ADD, find inputs where overflow occurs.
   auto sum9 = a + b;
-  auto [_, overflowed] = z3w::checked_cast<z3w::Ubv<8>>(sum9);
+  auto [_, overflowed] = z3w::checked_cast<z3w::SymUInt<8>>(sum9);
 
   solver.push();
   solver.add(overflowed.raw());

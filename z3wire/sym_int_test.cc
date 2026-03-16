@@ -1,4 +1,4 @@
-#include "z3wire/bitvec.h"
+#include "z3wire/sym_int.h"
 
 #include <gtest/gtest.h>
 #include <z3++.h>
@@ -8,27 +8,27 @@
 namespace z3w {
 namespace {
 
-class BitVecTest : public ::testing::Test {
+class SymIntTest : public ::testing::Test {
  protected:
   z3::context ctx_;
 };
 
 // --- Construction ---
 
-TEST_F(BitVecTest, SymbolicVariable) {
-  Ubv<8> a(ctx_, "a");
+TEST_F(SymIntTest, SymbolicVariable) {
+  SymUInt<8> a(ctx_, "a");
   EXPECT_EQ(a.raw().get_sort().bv_size(), 8);
 }
 
-TEST_F(BitVecTest, Literal) {
-  auto val = Ubv<8>::Literal<255>(ctx_);
+TEST_F(SymIntTest, Literal) {
+  auto val = SymUInt<8>::Literal<255>(ctx_);
   z3::solver s(ctx_);
   s.add(val.raw() == ctx_.bv_val(255, 8));
   EXPECT_EQ(s.check(), z3::sat);
 }
 
-TEST_F(BitVecTest, LiteralZero) {
-  auto val = Ubv<8>::Literal<0>(ctx_);
+TEST_F(SymIntTest, LiteralZero) {
+  auto val = SymUInt<8>::Literal<0>(ctx_);
   z3::solver s(ctx_);
   s.add(val.raw() == ctx_.bv_val(0, 8));
   EXPECT_EQ(s.check(), z3::sat);
@@ -36,10 +36,10 @@ TEST_F(BitVecTest, LiteralZero) {
 
 // --- Bitwise ---
 
-TEST_F(BitVecTest, BitwiseAnd) {
-  Ubv<8> a(ctx_, "a");
-  Ubv<8> b(ctx_, "b");
-  Ubv<8> c = a & b;
+TEST_F(SymIntTest, BitwiseAnd) {
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<8> b(ctx_, "b");
+  SymUInt<8> c = a & b;
 
   z3::solver s(ctx_);
   s.add(a.raw() == ctx_.bv_val(0xF0, 8));
@@ -48,10 +48,10 @@ TEST_F(BitVecTest, BitwiseAnd) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-TEST_F(BitVecTest, BitwiseOr) {
-  Ubv<8> a(ctx_, "a");
-  Ubv<8> b(ctx_, "b");
-  Ubv<8> c = a | b;
+TEST_F(SymIntTest, BitwiseOr) {
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<8> b(ctx_, "b");
+  SymUInt<8> c = a | b;
 
   z3::solver s(ctx_);
   s.add(a.raw() == ctx_.bv_val(0xF0, 8));
@@ -60,10 +60,10 @@ TEST_F(BitVecTest, BitwiseOr) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-TEST_F(BitVecTest, BitwiseXor) {
-  Ubv<8> a(ctx_, "a");
-  Ubv<8> b(ctx_, "b");
-  Ubv<8> c = a ^ b;
+TEST_F(SymIntTest, BitwiseXor) {
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<8> b(ctx_, "b");
+  SymUInt<8> c = a ^ b;
 
   z3::solver s(ctx_);
   s.add(a.raw() == ctx_.bv_val(0xFF, 8));
@@ -72,9 +72,9 @@ TEST_F(BitVecTest, BitwiseXor) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-TEST_F(BitVecTest, BitwiseNot) {
-  Ubv<8> a(ctx_, "a");
-  Ubv<8> b = ~a;
+TEST_F(SymIntTest, BitwiseNot) {
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<8> b = ~a;
 
   z3::solver s(ctx_);
   s.add(a.raw() == ctx_.bv_val(0xF0, 8));
@@ -84,10 +84,10 @@ TEST_F(BitVecTest, BitwiseNot) {
 
 // --- Exact equality ---
 
-TEST_F(BitVecTest, ExactEq) {
-  Ubv<8> a(ctx_, "a");
-  Ubv<8> b(ctx_, "b");
-  Bool eq = exact_eq(a, b);
+TEST_F(SymIntTest, ExactEq) {
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<8> b(ctx_, "b");
+  SymBool eq = exact_eq(a, b);
 
   z3::solver s(ctx_);
   s.add(eq.raw());
@@ -98,10 +98,10 @@ TEST_F(BitVecTest, ExactEq) {
 
 // --- Equality ---
 
-TEST_F(BitVecTest, Equality) {
-  Ubv<8> a(ctx_, "a");
-  Ubv<8> b(ctx_, "b");
-  Bool eq = (a == b);
+TEST_F(SymIntTest, Equality) {
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<8> b(ctx_, "b");
+  SymBool eq = (a == b);
 
   z3::solver s(ctx_);
   s.add(eq.raw());
@@ -110,10 +110,10 @@ TEST_F(BitVecTest, Equality) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-TEST_F(BitVecTest, Inequality) {
-  Ubv<8> a(ctx_, "a");
-  Ubv<8> b(ctx_, "b");
-  Bool neq = (a != b);
+TEST_F(SymIntTest, Inequality) {
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<8> b(ctx_, "b");
+  SymBool neq = (a != b);
 
   z3::solver s(ctx_);
   s.add(neq.raw());
@@ -124,10 +124,10 @@ TEST_F(BitVecTest, Inequality) {
 
 // --- Ordered comparison (unsigned) ---
 
-TEST_F(BitVecTest, UnsignedLessThan) {
-  Ubv<8> a(ctx_, "a");
-  Ubv<8> b(ctx_, "b");
-  Bool lt = (a < b);
+TEST_F(SymIntTest, UnsignedLessThan) {
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<8> b(ctx_, "b");
+  SymBool lt = (a < b);
 
   // 200 < 100 should be unsat (unsigned).
   z3::solver s(ctx_);
@@ -137,10 +137,10 @@ TEST_F(BitVecTest, UnsignedLessThan) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-TEST_F(BitVecTest, UnsignedGreaterThan) {
-  Ubv<8> a(ctx_, "a");
-  Ubv<8> b(ctx_, "b");
-  Bool gt = (a > b);
+TEST_F(SymIntTest, UnsignedGreaterThan) {
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<8> b(ctx_, "b");
+  SymBool gt = (a > b);
 
   z3::solver s(ctx_);
   s.add(gt.raw());
@@ -151,10 +151,10 @@ TEST_F(BitVecTest, UnsignedGreaterThan) {
 
 // --- Ordered comparison (signed) ---
 
-TEST_F(BitVecTest, SignedLessThan) {
-  Sbv<8> a(ctx_, "a");
-  Sbv<8> b(ctx_, "b");
-  Bool lt = (a < b);
+TEST_F(SymIntTest, SignedLessThan) {
+  SymSInt<8> a(ctx_, "a");
+  SymSInt<8> b(ctx_, "b");
+  SymBool lt = (a < b);
 
   // In signed 8-bit: 200 is -56, 100 is 100. So -56 < 100 is true.
   z3::solver s(ctx_);
@@ -166,9 +166,9 @@ TEST_F(BitVecTest, SignedLessThan) {
 
 // --- Arithmetic with bit growth ---
 
-TEST_F(BitVecTest, AdditionWidens) {
-  Ubv<8> a(ctx_, "a");
-  Ubv<8> b(ctx_, "b");
+TEST_F(SymIntTest, AdditionWidens) {
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<8> b(ctx_, "b");
   auto sum = a + b;
 
   // Result should be 9 bits wide.
@@ -177,9 +177,9 @@ TEST_F(BitVecTest, AdditionWidens) {
   EXPECT_EQ(sum.raw().get_sort().bv_size(), 9);
 }
 
-TEST_F(BitVecTest, AdditionNoOverflow) {
-  Ubv<8> a(ctx_, "a");
-  Ubv<8> b(ctx_, "b");
+TEST_F(SymIntTest, AdditionNoOverflow) {
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<8> b(ctx_, "b");
   auto sum = a + b;
 
   // 255 + 255 = 510, which fits in 9 bits.
@@ -190,37 +190,37 @@ TEST_F(BitVecTest, AdditionNoOverflow) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-TEST_F(BitVecTest, AdditionDifferentWidths) {
-  Ubv<8> a(ctx_, "a");
-  Ubv<4> b(ctx_, "b");
+TEST_F(SymIntTest, AdditionDifferentWidths) {
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<4> b(ctx_, "b");
   auto sum = a + b;
 
   // Result width = max(8, 4) + 1 = 9.
   static_assert(decltype(sum)::kWidth == 9);
 }
 
-TEST_F(BitVecTest, AdditionChained) {
-  Ubv<8> a(ctx_, "a");
-  Ubv<8> b(ctx_, "b");
-  auto sum1 = a + b;     // Ubv<9>
-  auto sum2 = sum1 + a;  // Ubv<10>
+TEST_F(SymIntTest, AdditionChained) {
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<8> b(ctx_, "b");
+  auto sum1 = a + b;     // SymUInt<9>
+  auto sum2 = sum1 + a;  // SymUInt<10>
 
   static_assert(decltype(sum1)::kWidth == 9);
   static_assert(decltype(sum2)::kWidth == 10);
 }
 
-TEST_F(BitVecTest, SubtractionIsSigned) {
-  Ubv<8> a(ctx_, "a");
-  Ubv<8> b(ctx_, "b");
+TEST_F(SymIntTest, SubtractionIsSigned) {
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<8> b(ctx_, "b");
   auto diff = a - b;
 
   static_assert(decltype(diff)::kWidth == 9);
   static_assert(decltype(diff)::kIsSigned);
 }
 
-TEST_F(BitVecTest, SubtractionCorrectValue) {
-  Ubv<8> a(ctx_, "a");
-  Ubv<8> b(ctx_, "b");
+TEST_F(SymIntTest, SubtractionCorrectValue) {
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<8> b(ctx_, "b");
   auto diff = a - b;
 
   // 100 - 200 = -100 in 9-bit signed.
@@ -234,9 +234,9 @@ TEST_F(BitVecTest, SubtractionCorrectValue) {
 
 // --- Mixed signedness arithmetic ---
 
-TEST_F(BitVecTest, AdditionMixedSignedness) {
-  Ubv<8> a(ctx_, "a");
-  Sbv<8> b(ctx_, "b");
+TEST_F(SymIntTest, AdditionMixedSignedness) {
+  SymUInt<8> a(ctx_, "a");
+  SymSInt<8> b(ctx_, "b");
   auto sum = a + b;
 
   // Result is signed when either operand is signed.
@@ -246,10 +246,10 @@ TEST_F(BitVecTest, AdditionMixedSignedness) {
 
 // --- Hardware shifts ---
 
-TEST_F(BitVecTest, LeftShift) {
-  Ubv<8> a(ctx_, "a");
-  Ubv<8> n(ctx_, "n");
-  Ubv<8> result = a << n;
+TEST_F(SymIntTest, LeftShift) {
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<8> n(ctx_, "n");
+  SymUInt<8> result = a << n;
 
   z3::solver s(ctx_);
   s.add(a.raw() == ctx_.bv_val(1, 8));
@@ -258,10 +258,10 @@ TEST_F(BitVecTest, LeftShift) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-TEST_F(BitVecTest, UnsignedRightShift) {
-  Ubv<8> a(ctx_, "a");
-  Ubv<8> n(ctx_, "n");
-  Ubv<8> result = a >> n;
+TEST_F(SymIntTest, UnsignedRightShift) {
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<8> n(ctx_, "n");
+  SymUInt<8> result = a >> n;
 
   z3::solver s(ctx_);
   s.add(a.raw() == ctx_.bv_val(0x80, 8));
@@ -271,10 +271,10 @@ TEST_F(BitVecTest, UnsignedRightShift) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-TEST_F(BitVecTest, SignedRightShift) {
-  Sbv<8> a(ctx_, "a");
-  Sbv<8> n(ctx_, "n");
-  Sbv<8> result = a >> n;
+TEST_F(SymIntTest, SignedRightShift) {
+  SymSInt<8> a(ctx_, "a");
+  SymSInt<8> n(ctx_, "n");
+  SymSInt<8> result = a >> n;
 
   z3::solver s(ctx_);
   s.add(a.raw() == ctx_.bv_val(0x80, 8));  // -128 signed
@@ -286,10 +286,10 @@ TEST_F(BitVecTest, SignedRightShift) {
 
 // --- ite ---
 
-TEST_F(BitVecTest, Ite) {
-  Ubv<8> a(ctx_, "a");
-  Ubv<8> b(ctx_, "b");
-  Bool sel(ctx_, "sel");
+TEST_F(SymIntTest, Ite) {
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<8> b(ctx_, "b");
+  SymBool sel(ctx_, "sel");
   auto result = ite(sel, a, b);
 
   static_assert(decltype(result)::kWidth == 8);
@@ -303,9 +303,9 @@ TEST_F(BitVecTest, Ite) {
 
 // --- cast ---
 
-TEST_F(BitVecTest, CastTruncation) {
-  Ubv<16> a(ctx_, "a");
-  auto b = cast<Ubv<8>>(a);
+TEST_F(SymIntTest, CastTruncation) {
+  SymUInt<16> a(ctx_, "a");
+  auto b = cast<SymUInt<8>>(a);
 
   static_assert(decltype(b)::kWidth == 8);
 
@@ -315,9 +315,9 @@ TEST_F(BitVecTest, CastTruncation) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-TEST_F(BitVecTest, CastZeroExtension) {
-  Ubv<8> a(ctx_, "a");
-  auto b = cast<Ubv<16>>(a);
+TEST_F(SymIntTest, CastZeroExtension) {
+  SymUInt<8> a(ctx_, "a");
+  auto b = cast<SymUInt<16>>(a);
 
   static_assert(decltype(b)::kWidth == 16);
 
@@ -327,9 +327,9 @@ TEST_F(BitVecTest, CastZeroExtension) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-TEST_F(BitVecTest, CastSignExtension) {
-  Sbv<8> a(ctx_, "a");
-  auto b = cast<Sbv<16>>(a);
+TEST_F(SymIntTest, CastSignExtension) {
+  SymSInt<8> a(ctx_, "a");
+  auto b = cast<SymSInt<16>>(a);
 
   z3::solver s(ctx_);
   s.add(a.raw() == ctx_.bv_val(0x80, 8));     // -128
@@ -337,9 +337,9 @@ TEST_F(BitVecTest, CastSignExtension) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-TEST_F(BitVecTest, CastBitcast) {
-  Ubv<8> a(ctx_, "a");
-  auto b = cast<Sbv<8>>(a);
+TEST_F(SymIntTest, CastBitcast) {
+  SymUInt<8> a(ctx_, "a");
+  auto b = cast<SymSInt<8>>(a);
 
   static_assert(decltype(b)::kIsSigned);
 
@@ -351,17 +351,17 @@ TEST_F(BitVecTest, CastBitcast) {
 
 // --- safe_cast ---
 
-TEST_F(BitVecTest, SafeCastWidening) {
-  Ubv<8> a(ctx_, "a");
-  auto b = safe_cast<Ubv<16>>(a);
+TEST_F(SymIntTest, SafeCastWidening) {
+  SymUInt<8> a(ctx_, "a");
+  auto b = safe_cast<SymUInt<16>>(a);
 
   static_assert(decltype(b)::kWidth == 16);
 }
 
-TEST_F(BitVecTest, SafeCastUnsignedToSigned) {
-  Ubv<8> a(ctx_, "a");
+TEST_F(SymIntTest, SafeCastUnsignedToSigned) {
+  SymUInt<8> a(ctx_, "a");
   // Needs W2 > W1 (9 > 8).
-  auto b = safe_cast<Sbv<9>>(a);
+  auto b = safe_cast<SymSInt<9>>(a);
 
   static_assert(decltype(b)::kWidth == 9);
   static_assert(decltype(b)::kIsSigned);
@@ -369,9 +369,9 @@ TEST_F(BitVecTest, SafeCastUnsignedToSigned) {
 
 // --- checked_cast ---
 
-TEST_F(BitVecTest, CheckedCastNoOverflow) {
-  Ubv<16> a(ctx_, "a");
-  auto [result, overflowed] = checked_cast<Ubv<8>>(a);
+TEST_F(SymIntTest, CheckedCastNoOverflow) {
+  SymUInt<16> a(ctx_, "a");
+  auto [result, overflowed] = checked_cast<SymUInt<8>>(a);
 
   // When value fits in 8 bits, overflow should be false.
   z3::solver s(ctx_);
@@ -380,9 +380,9 @@ TEST_F(BitVecTest, CheckedCastNoOverflow) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-TEST_F(BitVecTest, CheckedCastWithOverflow) {
-  Ubv<16> a(ctx_, "a");
-  auto [result, overflowed] = checked_cast<Ubv<8>>(a);
+TEST_F(SymIntTest, CheckedCastWithOverflow) {
+  SymUInt<16> a(ctx_, "a");
+  auto [result, overflowed] = checked_cast<SymUInt<8>>(a);
 
   // When value doesn't fit, overflow should be true.
   z3::solver s(ctx_);
@@ -391,29 +391,29 @@ TEST_F(BitVecTest, CheckedCastWithOverflow) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-// --- Bool / Ubv<1> conversion ---
+// --- SymBool / SymUInt<1> conversion ---
 
-TEST_F(BitVecTest, ToUbv1) {
-  Bool b = Bool::True(ctx_);
-  Ubv<1> v = to_ubv1(b);
+TEST_F(SymIntTest, ToUbv1) {
+  SymBool b = SymBool::True(ctx_);
+  SymUInt<1> v = to_ubv1(b);
 
   z3::solver s(ctx_);
   s.add(v.raw() != ctx_.bv_val(1, 1));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-TEST_F(BitVecTest, ToBool) {
-  auto v = Ubv<1>::Literal<1>(ctx_);
-  Bool b = to_bool(v);
+TEST_F(SymIntTest, ToBool) {
+  auto v = SymUInt<1>::Literal<1>(ctx_);
+  SymBool b = to_bool(v);
 
   z3::solver s(ctx_);
   s.add(!b.raw());
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-TEST_F(BitVecTest, ToBoolRoundtrip) {
-  Bool orig(ctx_, "orig");
-  Bool roundtrip = to_bool(to_ubv1(orig));
+TEST_F(SymIntTest, ToBoolRoundtrip) {
+  SymBool orig(ctx_, "orig");
+  SymBool roundtrip = to_bool(to_ubv1(orig));
 
   // orig <=> roundtrip should always hold.
   z3::solver s(ctx_);
@@ -423,8 +423,8 @@ TEST_F(BitVecTest, ToBoolRoundtrip) {
 
 // --- extract ---
 
-TEST_F(BitVecTest, StaticExtract) {
-  Ubv<16> a(ctx_, "a");
+TEST_F(SymIntTest, StaticExtract) {
+  SymUInt<16> a(ctx_, "a");
   auto high = extract<15, 8>(a);
   auto low = extract<7, 0>(a);
 
@@ -437,9 +437,9 @@ TEST_F(BitVecTest, StaticExtract) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-TEST_F(BitVecTest, SymbolicExtract) {
-  Ubv<16> a(ctx_, "a");
-  Ubv<4> idx(ctx_, "idx");
+TEST_F(SymIntTest, SymbolicExtract) {
+  SymUInt<16> a(ctx_, "a");
+  SymUInt<4> idx(ctx_, "idx");
   auto nibble = extract<4>(a, idx);
 
   static_assert(decltype(nibble)::kWidth == 4);
@@ -454,9 +454,9 @@ TEST_F(BitVecTest, SymbolicExtract) {
 
 // --- concat ---
 
-TEST_F(BitVecTest, Concat) {
-  Ubv<8> high(ctx_, "high");
-  Ubv<8> low(ctx_, "low");
+TEST_F(SymIntTest, Concat) {
+  SymUInt<8> high(ctx_, "high");
+  SymUInt<8> low(ctx_, "low");
   auto full = concat(high, low);
 
   static_assert(decltype(full)::kWidth == 16);
@@ -468,10 +468,10 @@ TEST_F(BitVecTest, Concat) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-TEST_F(BitVecTest, ConcatVariadic) {
-  Ubv<4> a(ctx_, "a");
-  Ubv<4> b(ctx_, "b");
-  Ubv<4> c(ctx_, "c");
+TEST_F(SymIntTest, ConcatVariadic) {
+  SymUInt<4> a(ctx_, "a");
+  SymUInt<4> b(ctx_, "b");
+  SymUInt<4> c(ctx_, "c");
   auto result = concat(a, b, c);
 
   static_assert(decltype(result)::kWidth == 12);
@@ -479,9 +479,9 @@ TEST_F(BitVecTest, ConcatVariadic) {
 
 // --- checked_shl ---
 
-TEST_F(BitVecTest, CheckedShlNoLoss) {
-  Ubv<8> a(ctx_, "a");
-  Ubv<8> n(ctx_, "n");
+TEST_F(SymIntTest, CheckedShlNoLoss) {
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<8> n(ctx_, "n");
   auto [shifted, lost] = checked_shl(a, n);
 
   // Shifting 1 left by 4 should not lose bits.
@@ -492,9 +492,9 @@ TEST_F(BitVecTest, CheckedShlNoLoss) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-TEST_F(BitVecTest, CheckedShlWithLoss) {
-  Ubv<8> a(ctx_, "a");
-  Ubv<8> n(ctx_, "n");
+TEST_F(SymIntTest, CheckedShlWithLoss) {
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<8> n(ctx_, "n");
   auto [shifted, lost] = checked_shl(a, n);
 
   // Shifting 0x80 left by 1 loses the high bit.
@@ -507,9 +507,9 @@ TEST_F(BitVecTest, CheckedShlWithLoss) {
 
 // --- checked_shr ---
 
-TEST_F(BitVecTest, CheckedShrWithLoss) {
-  Ubv<8> a(ctx_, "a");
-  Ubv<8> n(ctx_, "n");
+TEST_F(SymIntTest, CheckedShrWithLoss) {
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<8> n(ctx_, "n");
   auto [shifted, lost] = checked_shr(a, n);
 
   // Shifting 0x01 right by 1 loses the low bit.
@@ -522,8 +522,8 @@ TEST_F(BitVecTest, CheckedShrWithLoss) {
 
 // --- lossless_shl ---
 
-TEST_F(BitVecTest, LosslessShlConstant) {
-  Ubv<8> a(ctx_, "a");
+TEST_F(SymIntTest, LosslessShlConstant) {
+  SymUInt<8> a(ctx_, "a");
   auto result = lossless_shl<3>(a);
 
   static_assert(decltype(result)::kWidth == 11);
@@ -535,9 +535,9 @@ TEST_F(BitVecTest, LosslessShlConstant) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-TEST_F(BitVecTest, LosslessShlSymbolic) {
-  Ubv<8> a(ctx_, "a");
-  Ubv<3> n(ctx_, "n");
+TEST_F(SymIntTest, LosslessShlSymbolic) {
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<3> n(ctx_, "n");
   auto result = lossless_shl(a, n);
 
   // Result width = 8 + 2^3 - 1 = 15.
@@ -546,26 +546,26 @@ TEST_F(BitVecTest, LosslessShlSymbolic) {
 
 // --- Type traits ---
 
-TEST_F(BitVecTest, IsSymbolicV) {
-  static_assert(is_symbolic_v<Ubv<8>>);
-  static_assert(is_symbolic_v<Sbv<16>>);
+TEST_F(SymIntTest, IsSymbolicV) {
+  static_assert(is_symbolic_v<SymUInt<8>>);
+  static_assert(is_symbolic_v<SymSInt<16>>);
   static_assert(!is_symbolic_v<int>);
 }
 
 // --- Concrete to symbolic promotion ---
 
-TEST_F(BitVecTest, ConcreteToSymbolic) {
+TEST_F(SymIntTest, ConcreteToSymbolic) {
   auto concrete = UInt<8>::Literal<42>();
-  Ubv<8> symbolic = to_symbolic(concrete, ctx_);
+  SymUInt<8> symbolic = to_symbolic(concrete, ctx_);
 
   z3::solver s(ctx_);
   s.add(symbolic.raw() != ctx_.bv_val(42, 8));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-TEST_F(BitVecTest, SignedConcreteToSymbolic) {
+TEST_F(SymIntTest, SignedConcreteToSymbolic) {
   auto concrete = SInt<8>::Literal<-128>();
-  Sbv<8> symbolic = to_symbolic(concrete, ctx_);
+  SymSInt<8> symbolic = to_symbolic(concrete, ctx_);
 
   z3::solver s(ctx_);
   s.add(symbolic.raw() != ctx_.bv_val(0x80, 8));
@@ -574,8 +574,8 @@ TEST_F(BitVecTest, SignedConcreteToSymbolic) {
 
 // --- Mixed concrete + symbolic arithmetic ---
 
-TEST_F(BitVecTest, MixedAddSymbolicPlusConcrete) {
-  Ubv<8> sym(ctx_, "x");
+TEST_F(SymIntTest, MixedAddSymbolicPlusConcrete) {
+  SymUInt<8> sym(ctx_, "x");
   auto conc = UInt<8>::Literal<42>();
   auto result = sym + conc;
 
@@ -588,17 +588,17 @@ TEST_F(BitVecTest, MixedAddSymbolicPlusConcrete) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-TEST_F(BitVecTest, MixedAddConcretePlusSymbolic) {
+TEST_F(SymIntTest, MixedAddConcretePlusSymbolic) {
   auto conc = UInt<8>::Literal<42>();
-  Ubv<8> sym(ctx_, "x");
+  SymUInt<8> sym(ctx_, "x");
   auto result = conc + sym;
 
   static_assert(decltype(result)::kWidth == 9);
   static_assert(is_symbolic_v<decltype(result)>);
 }
 
-TEST_F(BitVecTest, MixedSubSymbolicMinusConcrete) {
-  Ubv<8> sym(ctx_, "x");
+TEST_F(SymIntTest, MixedSubSymbolicMinusConcrete) {
+  SymUInt<8> sym(ctx_, "x");
   auto conc = UInt<8>::Literal<50>();
   auto result = sym - conc;
 
@@ -607,8 +607,8 @@ TEST_F(BitVecTest, MixedSubSymbolicMinusConcrete) {
   static_assert(is_symbolic_v<decltype(result)>);
 }
 
-TEST_F(BitVecTest, MixedAddDifferentWidths) {
-  Ubv<8> sym(ctx_, "x");
+TEST_F(SymIntTest, MixedAddDifferentWidths) {
+  SymUInt<8> sym(ctx_, "x");
   auto conc = UInt<4>::Literal<15>();
   auto result = sym + conc;
 
@@ -617,10 +617,10 @@ TEST_F(BitVecTest, MixedAddDifferentWidths) {
 
 // --- Mixed bitwise ---
 
-TEST_F(BitVecTest, MixedBitwiseAnd) {
-  Ubv<8> sym(ctx_, "x");
+TEST_F(SymIntTest, MixedBitwiseAnd) {
+  SymUInt<8> sym(ctx_, "x");
   auto conc = UInt<8>::Literal<0x0F>();
-  Ubv<8> result = sym & conc;
+  SymUInt<8> result = sym & conc;
 
   z3::solver s(ctx_);
   s.add(sym.raw() == ctx_.bv_val(0xAB, 8));
@@ -630,10 +630,10 @@ TEST_F(BitVecTest, MixedBitwiseAnd) {
 
 // --- Mixed comparison ---
 
-TEST_F(BitVecTest, MixedEquality) {
-  Ubv<8> sym(ctx_, "x");
+TEST_F(SymIntTest, MixedEquality) {
+  SymUInt<8> sym(ctx_, "x");
   auto conc = UInt<8>::Literal<42>();
-  Bool eq = (sym == conc);
+  SymBool eq = (sym == conc);
 
   z3::solver s(ctx_);
   s.add(eq.raw());
@@ -641,10 +641,10 @@ TEST_F(BitVecTest, MixedEquality) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-TEST_F(BitVecTest, MixedLessThan) {
-  Ubv<8> sym(ctx_, "x");
+TEST_F(SymIntTest, MixedLessThan) {
+  SymUInt<8> sym(ctx_, "x");
   auto conc = UInt<8>::Literal<100>();
-  Bool lt = (sym < conc);
+  SymBool lt = (sym < conc);
 
   z3::solver s(ctx_);
   s.add(lt.raw());
@@ -654,8 +654,8 @@ TEST_F(BitVecTest, MixedLessThan) {
 
 // --- Mixed ite ---
 
-TEST_F(BitVecTest, MixedIteSymbolicCondConcreteValues) {
-  Bool cond(ctx_, "c");
+TEST_F(SymIntTest, MixedIteSymbolicCondConcreteValues) {
+  SymBool cond(ctx_, "c");
   auto a = UInt<8>::Literal<42>();
   auto b = UInt<8>::Literal<99>();
   auto result = ite(cond, a, b);
@@ -668,9 +668,9 @@ TEST_F(BitVecTest, MixedIteSymbolicCondConcreteValues) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-TEST_F(BitVecTest, MixedIteSymbolicCondMixedValues) {
-  Bool cond(ctx_, "c");
-  Ubv<8> sym(ctx_, "x");
+TEST_F(SymIntTest, MixedIteSymbolicCondMixedValues) {
+  SymBool cond(ctx_, "c");
+  SymUInt<8> sym(ctx_, "x");
   auto conc = UInt<8>::Literal<99>();
   auto result = ite(cond, sym, conc);
 
@@ -679,8 +679,8 @@ TEST_F(BitVecTest, MixedIteSymbolicCondMixedValues) {
 
 // --- Mixed shifts ---
 
-TEST_F(BitVecTest, MixedLeftShift) {
-  Ubv<8> sym(ctx_, "x");
+TEST_F(SymIntTest, MixedLeftShift) {
+  SymUInt<8> sym(ctx_, "x");
   auto conc = UInt<8>::Literal<4>();
   auto result = sym << conc;
 
@@ -690,8 +690,8 @@ TEST_F(BitVecTest, MixedLeftShift) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-TEST_F(BitVecTest, MixedRightShift) {
-  Ubv<8> sym(ctx_, "x");
+TEST_F(SymIntTest, MixedRightShift) {
+  SymUInt<8> sym(ctx_, "x");
   auto conc = UInt<8>::Literal<4>();
   auto result = sym >> conc;
 
@@ -701,16 +701,16 @@ TEST_F(BitVecTest, MixedRightShift) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-// --- is_symbolic_v<Bool> ---
+// --- is_symbolic_v<SymBool> ---
 
-TEST_F(BitVecTest, IsSymbolicBool) { static_assert(is_symbolic_v<Bool>); }
+TEST_F(SymIntTest, IsSymbolicBool) { static_assert(is_symbolic_v<SymBool>); }
 
 // --- Cross-type symbolic comparison (different widths) ---
 
-TEST_F(BitVecTest, CrossTypeEqualityDifferentWidths) {
-  Ubv<8> a(ctx_, "a");
-  Ubv<16> b(ctx_, "b");
-  Bool eq = (a == b);
+TEST_F(SymIntTest, CrossTypeEqualityDifferentWidths) {
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<16> b(ctx_, "b");
+  SymBool eq = (a == b);
 
   // If a=42 and b=42, they should be equal.
   z3::solver s(ctx_);
@@ -720,10 +720,10 @@ TEST_F(BitVecTest, CrossTypeEqualityDifferentWidths) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-TEST_F(BitVecTest, CrossTypeInequalityDifferentWidths) {
-  Ubv<8> a(ctx_, "a");
-  Ubv<16> b(ctx_, "b");
-  Bool neq = (a != b);
+TEST_F(SymIntTest, CrossTypeInequalityDifferentWidths) {
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<16> b(ctx_, "b");
+  SymBool neq = (a != b);
 
   // If a=42 and b=42, they should not be unequal.
   z3::solver s(ctx_);
@@ -733,10 +733,10 @@ TEST_F(BitVecTest, CrossTypeInequalityDifferentWidths) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-TEST_F(BitVecTest, CrossTypeLessThanDifferentWidths) {
-  Ubv<8> a(ctx_, "a");
-  Ubv<16> b(ctx_, "b");
-  Bool lt = (a < b);
+TEST_F(SymIntTest, CrossTypeLessThanDifferentWidths) {
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<16> b(ctx_, "b");
+  SymBool lt = (a < b);
 
   // 100 < 200 should be sat (unsigned).
   z3::solver s(ctx_);
@@ -748,12 +748,12 @@ TEST_F(BitVecTest, CrossTypeLessThanDifferentWidths) {
 
 // --- Cross-type symbolic comparison (different signedness) ---
 
-TEST_F(BitVecTest, CrossTypeLessThanDifferentSignedness) {
-  // Sbv<8> -1 (0xFF) < Ubv<8> 200 should be true.
+TEST_F(SymIntTest, CrossTypeLessThanDifferentSignedness) {
+  // SymSInt<8> -1 (0xFF) < SymUInt<8> 200 should be true.
   // Common type: signed, width = max(8,8)+1 = 9.
-  Sbv<8> a(ctx_, "a");
-  Ubv<8> b(ctx_, "b");
-  Bool lt = (a < b);
+  SymSInt<8> a(ctx_, "a");
+  SymUInt<8> b(ctx_, "b");
+  SymBool lt = (a < b);
 
   z3::solver s(ctx_);
   s.add(lt.raw());
@@ -762,11 +762,11 @@ TEST_F(BitVecTest, CrossTypeLessThanDifferentSignedness) {
   EXPECT_EQ(s.check(), z3::sat);
 }
 
-TEST_F(BitVecTest, CrossTypeGreaterEqualDifferentSignedness) {
-  // Ubv<8> 200 >= Sbv<8> -1 should be true.
-  Ubv<8> a(ctx_, "a");
-  Sbv<8> b(ctx_, "b");
-  Bool ge = (a >= b);
+TEST_F(SymIntTest, CrossTypeGreaterEqualDifferentSignedness) {
+  // SymUInt<8> 200 >= SymSInt<8> -1 should be true.
+  SymUInt<8> a(ctx_, "a");
+  SymSInt<8> b(ctx_, "b");
+  SymBool ge = (a >= b);
 
   z3::solver s(ctx_);
   s.add(a.raw() == ctx_.bv_val(200, 8));
@@ -777,10 +777,10 @@ TEST_F(BitVecTest, CrossTypeGreaterEqualDifferentSignedness) {
 
 // --- Mixed concrete+symbolic cross-type comparison ---
 
-TEST_F(BitVecTest, MixedCrossTypeEquality) {
-  Ubv<8> sym(ctx_, "x");
+TEST_F(SymIntTest, MixedCrossTypeEquality) {
+  SymUInt<8> sym(ctx_, "x");
   auto conc = UInt<16>::Literal<42>();
-  Bool eq = (sym == conc);
+  SymBool eq = (sym == conc);
 
   z3::solver s(ctx_);
   s.add(eq.raw());
@@ -788,10 +788,10 @@ TEST_F(BitVecTest, MixedCrossTypeEquality) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-TEST_F(BitVecTest, MixedCrossTypeLessThan) {
-  Ubv<8> sym(ctx_, "x");
+TEST_F(SymIntTest, MixedCrossTypeLessThan) {
+  SymUInt<8> sym(ctx_, "x");
   auto conc = UInt<16>::Literal<300>();
-  Bool lt = (sym < conc);
+  SymBool lt = (sym < conc);
 
   // Any 8-bit unsigned value (0-255) is always < 300.
   z3::solver s(ctx_);
@@ -801,8 +801,8 @@ TEST_F(BitVecTest, MixedCrossTypeLessThan) {
 
 // --- Unary negate ---
 
-TEST_F(BitVecTest, NegateUnsigned) {
-  Ubv<8> a(ctx_, "a");
+TEST_F(SymIntTest, NegateUnsigned) {
+  SymUInt<8> a(ctx_, "a");
   auto neg = -a;
 
   // Result: width = 9, always signed.
@@ -816,22 +816,22 @@ TEST_F(BitVecTest, NegateUnsigned) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-TEST_F(BitVecTest, NegateSigned) {
-  Sbv<8> a(ctx_, "a");
+TEST_F(SymIntTest, NegateSigned) {
+  SymSInt<8> a(ctx_, "a");
   auto neg = -a;
 
   static_assert(decltype(neg)::kWidth == 9);
   static_assert(decltype(neg)::kIsSigned);
 
-  // Negate -128 → 128, which fits in Sbv<9>.
+  // Negate -128 -> 128, which fits in SymSInt<9>.
   z3::solver s(ctx_);
   s.add(a.raw() == ctx_.bv_val(0x80, 8));  // -128 signed
   s.add(neg.raw() != ctx_.bv_val(128, 9));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-TEST_F(BitVecTest, NegateZero) {
-  Ubv<8> a(ctx_, "a");
+TEST_F(SymIntTest, NegateZero) {
+  SymUInt<8> a(ctx_, "a");
   auto neg = -a;
 
   z3::solver s(ctx_);
@@ -842,10 +842,10 @@ TEST_F(BitVecTest, NegateZero) {
 
 // --- Mixed unary negate ---
 
-TEST_F(BitVecTest, NegateConsistentWithBinarySub) {
-  Ubv<8> a(ctx_, "a");
+TEST_F(SymIntTest, NegateConsistentWithBinarySub) {
+  SymUInt<8> a(ctx_, "a");
   auto neg = -a;
-  auto zero_minus_a = Ubv<8>::Literal<0>(ctx_) - a;
+  auto zero_minus_a = SymUInt<8>::Literal<0>(ctx_) - a;
 
   // -a should equal 0 - a for all values.
   z3::solver s(ctx_);
@@ -855,8 +855,8 @@ TEST_F(BitVecTest, NegateConsistentWithBinarySub) {
 
 // --- Single-bit extraction ---
 
-TEST_F(BitVecTest, BitExtract) {
-  Ubv<8> a(ctx_, "a");
+TEST_F(SymIntTest, BitExtract) {
+  SymUInt<8> a(ctx_, "a");
   auto b5 = bit<5>(a);
 
   static_assert(decltype(b5)::kWidth == 1);

@@ -24,7 +24,7 @@
 using namespace example;
 
 // Helper: assert an implication (p → q).
-void imply(z3::solver& solver, const z3w::Bool& p, const z3w::Bool& q) {
+void imply(z3::solver& solver, const z3w::SymBool& p, const z3w::SymBool& q) {
   solver.add((!p || q).raw());
 }
 
@@ -43,13 +43,14 @@ int main() {
 
   // Rule 1: SLEEP → all counters zero.
   for (int i = 0; i < 4; ++i) {
-    auto counter_zero = z3w::Bool(reg.counters[i].raw() == ctx.bv_val(0, 4));
+    auto counter_zero = z3w::SymBool(reg.counters[i].raw() == ctx.bv_val(0, 4));
     imply(solver, mode_is_sleep, counter_zero);
   }
 
   // Rule 2: counter nonzero → ready.
   for (int i = 0; i < 4; ++i) {
-    auto counter_nonzero = z3w::Bool(reg.counters[i].raw() != ctx.bv_val(0, 4));
+    auto counter_nonzero =
+        z3w::SymBool(reg.counters[i].raw() != ctx.bv_val(0, 4));
     imply(solver, counter_nonzero, reg.ready);
   }
 
@@ -84,10 +85,10 @@ int main() {
     solver.push();
     solver.add((!reg.ready).raw());
     auto any_counter_active =
-        z3w::Bool(reg.counters[0].raw() != ctx.bv_val(0, 4) ||
-                  reg.counters[1].raw() != ctx.bv_val(0, 4) ||
-                  reg.counters[2].raw() != ctx.bv_val(0, 4) ||
-                  reg.counters[3].raw() != ctx.bv_val(0, 4));
+        z3w::SymBool(reg.counters[0].raw() != ctx.bv_val(0, 4) ||
+                     reg.counters[1].raw() != ctx.bv_val(0, 4) ||
+                     reg.counters[2].raw() != ctx.bv_val(0, 4) ||
+                     reg.counters[3].raw() != ctx.bv_val(0, 4));
     solver.add(any_counter_active.raw());
 
     if (solver.check() == z3::sat) {

@@ -107,11 +107,11 @@ class EmitHeaderTest(unittest.TestCase):
         output = emit_header(resolved, proto_header="test.pb.h")
 
         self.assertIn("struct RegSymbolic {", output)
-        self.assertIn("z3w::Bool flag;", output)
-        self.assertIn("z3w::Ubv<7> val;", output)
+        self.assertIn("z3w::SymBool flag;", output)
+        self.assertIn("z3w::SymUInt<7> val;", output)
         self.assertIn("// [0]", output)
         self.assertIn("// [7:1]", output)
-        self.assertIn("z3w::Ubv<8> Pack() const;", output)
+        self.assertIn("z3w::SymUInt<8> Pack() const;", output)
         self.assertIn("static RegSymbolic Create(z3::context& ctx,", output)
 
     def test_to_proto_body(self):
@@ -231,8 +231,8 @@ class EmitHeaderTest(unittest.TestCase):
         resolved = resolve(module)
         output = emit_header(resolved, proto_header="test.pb.h")
 
-        self.assertIn('z3w::Bool(ctx, prefix + ".flag")', output)
-        self.assertIn('z3w::Ubv<7>(ctx, prefix + ".val")', output)
+        self.assertIn('z3w::SymBool(ctx, prefix + ".flag")', output)
+        self.assertIn('z3w::SymUInt<7>(ctx, prefix + ".val")', output)
 
     def test_array_in_pack(self):
         module = rdl_pb2.Module(
@@ -388,16 +388,16 @@ class EmitHeaderTest(unittest.TestCase):
 
         # ErrorInfo symbolic
         self.assertIn("struct ErrorInfoSymbolic {", output)
-        self.assertIn("z3w::Sbv<2> severity;", output)
+        self.assertIn("z3w::SymSInt<2> severity;", output)
 
         # StatusRegister concrete — nested struct and array
         self.assertIn("ErrorInfoConcrete error;", output)
         self.assertIn("std::array<z3w::UInt<4>, 4> counters;", output)
 
         # StatusRegister symbolic — bit offsets
-        self.assertIn("z3w::Ubv<32> Pack() const;", output)
+        self.assertIn("z3w::SymUInt<32> Pack() const;", output)
         self.assertIn("ErrorInfoSymbolic error;", output)
-        self.assertIn("std::array<z3w::Ubv<4>, 4> counters;", output)
+        self.assertIn("std::array<z3w::SymUInt<4>, 4> counters;", output)
 
         # Namespace
         self.assertIn("namespace example {", output)
