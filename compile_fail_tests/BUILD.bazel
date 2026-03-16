@@ -118,3 +118,10 @@ cc_compile_fail_test(
     expected_message = "extract: TargetWidth must be <= input width",
     deps = ["//z3wire:sym_int"],
 )
+
+cc_compile_fail_test(
+    name = "bool_from_int_test",
+    src = "bool_from_int_test.cc",
+    expected_message = "deleted",
+    deps = ["//z3wire:bool"],
+)

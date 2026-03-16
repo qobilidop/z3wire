@@ -1,3 +1,12 @@
+# Concrete Bool wrapper (no Z3 dependency).
+add_library(z3wire_bool INTERFACE)
+add_library(z3wire::bool ALIAS z3wire_bool)
+
+target_include_directories(z3wire_bool INTERFACE
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
+    $<INSTALL_INTERFACE:include>
+)
+
 # Concrete types (no Z3 dependency).
 add_library(z3wire_int INTERFACE)
 add_library(z3wire::int ALIAS z3wire_int)
@@ -39,6 +48,10 @@ if(BUILD_TESTING)
         GIT_TAG v1.16.0
     )
     FetchContent_MakeAvailable(googletest)
+
+    add_executable(bool_test bool_test.cc)
+    target_link_libraries(bool_test PRIVATE z3wire_bool GTest::gtest_main)
+    add_test(NAME bool_test COMMAND bool_test)
 
     add_executable(int_test int_test.cc)
     target_link_libraries(int_test PRIVATE z3wire_int GTest::gtest_main)

@@ -25,7 +25,10 @@ cc_library(
     name = "sym_bool",
     hdrs = ["sym_bool.h"],
     visibility = ["//visibility:public"],
-    deps = ["@z3//:z3_static"],
+    deps = [
+        ":bool",
+        "@z3//:z3_static",
+    ],
 )
 
 cc_test(
@@ -33,6 +36,21 @@ cc_test(
     srcs = ["sym_bool_test.cc"],
     deps = [
         ":sym_bool",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "bool",
+    hdrs = ["bool.h"],
+    visibility = ["//visibility:public"],
+)
+
+cc_test(
+    name = "bool_test",
+    srcs = ["bool_test.cc"],
+    deps = [
+        ":bool",
         "@googletest//:gtest_main",
     ],
 )

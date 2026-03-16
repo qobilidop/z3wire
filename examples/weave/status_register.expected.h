@@ -4,6 +4,7 @@
 #include <string>
 #include <tuple>
 
+#include "z3wire/bool.h"
 #include "z3wire/sym_bool.h"
 #include "z3wire/sym_int.h"
 #include "z3wire/int.h"
@@ -30,7 +31,7 @@ struct OpMode {
 struct ErrorInfoConcrete {
   z3w::UInt<4> code;
   z3w::SInt<2> severity;
-  bool fatal;
+  z3w::Bool fatal;
   z3w::UInt<1> reserved;
 
   ErrorInfoProto ToProto() const;
@@ -39,7 +40,7 @@ struct ErrorInfoConcrete {
 
 // Device status register
 struct StatusRegisterConcrete {
-  bool ready;
+  z3w::Bool ready;
   z3w::UInt<2> mode;
   ErrorInfoConcrete error;
   std::array<z3w::UInt<4>, 4> counters;
@@ -94,7 +95,7 @@ inline ErrorInfoProto ErrorInfoConcrete::ToProto() const {
   ErrorInfoProto proto;
   proto.set_code(static_cast<uint32_t>(code.value()));
   proto.set_severity(static_cast<int32_t>(severity.value()));
-  proto.set_fatal(fatal);
+  proto.set_fatal(bool(fatal));
   return proto;
 }
 
@@ -102,7 +103,7 @@ inline ErrorInfoConcrete ErrorInfoConcrete::FromProto(const ErrorInfoProto& prot
   ErrorInfoConcrete result{};
   result.code = std::get<0>(z3w::UInt<4>::checked(proto.code()));
   result.severity = std::get<0>(z3w::SInt<2>::checked(proto.severity()));
-  result.fatal = proto.fatal();
+  result.fatal = z3w::Bool(proto.fatal());
   return result;
 }
 
@@ -124,7 +125,7 @@ inline ErrorInfoConcrete ErrorInfoSymbolic::ToConcrete(const z3::model& model) c
   ErrorInfoConcrete result{};
   result.code = std::get<0>(z3w::UInt<4>::checked(static_cast<uint32_t>(model.eval(code.raw(), true).get_numeral_int64())));
   result.severity = std::get<0>(z3w::SInt<2>::checked(static_cast<int32_t>(model.eval(severity.raw(), true).get_numeral_int64())));
-  result.fatal = model.eval(fatal.raw(), true).is_true();
+  result.fatal = z3w::Bool(model.eval(fatal.raw(), true).is_true());
   result.reserved = std::get<0>(z3w::UInt<1>::checked(static_cast<uint32_t>(model.eval(reserved.raw(), true).get_numeral_int64())));
   return result;
 }
@@ -134,14 +135,14 @@ inline ErrorInfoSymbolic ErrorInfoSymbolic::FromConcrete(z3::context& ctx,
   ErrorInfoSymbolic result;
   result.code = z3w::to_symbolic(concrete.code, ctx);
   result.severity = z3w::to_symbolic(concrete.severity, ctx);
-  result.fatal = (concrete.fatal ? z3w::SymBool::True(ctx) : z3w::SymBool::False(ctx));
+  result.fatal = z3w::to_symbolic(concrete.fatal, ctx);
   result.reserved = z3w::to_symbolic(concrete.reserved, ctx);
   return result;
 }
 
 inline StatusRegisterProto StatusRegisterConcrete::ToProto() const {
   StatusRegisterProto proto;
-  proto.set_ready(ready);
+  proto.set_ready(bool(ready));
   proto.set_mode(static_cast<uint32_t>(mode.value()));
   *proto.mutable_error() = error.ToProto();
   for (size_t i = 0; i < 4; ++i) {
@@ -152,7 +153,7 @@ inline StatusRegisterProto StatusRegisterConcrete::ToProto() const {
 
 inline StatusRegisterConcrete StatusRegisterConcrete::FromProto(const StatusRegisterProto& proto) {
   StatusRegisterConcrete result{};
-  result.ready = proto.ready();
+  result.ready = z3w::Bool(proto.ready());
   result.mode = std::get<0>(z3w::UInt<2>::checked(proto.mode()));
   result.error = ErrorInfoConcrete::FromProto(proto.error());
   for (size_t i = 0; i < 4; ++i) {
@@ -180,7 +181,7 @@ inline z3w::SymUInt<32> StatusRegisterSymbolic::Pack() const {
 
 inline StatusRegisterConcrete StatusRegisterSymbolic::ToConcrete(const z3::model& model) const {
   StatusRegisterConcrete result{};
-  result.ready = model.eval(ready.raw(), true).is_true();
+  result.ready = z3w::Bool(model.eval(ready.raw(), true).is_true());
   result.mode = std::get<0>(z3w::UInt<2>::checked(static_cast<uint32_t>(model.eval(mode.raw(), true).get_numeral_int64())));
   result.error = error.ToConcrete(model);
   for (size_t i = 0; i < 4; ++i) {
@@ -193,7 +194,7 @@ inline StatusRegisterConcrete StatusRegisterSymbolic::ToConcrete(const z3::model
 inline StatusRegisterSymbolic StatusRegisterSymbolic::FromConcrete(z3::context& ctx,
     const StatusRegisterConcrete& concrete) {
   StatusRegisterSymbolic result;
-  result.ready = (concrete.ready ? z3w::SymBool::True(ctx) : z3w::SymBool::False(ctx));
+  result.ready = z3w::to_symbolic(concrete.ready, ctx);
   result.mode = z3w::to_symbolic(concrete.mode, ctx);
   result.error = ErrorInfoSymbolic::FromConcrete(ctx, concrete.error);
   for (size_t i = 0; i < 4; ++i) {

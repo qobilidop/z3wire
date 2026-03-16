@@ -6,6 +6,8 @@
 
 #include <z3++.h>
 
+#include "z3wire/bool.h"
+
 namespace z3w {
 
 // Type-safe wrapper around a Z3 Bool expression.
@@ -58,6 +60,11 @@ class SymBool {
  private:
   std::optional<z3::expr> expr_;
 };
+
+// Convert a concrete Bool to a symbolic SymBool.
+inline SymBool to_symbolic(Bool val, z3::context& ctx) {
+  return val.value() ? SymBool::True(ctx) : SymBool::False(ctx);
+}
 
 }  // namespace z3w
 

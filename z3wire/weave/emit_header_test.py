@@ -76,7 +76,7 @@ class EmitHeaderTest(unittest.TestCase):
         output = emit_header(resolved, proto_header="test.pb.h")
 
         self.assertIn("struct RegConcrete {", output)
-        self.assertIn("bool flag;", output)
+        self.assertIn("z3w::Bool flag;", output)
         self.assertIn("z3w::SInt<4> val;", output)
         self.assertIn("std::array<z3w::UInt<8>, 2> items;", output)
         self.assertIn("RegProto ToProto() const;", output)
@@ -144,7 +144,7 @@ class EmitHeaderTest(unittest.TestCase):
         output = emit_header(resolved, proto_header="test.pb.h")
 
         self.assertIn("inline RegProto RegConcrete::ToProto() const {", output)
-        self.assertIn("proto.set_flag(flag);", output)
+        self.assertIn("proto.set_flag(bool(flag));", output)
         self.assertIn("proto.set_val(static_cast<uint32_t>(val.value()));", output)
         # Reserved field should not appear in ToProto
         self.assertNotIn("pad", output.split("ToProto")[1].split("}")[0])
@@ -176,7 +176,7 @@ class EmitHeaderTest(unittest.TestCase):
         self.assertIn(
             "inline RegConcrete RegConcrete::FromProto(const RegProto& proto) {", output
         )
-        self.assertIn("result.flag = proto.flag();", output)
+        self.assertIn("result.flag = z3w::Bool(proto.flag());", output)
         self.assertIn("std::get<0>(z3w::UInt<8>::checked(proto.val()))", output)
 
     def test_pack_body(self):

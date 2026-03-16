@@ -155,6 +155,12 @@ struct is_concrete : std::false_type {};
 template <size_t W, bool S>
 struct is_concrete<Int<W, S>> : std::true_type {};
 
+// Forward declaration for concrete Bool.
+class Bool;
+
+template <>
+struct is_concrete<Bool> : std::true_type {};
+
 template <typename T>
 inline constexpr bool is_concrete_v = is_concrete<T>::value;
 

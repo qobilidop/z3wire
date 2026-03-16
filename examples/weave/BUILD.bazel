@@ -41,6 +41,7 @@ cc_library(
     hdrs = [":status_register.h"],
     deps = [
         ":status_register_cc_proto",
+        "//z3wire:bool",
         "//z3wire:int",
         "//z3wire:sym_int",
     ],

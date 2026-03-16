@@ -20,7 +20,7 @@ def _symbolic_type(field: ResolvedField) -> str:
 def _concrete_type(field: ResolvedField) -> str:
     """Return the Z3Wire concrete C++ type for a field."""
     if field.kind == "bool":
-        return "bool"
+        return "z3w::Bool"
     elif field.kind == "bitvec" or field.kind == "enum_ref":
         w = field.element_width
         if field.signedness == "signed":
@@ -54,7 +54,7 @@ def _proto_value_type(field: ResolvedField) -> str:
 def _to_proto_expr(field: ResolvedField, accessor: str) -> str:
     """Generate expression to convert a concrete field value to proto value."""
     if field.kind == "bool":
-        return accessor
+        return f"bool({accessor})"
     elif field.kind == "bitvec" or field.kind == "enum_ref":
         return f"static_cast<{_proto_value_type(field)}>({accessor}.value())"
     elif field.kind == "struct_ref":
@@ -65,7 +65,7 @@ def _to_proto_expr(field: ResolvedField, accessor: str) -> str:
 def _from_proto_expr(field: ResolvedField, accessor: str) -> str:
     """Generate expression to convert a proto value to concrete field value."""
     if field.kind == "bool":
-        return accessor
+        return f"z3w::Bool({accessor})"
     elif field.kind == "bitvec" or field.kind == "enum_ref":
         ctype = _concrete_type(field)
         return f"std::get<0>({ctype}::checked({accessor}))"
@@ -78,7 +78,7 @@ def _from_proto_expr(field: ResolvedField, accessor: str) -> str:
 def _to_concrete_expr(field: ResolvedField, accessor: str) -> str:
     """Generate expression to evaluate a symbolic field to concrete."""
     if field.kind == "bool":
-        return f"model.eval({accessor}.raw(), true).is_true()"
+        return f"z3w::Bool(model.eval({accessor}.raw(), true).is_true())"
     elif field.kind == "bitvec" or field.kind == "enum_ref":
         ctype = _concrete_type(field)
         return (
@@ -94,7 +94,7 @@ def _to_concrete_expr(field: ResolvedField, accessor: str) -> str:
 def _from_concrete_expr(field: ResolvedField, accessor: str) -> str:
     """Generate expression to create symbolic constant from concrete value."""
     if field.kind == "bool":
-        return f"({accessor} ? z3w::SymBool::True(ctx) : z3w::SymBool::False(ctx))"
+        return f"z3w::to_symbolic({accessor}, ctx)"
     elif field.kind == "bitvec" or field.kind == "enum_ref":
         return f"z3w::to_symbolic({accessor}, ctx)"
     elif field.kind == "struct_ref":
@@ -356,6 +356,7 @@ def emit_header(module: ResolvedModule, proto_header: str) -> str:
     lines.append("#include <string>")
     lines.append("#include <tuple>")
     lines.append("")
+    lines.append('#include "z3wire/bool.h"')
     lines.append('#include "z3wire/sym_bool.h"')
     lines.append('#include "z3wire/sym_int.h"')
     lines.append('#include "z3wire/int.h"')

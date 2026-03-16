@@ -3,6 +3,8 @@
 #include <gtest/gtest.h>
 #include <z3++.h>
 
+#include "z3wire/bool.h"
+
 namespace z3w {
 namespace {
 
@@ -94,6 +96,15 @@ TEST_F(SymBoolTest, Inequality) {
   s.add(a.raw());
   s.add(b.raw());
   EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(SymBoolTest, ToSymbolicFromConcrete) {
+  z3w::Bool concrete_true(true);
+  z3w::Bool concrete_false(false);
+  auto sym_t = z3w::to_symbolic(concrete_true, ctx_);
+  auto sym_f = z3w::to_symbolic(concrete_false, ctx_);
+  EXPECT_TRUE(sym_t.raw().is_true());
+  EXPECT_TRUE(sym_f.raw().is_false());
 }
 
 }  // namespace
