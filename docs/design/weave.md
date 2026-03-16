@@ -64,10 +64,11 @@ enum Signedness {
 }
 
 message Module {
-  string namespace = 1;
-  FieldPackOrder field_pack_order = 2;
-  repeated EnumDef enums = 3;
-  repeated Struct structs = 4;
+  string file_prefix = 1;
+  string namespace = 2;
+  FieldPackOrder field_pack_order = 3;
+  repeated EnumDef enums = 4;
+  repeated Struct structs = 5;
 }
 
 message EnumDef {
@@ -118,8 +119,9 @@ message BitVecType {
 
 ### Key schema concepts
 
-- **Module**: Top-level container. Sets the C++ `namespace` and a default
-    `field_pack_order` inherited by all structs.
+- **Module**: Top-level container. Sets the `file_prefix` (output filename
+    prefix), C++ `namespace`, and a default `field_pack_order` inherited by
+    all structs.
 - **Struct**: A named collection of fields occupying a contiguous bit range.
     Can override the module-level `field_pack_order`. If `width` is set, the tool
     validates that fields sum to exactly that width.
@@ -142,8 +144,9 @@ message BitVecType {
 ### Example input
 
 ```textproto
-# status_register.txtpb
+# status_register.rdl.txtpb
 
+file_prefix: "status_register"
 namespace: "example"
 field_pack_order: FIELD_PACK_ORDER_LSB_FIRST
 
@@ -188,13 +191,16 @@ Weave produces two files per input: one C++ header and one proto file.
 
 ### C++ header (`status_register.h`)
 
-Contains enum constants, concrete structs (POD data holders), and symbolic
-structs with Z3Wire types. All in a single header for simplicity.
+The header is organized into four labeled sections: enum constants, concrete
+types, symbolic types, and inline implementations. Declarations are at the top
+for quick scanning; method bodies follow at the bottom.
 
 ```cpp
 #pragma once
+
 #include <array>
 #include <string>
+#include <tuple>
 
 #include "z3wire/bool.h"
 #include "z3wire/bitvec.h"
@@ -203,14 +209,20 @@ structs with Z3Wire types. All in a single header for simplicity.
 
 namespace example {
 
+// =============================================================
+// Enum constants
+// =============================================================
+
 // Operating mode (width: 2)
 struct OpMode {
-  static constexpr z3w::UInt<2> kIdle{0};
-  static constexpr z3w::UInt<2> kActive{1};
-  static constexpr z3w::UInt<2> kSleep{2};
+  static constexpr auto kIdle = z3w::UInt<2>::Literal<0>();
+  static constexpr auto kActive = z3w::UInt<2>::Literal<1>();
+  static constexpr auto kSleep = z3w::UInt<2>::Literal<2>();
 };
 
-// --- ErrorInfo ---
+// =============================================================
+// Concrete types
+// =============================================================
 
 // Error information
 struct ErrorInfoConcrete {
@@ -222,24 +234,6 @@ struct ErrorInfoConcrete {
   ErrorInfoProto ToProto() const;
   static ErrorInfoConcrete FromProto(const ErrorInfoProto& proto);
 };
-
-// Error information (symbolic)
-// Total width: 8 bits, field pack order: LSB first
-struct ErrorInfoSymbolic {
-  z3w::Ubv<4> code;           // [3:0]
-  z3w::Sbv<2> severity;       // [5:4]
-  z3w::Bool fatal;             // [6]
-  z3w::Ubv<1> reserved;       // [7]
-
-  static ErrorInfoSymbolic Create(z3::context& ctx,
-                                  const std::string& prefix);
-  z3w::Ubv<8> Pack() const;
-  ErrorInfoConcrete ToConcrete(const z3::model& model) const;
-  static ErrorInfoSymbolic FromConcrete(z3::context& ctx,
-                                        const ErrorInfoConcrete& concrete);
-};
-
-// --- StatusRegister ---
 
 // Device status register
 struct StatusRegisterConcrete {
@@ -253,22 +247,49 @@ struct StatusRegisterConcrete {
   static StatusRegisterConcrete FromProto(const StatusRegisterProto& proto);
 };
 
+// =============================================================
+// Symbolic types
+// =============================================================
+
+// Error information (symbolic)
+// Total width: 8 bits, field pack order: LSB first
+struct ErrorInfoSymbolic {
+  z3w::Ubv<4> code;  // [3:0]
+  z3w::Sbv<2> severity;  // [5:4]
+  z3w::Bool fatal;  // [6]
+  z3w::Ubv<1> reserved;  // [7]
+
+  static ErrorInfoSymbolic Create(z3::context& ctx,
+      const std::string& prefix);
+  z3w::Ubv<8> Pack() const;
+  ErrorInfoConcrete ToConcrete(const z3::model& model) const;
+  static ErrorInfoSymbolic FromConcrete(z3::context& ctx,
+      const ErrorInfoConcrete& concrete);
+};
+
 // Device status register (symbolic)
 // Total width: 32 bits, field pack order: LSB first
 struct StatusRegisterSymbolic {
-  z3w::Bool ready;                        // [0]
-  z3w::Ubv<2> mode;                       // [2:1]
-  ErrorInfoSymbolic error;                // [10:3]
-  std::array<z3w::Ubv<4>, 4> counters;   // [26:11]
-  z3w::Ubv<5> reserved;                   // [31:27]
+  z3w::Bool ready;  // [0]
+  z3w::Ubv<2> mode;  // [2:1]
+  ErrorInfoSymbolic error;  // [10:3]
+  std::array<z3w::Ubv<4>, 4> counters;  // [26:11]
+  z3w::Ubv<5> reserved;  // [31:27]
 
   static StatusRegisterSymbolic Create(z3::context& ctx,
-                                       const std::string& prefix);
+      const std::string& prefix);
   z3w::Ubv<32> Pack() const;
   StatusRegisterConcrete ToConcrete(const z3::model& model) const;
   static StatusRegisterSymbolic FromConcrete(z3::context& ctx,
-                                             const StatusRegisterConcrete& concrete);
+      const StatusRegisterConcrete& concrete);
 };
+
+// =============================================================
+// Inline implementations
+// =============================================================
+
+// ... (method bodies for ToProto, FromProto, Create, Pack,
+//      ToConcrete, FromConcrete — see generated output)
 
 }  // namespace example
 ```
@@ -366,17 +387,18 @@ z3wire/weave/
   emit_proto.py          # Generates the .proto file
   BUILD.bazel
 examples/weave/
-  example.txtpb          # Example RDL instance
+  status_register.rdl.txtpb  # Example RDL instance
   BUILD.bazel
 ```
 
 ### CLI
 
 ```bash
-weave --input status_register.txtpb --output_dir gen/
+weave --input status_register.rdl.txtpb --output_dir gen/
 ```
 
-Produces `gen/status_register.h` and `gen/status_register.proto`.
+Produces `gen/status_register.h` and `gen/status_register.proto` (filenames
+derived from the `file_prefix` field in the Module, not the input filename).
 
 ### Implementation
 

@@ -13,10 +13,11 @@ enum Signedness {
 }
 
 message Module {
-  string namespace = 1;
-  FieldPackOrder field_pack_order = 2;
-  repeated EnumDef enums = 3;
-  repeated Struct structs = 4;
+  string file_prefix = 1;
+  string namespace = 2;
+  FieldPackOrder field_pack_order = 3;
+  repeated EnumDef enums = 4;
+  repeated Struct structs = 5;
 }
 
 message EnumDef {

@@ -48,6 +48,7 @@ class ResolvedStruct:
 
 @dataclass
 class ResolvedModule:
+    file_prefix: str
     namespace: str
     enums: list  # list of ResolvedEnum
     structs: list  # list of ResolvedStruct
@@ -55,10 +56,13 @@ class ResolvedModule:
 
 def resolve(module: rdl_pb2.Module) -> ResolvedModule:
     """Resolve an RDL module: validate and compute layouts."""
+    if not module.file_prefix:
+        raise ValueError("Module must specify file_prefix")
     enums = _resolve_enums(module)
     enum_map = {e.name: e for e in enums}
     structs = _resolve_structs(module, enum_map)
     return ResolvedModule(
+        file_prefix=module.file_prefix,
         namespace=module.namespace,
         enums=enums,
         structs=structs,

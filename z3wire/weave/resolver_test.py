@@ -10,6 +10,7 @@ from z3wire.weave.resolver import resolve
 class ResolverTest(unittest.TestCase):
     def test_bool_field_width(self):
         module = rdl_pb2.Module(
+            file_prefix="test",
             namespace="test",
             field_pack_order=rdl_pb2.FIELD_PACK_ORDER_LSB_FIRST,
             structs=[
@@ -31,6 +32,7 @@ class ResolverTest(unittest.TestCase):
 
     def test_bitvec_field_width(self):
         module = rdl_pb2.Module(
+            file_prefix="test",
             namespace="test",
             field_pack_order=rdl_pb2.FIELD_PACK_ORDER_LSB_FIRST,
             structs=[
@@ -56,6 +58,7 @@ class ResolverTest(unittest.TestCase):
 
     def test_count_zero_is_scalar_count_one_is_array(self):
         module = rdl_pb2.Module(
+            file_prefix="test",
             namespace="test",
             field_pack_order=rdl_pb2.FIELD_PACK_ORDER_LSB_FIRST,
             structs=[
@@ -84,6 +87,7 @@ class ResolverTest(unittest.TestCase):
 
     def test_unresolved_enum_ref(self):
         module = rdl_pb2.Module(
+            file_prefix="test",
             namespace="test",
             field_pack_order=rdl_pb2.FIELD_PACK_ORDER_LSB_FIRST,
             structs=[
@@ -103,6 +107,7 @@ class ResolverTest(unittest.TestCase):
 
     def test_unresolved_struct_ref(self):
         module = rdl_pb2.Module(
+            file_prefix="test",
             namespace="test",
             field_pack_order=rdl_pb2.FIELD_PACK_ORDER_LSB_FIRST,
             structs=[
@@ -122,6 +127,7 @@ class ResolverTest(unittest.TestCase):
 
     def test_enum_value_exceeds_width(self):
         module = rdl_pb2.Module(
+            file_prefix="test",
             namespace="test",
             field_pack_order=rdl_pb2.FIELD_PACK_ORDER_LSB_FIRST,
             enums=[
@@ -137,6 +143,7 @@ class ResolverTest(unittest.TestCase):
 
     def test_duplicate_enum_values(self):
         module = rdl_pb2.Module(
+            file_prefix="test",
             namespace="test",
             field_pack_order=rdl_pb2.FIELD_PACK_ORDER_LSB_FIRST,
             enums=[
@@ -155,6 +162,7 @@ class ResolverTest(unittest.TestCase):
 
     def test_width_mismatch(self):
         module = rdl_pb2.Module(
+            file_prefix="test",
             namespace="test",
             field_pack_order=rdl_pb2.FIELD_PACK_ORDER_LSB_FIRST,
             structs=[
@@ -175,6 +183,7 @@ class ResolverTest(unittest.TestCase):
 
     def test_missing_field_pack_order(self):
         module = rdl_pb2.Module(
+            file_prefix="test",
             namespace="test",
             structs=[
                 rdl_pb2.Struct(
@@ -191,8 +200,17 @@ class ResolverTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "field_pack_order"):
             resolve(module)
 
+    def test_missing_file_prefix(self):
+        module = rdl_pb2.Module(
+            namespace="test",
+            field_pack_order=rdl_pb2.FIELD_PACK_ORDER_LSB_FIRST,
+        )
+        with self.assertRaisesRegex(ValueError, "file_prefix"):
+            resolve(module)
+
     def test_circular_struct_dependency(self):
         module = rdl_pb2.Module(
+            file_prefix="test",
             namespace="test",
             field_pack_order=rdl_pb2.FIELD_PACK_ORDER_LSB_FIRST,
             structs=[
@@ -221,6 +239,7 @@ class ResolverTest(unittest.TestCase):
 
     def test_msb_first_not_implemented(self):
         module = rdl_pb2.Module(
+            file_prefix="test",
             namespace="test",
             field_pack_order=rdl_pb2.FIELD_PACK_ORDER_MSB_FIRST,
             structs=[
@@ -240,6 +259,7 @@ class ResolverTest(unittest.TestCase):
 
     def test_reserved_field_name_collision(self):
         module = rdl_pb2.Module(
+            file_prefix="test",
             namespace="test",
             field_pack_order=rdl_pb2.FIELD_PACK_ORDER_LSB_FIRST,
             structs=[
@@ -260,6 +280,7 @@ class ResolverTest(unittest.TestCase):
     def test_full_example(self):
         """Test the complete StatusRegister example from the design doc."""
         module = rdl_pb2.Module(
+            file_prefix="status_register",
             namespace="example",
             field_pack_order=rdl_pb2.FIELD_PACK_ORDER_LSB_FIRST,
             enums=[

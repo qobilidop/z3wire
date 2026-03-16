@@ -28,22 +28,20 @@ def main():
     # Resolve
     resolved = resolve(module)
 
-    # Determine output filenames from input filename
-    base = os.path.splitext(os.path.basename(args.input))[0]
-    proto_filename = f"{base}.proto"
-    header_filename = f"{base}.h"
+    # Output filenames from file_prefix
+    prefix = resolved.file_prefix
 
     # Generate outputs
     os.makedirs(args.output_dir, exist_ok=True)
 
     proto_output = emit_proto(resolved)
-    proto_path = os.path.join(args.output_dir, proto_filename)
+    proto_path = os.path.join(args.output_dir, f"{prefix}.proto")
     with open(proto_path, "w") as f:
         f.write(proto_output)
     print(f"Generated {proto_path}")
 
-    header_output = emit_header(resolved, proto_header=f"{base}.pb.h")
-    header_path = os.path.join(args.output_dir, header_filename)
+    header_output = emit_header(resolved, proto_header=f"{prefix}.pb.h")
+    header_path = os.path.join(args.output_dir, f"{prefix}.h")
     with open(header_path, "w") as f:
         f.write(header_output)
     print(f"Generated {header_path}")

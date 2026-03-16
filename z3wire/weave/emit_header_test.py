@@ -10,6 +10,7 @@ from z3wire.weave.emit_header import emit_header
 class EmitHeaderTest(unittest.TestCase):
     def test_enum_constants(self):
         module = rdl_pb2.Module(
+            file_prefix="test",
             namespace="test",
             field_pack_order=rdl_pb2.FIELD_PACK_ORDER_LSB_FIRST,
             enums=[
@@ -41,6 +42,7 @@ class EmitHeaderTest(unittest.TestCase):
 
     def test_concrete_struct(self):
         module = rdl_pb2.Module(
+            file_prefix="test",
             namespace="test",
             field_pack_order=rdl_pb2.FIELD_PACK_ORDER_LSB_FIRST,
             structs=[
@@ -82,6 +84,7 @@ class EmitHeaderTest(unittest.TestCase):
 
     def test_symbolic_struct(self):
         module = rdl_pb2.Module(
+            file_prefix="test",
             namespace="test",
             field_pack_order=rdl_pb2.FIELD_PACK_ORDER_LSB_FIRST,
             structs=[
@@ -113,6 +116,7 @@ class EmitHeaderTest(unittest.TestCase):
 
     def test_to_proto_body(self):
         module = rdl_pb2.Module(
+            file_prefix="test",
             namespace="test",
             field_pack_order=rdl_pb2.FIELD_PACK_ORDER_LSB_FIRST,
             structs=[
@@ -147,6 +151,7 @@ class EmitHeaderTest(unittest.TestCase):
 
     def test_from_proto_body(self):
         module = rdl_pb2.Module(
+            file_prefix="test",
             namespace="test",
             field_pack_order=rdl_pb2.FIELD_PACK_ORDER_LSB_FIRST,
             structs=[
@@ -176,6 +181,7 @@ class EmitHeaderTest(unittest.TestCase):
 
     def test_pack_body(self):
         module = rdl_pb2.Module(
+            file_prefix="test",
             namespace="test",
             field_pack_order=rdl_pb2.FIELD_PACK_ORDER_LSB_FIRST,
             structs=[
@@ -203,6 +209,7 @@ class EmitHeaderTest(unittest.TestCase):
 
     def test_create_body(self):
         module = rdl_pb2.Module(
+            file_prefix="test",
             namespace="test",
             field_pack_order=rdl_pb2.FIELD_PACK_ORDER_LSB_FIRST,
             structs=[
@@ -229,6 +236,7 @@ class EmitHeaderTest(unittest.TestCase):
 
     def test_array_in_pack(self):
         module = rdl_pb2.Module(
+            file_prefix="test",
             namespace="test",
             field_pack_order=rdl_pb2.FIELD_PACK_ORDER_LSB_FIRST,
             structs=[
@@ -253,6 +261,7 @@ class EmitHeaderTest(unittest.TestCase):
     def test_full_example(self):
         """Test the complete StatusRegister example from the design doc."""
         module = rdl_pb2.Module(
+            file_prefix="status_register",
             namespace="example",
             field_pack_order=rdl_pb2.FIELD_PACK_ORDER_LSB_FIRST,
             enums=[

@@ -1,5 +1,6 @@
-# status_register.txtpb
+# status_register.rdl.txtpb
 
+file_prefix: "status_register"
 namespace: "example"
 field_pack_order: FIELD_PACK_ORDER_LSB_FIRST
 

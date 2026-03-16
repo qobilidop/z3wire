@@ -10,6 +10,7 @@ from z3wire.weave.emit_proto import emit_proto
 class EmitProtoTest(unittest.TestCase):
     def test_simple_struct(self):
         module = rdl_pb2.Module(
+            file_prefix="test",
             namespace="test",
             field_pack_order=rdl_pb2.FIELD_PACK_ORDER_LSB_FIRST,
             structs=[
@@ -47,6 +48,7 @@ class EmitProtoTest(unittest.TestCase):
 
     def test_nested_and_signed(self):
         module = rdl_pb2.Module(
+            file_prefix="test",
             namespace="example",
             field_pack_order=rdl_pb2.FIELD_PACK_ORDER_LSB_FIRST,
             structs=[
@@ -90,6 +92,7 @@ class EmitProtoTest(unittest.TestCase):
 
     def test_enum_ref_field(self):
         module = rdl_pb2.Module(
+            file_prefix="test",
             namespace="test",
             field_pack_order=rdl_pb2.FIELD_PACK_ORDER_LSB_FIRST,
             enums=[

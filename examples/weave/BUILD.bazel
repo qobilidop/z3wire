@@ -7,12 +7,12 @@ load("@rules_shell//shell:sh_test.bzl", "sh_test")
 
 genrule(
     name = "status_register_gen",
-    srcs = ["status_register.txtpb"],
+    srcs = ["status_register.rdl.txtpb"],
     outs = [
         "status_register.h",
         "status_register.proto",
     ],
-    cmd = "$(location //z3wire/weave) --input $(location status_register.txtpb) --output_dir $(RULEDIR)",
+    cmd = "$(location //z3wire/weave) --input $(location status_register.rdl.txtpb) --output_dir $(RULEDIR)",
     tools = ["//z3wire/weave"],
 )
 
