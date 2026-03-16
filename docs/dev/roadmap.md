@@ -16,6 +16,9 @@ Future directions for Z3Wire, roughly in priority order.
 - **Combinational logic framing** — Documented the complete set of
     combinational logic primitives as the organizing principle for the API.
     See the [design overview](../design/overview.md#combinational-logic-primitives).
+- **Weave codegen tool (Phase 1)** — Generates C++ struct declarations
+    (symbolic + concrete) and protobuf messages from RDL bit field descriptions.
+    See the [design doc](../design/weave.md).
 
 ## Next features
 
@@ -35,6 +38,13 @@ Future directions for Z3Wire, roughly in priority order.
     snapshot rather than tracking `main`.
 - **Publish to Bazel Central Registry** — Allow users to use
     `bazel_dep(name = "z3wire", version = "...")` without `git_override`.
+
+## Weave
+
+- **Weave Phase 2** — Generate method implementations (`Create`, `Pack`,
+    `ToConcrete`, `FromConcrete`, `ToProto`, `FromProto`).
+- **Weave MSB_FIRST packing** — Implement MSB-first field pack order for
+    network protocol use cases.
 
 ## Ergonomics
 

@@ -55,6 +55,7 @@ nav:
   - Design:
       - Overview: design/overview.md
       - Compile-Fail Tests: design/compile-fail-tests.md
+      - Weave: design/weave.md
   - Development:
       - Test Coverage: dev/test-coverage.md
       - Roadmap: dev/roadmap.md

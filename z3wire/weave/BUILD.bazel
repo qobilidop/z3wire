@@ -1,0 +1,61 @@
+load("@protobuf//bazel:py_proto_library.bzl", "py_proto_library")
+load("@rules_proto//proto:defs.bzl", "proto_library")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
+
+proto_library(
+    name = "rdl_proto",
+    srcs = ["rdl.proto"],
+)
+
+py_proto_library(
+    name = "rdl_py_proto",
+    deps = [":rdl_proto"],
+)
+
+py_library(
+    name = "resolver",
+    srcs = ["resolver.py"],
+    deps = [":rdl_py_proto"],
+)
+
+py_test(
+    name = "resolver_test",
+    srcs = ["resolver_test.py"],
+    deps = [":resolver"],
+)
+
+py_library(
+    name = "emit_proto",
+    srcs = ["emit_proto.py"],
+    deps = [":resolver"],
+)
+
+py_test(
+    name = "emit_proto_test",
+    srcs = ["emit_proto_test.py"],
+    deps = [":emit_proto"],
+)
+
+py_library(
+    name = "emit_header",
+    srcs = ["emit_header.py"],
+    deps = [":resolver"],
+)
+
+py_test(
+    name = "emit_header_test",
+    srcs = ["emit_header_test.py"],
+    deps = [":emit_header"],
+)
+
+py_binary(
+    name = "weave",
+    srcs = ["weave.py"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":emit_header",
+        ":emit_proto",
+        ":rdl_py_proto",
+        ":resolver",
+    ],
+)

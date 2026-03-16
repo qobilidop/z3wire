@@ -408,24 +408,24 @@ Weave validates:
 
 ## Design decisions
 
-| Decision | Choice | Rationale |
-|---|---|---|
-| SoT format | Proto `.txtpb` | No custom parser needed |
-| Codegen language | Python | Natural fit for text generation |
-| Field layout | Ordered, not positioned | Tool computes offsets from order + widths |
-| Field pack order | Per-module default, per-struct override | Inheritance with explicit override |
-| Enums | Struct with `constexpr` constants | Avoids type mismatch with bit-vector fields |
-| Name transformation | None | Users write target-language names directly |
-| Arrays | Fixed-size only | Hardware has no dynamic allocation |
-| Nesting | Inline embedding (contiguous bits) | Natural for hardware/protocol layouts |
-| Nested prefixes | Auto-derived | User provides top-level prefix only |
-| Conversions | Symbolic ↔ Concrete ↔ Proto | Clean chain, each layer knows only its neighbor |
-| Concrete struct | POD data holder | No Z3 dependency, minimal methods |
-| Reserved fields | Explicit `reserved` flag on Field | Omitted from proto; included in C++ for correct layout |
-| Generated files | One `.h` + one `.proto` per input | Simplicity; split later if needed |
-| Templating | f-strings | No extra dependency |
-| Width validation | Optional `width` field on Struct | Catches field sum mismatches |
-| Method naming | Google C++ Style Guide (CamelCase) | Generated code is a separate codebase |
+| Decision            | Choice                                  | Rationale                                              |
+| ------------------- | --------------------------------------- | ------------------------------------------------------ |
+| SoT format          | Proto `.txtpb`                          | No custom parser needed                                |
+| Codegen language    | Python                                  | Natural fit for text generation                        |
+| Field layout        | Ordered, not positioned                 | Tool computes offsets from order + widths              |
+| Field pack order    | Per-module default, per-struct override | Inheritance with explicit override                     |
+| Enums               | Struct with `constexpr` constants       | Avoids type mismatch with bit-vector fields            |
+| Name transformation | None                                    | Users write target-language names directly             |
+| Arrays              | Fixed-size only                         | Hardware has no dynamic allocation                     |
+| Nesting             | Inline embedding (contiguous bits)      | Natural for hardware/protocol layouts                  |
+| Nested prefixes     | Auto-derived                            | User provides top-level prefix only                    |
+| Conversions         | Symbolic ↔ Concrete ↔ Proto             | Clean chain, each layer knows only its neighbor        |
+| Concrete struct     | POD data holder                         | No Z3 dependency, minimal methods                      |
+| Reserved fields     | Explicit `reserved` flag on Field       | Omitted from proto; included in C++ for correct layout |
+| Generated files     | One `.h` + one `.proto` per input       | Simplicity; split later if needed                      |
+| Templating          | f-strings                               | No extra dependency                                    |
+| Width validation    | Optional `width` field on Struct        | Catches field sum mismatches                           |
+| Method naming       | Google C++ Style Guide (CamelCase)      | Generated code is a separate codebase                  |
 
 ## Future work
 

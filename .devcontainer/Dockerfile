@@ -44,6 +44,9 @@ RUN pip install --break-system-packages mkdocs-material mkdocs-include-markdown-
 # admonition support so mdformat preserves !!! blocks correctly).
 RUN pip install --break-system-packages mdformat-mkdocs
 
+# Install Python tools for weave codegen.
+RUN pip install --break-system-packages protobuf pytest black
+
 # Non-root user (required by rules_python for bazel coverage).
 RUN useradd -m -s /bin/bash dev
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh

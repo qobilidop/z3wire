@@ -1,0 +1,10 @@
+genrule(
+    name = "status_register_gen",
+    srcs = ["status_register.txtpb"],
+    outs = [
+        "status_register.h",
+        "status_register.proto",
+    ],
+    cmd = "$(location //z3wire/weave) --input $(location status_register.txtpb) --output_dir $(RULEDIR)",
+    tools = ["//z3wire/weave"],
+)

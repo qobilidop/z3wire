@@ -25,10 +25,6 @@
 
 - Follow [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html),
     with the following deliberate deviations:
-    - **Functions use `snake_case`** (not `CamelCase`). This matches the Z3 C++
-        API that users call alongside Z3Wire, keeping mixed code readable. Static
-        factory methods (`True()`, `False()`, `Literal()`) use `CamelCase` as they
-        act as named constructors.
     - **Type traits follow STL convention**: `is_symbolic`, `is_concrete`,
         `is_symbolic_v`, `is_concrete_v` (not `IsSymbolic`, etc.).
 - Follow Google Abseil [C++ Tips of the Week](https://abseil.io/tips/).
@@ -69,4 +65,3 @@
     (not required before every commit, but fix any issues before pushing).
 - All tests MUST pass before commit.
 - Try your best to make sure CI will pass before commit.
-- Always confirm with me before committing. Auto-push after commit.

@@ -1,0 +1,65 @@
+syntax = "proto3";
+package z3wire_rdl;
+
+enum FieldPackOrder {
+  FIELD_PACK_ORDER_UNSPECIFIED = 0;
+  FIELD_PACK_ORDER_LSB_FIRST = 1;
+  FIELD_PACK_ORDER_MSB_FIRST = 2;
+}
+
+enum Signedness {
+  SIGNEDNESS_UNSIGNED = 0;
+  SIGNEDNESS_SIGNED = 1;
+}
+
+message Module {
+  string namespace = 1;
+  FieldPackOrder field_pack_order = 2;
+  repeated EnumDef enums = 3;
+  repeated Struct structs = 4;
+}
+
+message EnumDef {
+  string name = 1;
+  string desc = 2;
+  uint32 width = 3;
+  repeated EnumValue values = 4;
+}
+
+message EnumValue {
+  string name = 1;
+  string desc = 2;
+  uint64 value = 3;
+}
+
+message Struct {
+  string name = 1;
+  string desc = 2;
+  optional uint32 width = 3;
+  FieldPackOrder field_pack_order = 4;
+  repeated Field fields = 5;
+}
+
+message Field {
+  string name = 1;
+  string desc = 2;
+  FieldType type = 3;
+  uint32 count = 4;
+  bool reserved = 5;
+}
+
+message FieldType {
+  oneof kind {
+    BoolType bool = 1;
+    BitVecType bitvec = 2;
+    string enum_ref = 3;
+    string struct_ref = 4;
+  }
+}
+
+message BoolType {}
+
+message BitVecType {
+  uint32 width = 1;
+  Signedness signedness = 2;
+}
