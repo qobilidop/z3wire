@@ -1,0 +1,9 @@
+Query 1: Can mode=ACTIVE with fatal=true?
+  Safe: rules prevent ACTIVE mode with fatal error.
+
+Query 2: Can a counter be nonzero with ready=false?
+  Safe: rules guarantee ready=true when counters are active.
+
+Query 3: Adding rule 'fatal → SLEEP'. Contradiction?
+  Contradiction! Rules 3 + 4 make fatal errors impossible.
+  (Rule 3: fatal→IDLE, Rule 4: fatal→SLEEP, but IDLE!=SLEEP)

@@ -78,13 +78,13 @@ def _from_proto_expr(field: ResolvedField, accessor: str) -> str:
 def _to_concrete_expr(field: ResolvedField, accessor: str) -> str:
     """Generate expression to evaluate a symbolic field to concrete."""
     if field.kind == "bool":
-        return f"model.eval({accessor}.raw()).is_true()"
+        return f"model.eval({accessor}.raw(), true).is_true()"
     elif field.kind == "bitvec" or field.kind == "enum_ref":
         ctype = _concrete_type(field)
         return (
             f"std::get<0>({ctype}::checked("
             f"static_cast<{_proto_value_type(field)}>("
-            f"model.eval({accessor}.raw()).get_numeral_int64())))"
+            f"model.eval({accessor}.raw(), true).get_numeral_int64())))"
         )
     elif field.kind == "struct_ref":
         return f"{accessor}.ToConcrete(model)"
