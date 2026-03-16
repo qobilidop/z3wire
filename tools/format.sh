@@ -4,7 +4,8 @@ set -euo pipefail
 
 cd "$(git rev-parse --show-toplevel)"
 
-cpp_files=$(find z3wire examples -name '*.h' -o -name '*.cc')
+cpp_files=$(find z3wire examples -name '*.h' -o -name '*.cc' |
+  grep -v '\.expected\.')
 bzl_files=$(find . -name '*.bazel' -o -name '*.bzl' -o -name 'BUILD' |
   grep -v '.git/')
 sh_files=$(find . -name '*.sh' -not -path './.git/*')

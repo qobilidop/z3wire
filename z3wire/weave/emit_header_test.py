@@ -72,8 +72,8 @@ class EmitHeaderTest(unittest.TestCase):
         self.assertIn("bool flag;", output)
         self.assertIn("z3w::SInt<4> val;", output)
         self.assertIn("std::array<z3w::UInt<8>, 2> items;", output)
-        self.assertIn("RegProto ToProto() const {", output)
-        self.assertIn("static RegConcrete FromProto(const RegProto& proto) {", output)
+        self.assertIn("RegProto ToProto() const;", output)
+        self.assertIn("static RegConcrete FromProto(const RegProto& proto);", output)
 
     def test_symbolic_struct(self):
         module = rdl_pb2.Module(
@@ -103,7 +103,7 @@ class EmitHeaderTest(unittest.TestCase):
         self.assertIn("z3w::Ubv<7> val;", output)
         self.assertIn("// [0]", output)
         self.assertIn("// [7:1]", output)
-        self.assertIn("z3w::Ubv<8> Pack() const {", output)
+        self.assertIn("z3w::Ubv<8> Pack() const;", output)
         self.assertIn("static RegSymbolic Create(z3::context& ctx,", output)
 
     def test_to_proto_body(self):
@@ -134,7 +134,7 @@ class EmitHeaderTest(unittest.TestCase):
         resolved = resolve(module)
         output = emit_header(resolved, proto_header="test.pb.h")
 
-        self.assertIn("RegProto ToProto() const {", output)
+        self.assertIn("inline RegProto RegConcrete::ToProto() const {", output)
         self.assertIn("proto.set_flag(flag);", output)
         self.assertIn("proto.set_val(static_cast<uint32_t>(val.value()));", output)
         # Reserved field should not appear in ToProto
@@ -163,7 +163,9 @@ class EmitHeaderTest(unittest.TestCase):
         resolved = resolve(module)
         output = emit_header(resolved, proto_header="test.pb.h")
 
-        self.assertIn("static RegConcrete FromProto(const RegProto& proto) {", output)
+        self.assertIn(
+            "inline RegConcrete RegConcrete::FromProto(const RegProto& proto) {", output
+        )
         self.assertIn("result.flag = proto.flag();", output)
         self.assertIn("std::get<0>(z3w::UInt<8>::checked(proto.val()))", output)
 
@@ -343,13 +345,34 @@ class EmitHeaderTest(unittest.TestCase):
         self.assertIn("std::array<z3w::UInt<4>, 4> counters;", output)
 
         # StatusRegister symbolic — bit offsets
-        self.assertIn("z3w::Ubv<32> Pack() const {", output)
+        self.assertIn("z3w::Ubv<32> Pack() const;", output)
         self.assertIn("ErrorInfoSymbolic error;", output)
         self.assertIn("std::array<z3w::Ubv<4>, 4> counters;", output)
 
         # Namespace
         self.assertIn("namespace example {", output)
         self.assertIn("}  // namespace example", output)
+
+        # Section structure
+        self.assertIn("// Enum constants", output)
+        self.assertIn("// Concrete types", output)
+        self.assertIn("// Symbolic types", output)
+        self.assertIn("// Inline implementations", output)
+
+        # Sections in correct order
+        enum_pos = output.index("// Enum constants")
+        concrete_pos = output.index("// Concrete types")
+        symbolic_pos = output.index("// Symbolic types")
+        impl_pos = output.index("// Inline implementations")
+        self.assertLess(enum_pos, concrete_pos)
+        self.assertLess(concrete_pos, symbolic_pos)
+        self.assertLess(symbolic_pos, impl_pos)
+
+        # Types are in the right sections
+        self.assertLess(concrete_pos, output.index("struct ErrorInfoConcrete {"))
+        self.assertLess(output.index("struct ErrorInfoConcrete {"), symbolic_pos)
+        self.assertLess(symbolic_pos, output.index("struct ErrorInfoSymbolic {"))
+        self.assertLess(output.index("struct ErrorInfoSymbolic {"), impl_pos)
 
 
 if __name__ == "__main__":
