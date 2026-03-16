@@ -10,3 +10,6 @@ MODULE.bazel.lock
 
 # MkDocs
 /site/
+
+# Superpowers
+/docs/superpowers/
