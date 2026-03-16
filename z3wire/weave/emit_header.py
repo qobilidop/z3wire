@@ -1,6 +1,6 @@
 """Generates a C++ header from a resolved RDL module."""
 
-from z3wire.weave.resolver import ResolvedModule, ResolvedField
+from z3wire.weave.resolver import ResolvedModule, ResolvedStruct, ResolvedField
 
 
 def _symbolic_type(field: ResolvedField) -> str:
@@ -38,6 +38,238 @@ def _field_decl(type_str: str, field: ResolvedField) -> str:
     return f"{type_str} {field.name};"
 
 
+def _proto_value_type(field: ResolvedField) -> str:
+    """Return the C++ type used in the proto message for a field."""
+    if field.kind == "bool":
+        return "bool"
+    elif field.kind == "bitvec" or field.kind == "enum_ref":
+        if field.signedness == "signed":
+            return "int64_t" if field.element_width > 32 else "int32_t"
+        return "uint64_t" if field.element_width > 32 else "uint32_t"
+    elif field.kind == "struct_ref":
+        return f"{field.struct_name}Proto"
+    raise ValueError(f"Unknown kind: {field.kind}")
+
+
+def _to_proto_expr(field: ResolvedField, accessor: str) -> str:
+    """Generate expression to convert a concrete field value to proto value."""
+    if field.kind == "bool":
+        return accessor
+    elif field.kind == "bitvec" or field.kind == "enum_ref":
+        return f"static_cast<{_proto_value_type(field)}>({accessor}.value())"
+    elif field.kind == "struct_ref":
+        return f"{accessor}.ToProto()"
+    raise ValueError(f"Unknown kind: {field.kind}")
+
+
+def _from_proto_expr(field: ResolvedField, accessor: str) -> str:
+    """Generate expression to convert a proto value to concrete field value."""
+    if field.kind == "bool":
+        return accessor
+    elif field.kind == "bitvec" or field.kind == "enum_ref":
+        ctype = _concrete_type(field)
+        return f"std::get<0>({ctype}::checked({accessor}))"
+    elif field.kind == "struct_ref":
+        ctype = _concrete_type(field)
+        return f"{ctype}::FromProto({accessor})"
+    raise ValueError(f"Unknown kind: {field.kind}")
+
+
+def _to_concrete_expr(field: ResolvedField, accessor: str) -> str:
+    """Generate expression to evaluate a symbolic field to concrete."""
+    if field.kind == "bool":
+        return f"model.eval({accessor}.raw()).is_true()"
+    elif field.kind == "bitvec" or field.kind == "enum_ref":
+        ctype = _concrete_type(field)
+        return (
+            f"std::get<0>({ctype}::checked("
+            f"static_cast<{_proto_value_type(field)}>("
+            f"model.eval({accessor}.raw()).get_numeral_int64())))"
+        )
+    elif field.kind == "struct_ref":
+        return f"{accessor}.ToConcrete(model)"
+    raise ValueError(f"Unknown kind: {field.kind}")
+
+
+def _from_concrete_expr(field: ResolvedField, accessor: str) -> str:
+    """Generate expression to create symbolic constant from concrete value."""
+    if field.kind == "bool":
+        return f"({accessor} ? z3w::Bool::True(ctx) : z3w::Bool::False(ctx))"
+    elif field.kind == "bitvec" or field.kind == "enum_ref":
+        ctype = _concrete_type(field)
+        stype = _symbolic_type(field)
+        return f"z3w::to_symbolic({accessor}, ctx)"
+    elif field.kind == "struct_ref":
+        stype = _symbolic_type(field)
+        return f"{stype}::FromConcrete(ctx, {accessor})"
+    raise ValueError(f"Unknown kind: {field.kind}")
+
+
+def _create_expr(field: ResolvedField, prefix_expr: str) -> str:
+    """Generate expression to create a fresh symbolic variable."""
+    if field.kind == "bool":
+        return f'z3w::Bool(ctx, {prefix_expr} + ".{field.name}")'
+    elif field.kind == "bitvec" or field.kind == "enum_ref":
+        stype = _symbolic_type(field)
+        return f'{stype}(ctx, {prefix_expr} + ".{field.name}")'
+    elif field.kind == "struct_ref":
+        stype = _symbolic_type(field)
+        return f'{stype}::Create(ctx, {prefix_expr} + ".{field.name}")'
+    raise ValueError(f"Unknown kind: {field.kind}")
+
+
+def _pack_expr(field: ResolvedField, accessor: str) -> str:
+    """Generate expression to convert a symbolic field to Ubv for packing."""
+    if field.kind == "bool":
+        return f"z3w::to_ubv1({accessor})"
+    elif field.kind == "bitvec" or field.kind == "enum_ref":
+        if field.signedness == "signed":
+            return f"z3w::cast<z3w::Ubv<{field.element_width}>>({accessor})"
+        return accessor
+    elif field.kind == "struct_ref":
+        return f"{accessor}.Pack()"
+    raise ValueError(f"Unknown kind: {field.kind}")
+
+
+def _emit_to_proto(lines: list, struct: ResolvedStruct) -> None:
+    """Generate inline ToProto method body."""
+    lines.append(f"  {struct.name}Proto ToProto() const {{")
+    lines.append(f"    {struct.name}Proto proto;")
+    for field in struct.fields:
+        if field.reserved:
+            continue
+        if field.count >= 1:
+            lines.append(f"    for (size_t i = 0; i < {field.count}; ++i) {{")
+            expr = _to_proto_expr(field, f"{field.name}[i]")
+            if field.kind == "struct_ref":
+                lines.append(f"      *proto.add_{field.name}() = {expr};")
+            else:
+                lines.append(f"      proto.add_{field.name}({expr});")
+            lines.append("    }")
+        else:
+            expr = _to_proto_expr(field, field.name)
+            if field.kind == "struct_ref":
+                lines.append(f"    *proto.mutable_{field.name}() = {expr};")
+            else:
+                lines.append(f"    proto.set_{field.name}({expr});")
+    lines.append("    return proto;")
+    lines.append("  }")
+
+
+def _emit_from_proto(lines: list, struct: ResolvedStruct) -> None:
+    """Generate inline FromProto method body."""
+    lines.append(
+        f"  static {struct.name}Concrete FromProto("
+        f"const {struct.name}Proto& proto) {{"
+    )
+    lines.append(f"    {struct.name}Concrete result{{}};")
+    for field in struct.fields:
+        if field.reserved:
+            continue
+        if field.count >= 1:
+            lines.append(f"    for (size_t i = 0; i < {field.count}; ++i) {{")
+            expr = _from_proto_expr(field, f"proto.{field.name}(i)")
+            lines.append(f"      result.{field.name}[i] = {expr};")
+            lines.append("    }")
+        else:
+            expr = _from_proto_expr(field, f"proto.{field.name}()")
+            lines.append(f"    result.{field.name} = {expr};")
+    lines.append("    return result;")
+    lines.append("  }")
+
+
+def _emit_create(lines: list, struct: ResolvedStruct) -> None:
+    """Generate inline Create method body."""
+    lines.append(f"  static {struct.name}Symbolic Create(z3::context& ctx,")
+    lines.append("      const std::string& prefix) {")
+    lines.append(f"    {struct.name}Symbolic result;")
+    for field in struct.fields:
+        if field.count >= 1:
+            lines.append(f"    for (size_t i = 0; i < {field.count}; ++i) {{")
+            if field.kind == "bool":
+                lines.append(
+                    f"      result.{field.name}[i] = z3w::Bool(ctx,"
+                    f' prefix + ".{field.name}[" + std::to_string(i) + "]");'
+                )
+            elif field.kind == "struct_ref":
+                stype = _symbolic_type(field)
+                lines.append(
+                    f"      result.{field.name}[i] = {stype}::Create(ctx,"
+                    f' prefix + ".{field.name}[" + std::to_string(i) + "]");'
+                )
+            else:
+                stype = _symbolic_type(field)
+                lines.append(
+                    f"      result.{field.name}[i] = {stype}(ctx,"
+                    f' prefix + ".{field.name}[" + std::to_string(i) + "]");'
+                )
+            lines.append("    }")
+        else:
+            expr = _create_expr(field, "prefix")
+            lines.append(f"    result.{field.name} = {expr};")
+    lines.append("    return result;")
+    lines.append("  }")
+
+
+def _emit_pack(lines: list, struct: ResolvedStruct) -> None:
+    """Generate inline Pack method body."""
+    lines.append(f"  z3w::Ubv<{struct.total_width}> Pack() const {{")
+    # Build concat expression from fields in order.
+    # For LSB_FIRST: fields are listed low-to-high, but concat takes (high, low),
+    # so we reverse and fold.
+    pack_parts = []
+    for field in struct.fields:
+        if field.count >= 1:
+            for i in range(field.count):
+                pack_parts.append(_pack_expr(field, f"{field.name}[{i}]"))
+        else:
+            pack_parts.append(_pack_expr(field, field.name))
+
+    if len(pack_parts) == 1:
+        lines.append(f"    return {pack_parts[0]};")
+    else:
+        # LSB_FIRST: field[0] is lowest bits. concat(high, low).
+        # So we need concat(last_field, ..., first_field).
+        reversed_parts = list(reversed(pack_parts))
+        lines.append(f"    return z3w::concat({', '.join(reversed_parts)});")
+    lines.append("  }")
+
+
+def _emit_to_concrete(lines: list, struct: ResolvedStruct) -> None:
+    """Generate inline ToConcrete method body."""
+    lines.append(f"  {struct.name}Concrete ToConcrete(const z3::model& model) const {{")
+    lines.append(f"    {struct.name}Concrete result{{}};")
+    for field in struct.fields:
+        if field.count >= 1:
+            lines.append(f"    for (size_t i = 0; i < {field.count}; ++i) {{")
+            expr = _to_concrete_expr(field, f"{field.name}[i]")
+            lines.append(f"      result.{field.name}[i] = {expr};")
+            lines.append("    }")
+        else:
+            expr = _to_concrete_expr(field, field.name)
+            lines.append(f"    result.{field.name} = {expr};")
+    lines.append("    return result;")
+    lines.append("  }")
+
+
+def _emit_from_concrete(lines: list, struct: ResolvedStruct) -> None:
+    """Generate inline FromConcrete method body."""
+    lines.append(f"  static {struct.name}Symbolic FromConcrete(z3::context& ctx,")
+    lines.append(f"      const {struct.name}Concrete& concrete) {{")
+    lines.append(f"    {struct.name}Symbolic result;")
+    for field in struct.fields:
+        if field.count >= 1:
+            lines.append(f"    for (size_t i = 0; i < {field.count}; ++i) {{")
+            expr = _from_concrete_expr(field, f"concrete.{field.name}[i]")
+            lines.append(f"      result.{field.name}[i] = {expr};")
+            lines.append("    }")
+        else:
+            expr = _from_concrete_expr(field, f"concrete.{field.name}")
+            lines.append(f"    result.{field.name} = {expr};")
+    lines.append("    return result;")
+    lines.append("  }")
+
+
 def emit_header(module: ResolvedModule, proto_header: str) -> str:
     """Generate a C++ header string from a resolved module."""
     lines = []
@@ -49,6 +281,7 @@ def emit_header(module: ResolvedModule, proto_header: str) -> str:
     if has_arrays:
         lines.append("#include <array>")
     lines.append("#include <string>")
+    lines.append("#include <tuple>")
     lines.append("")
     lines.append('#include "z3wire/bool.h"')
     lines.append('#include "z3wire/bitvec.h"')
@@ -70,6 +303,11 @@ def emit_header(module: ResolvedModule, proto_header: str) -> str:
         lines.append("};")
         lines.append("")
 
+    # Forward declarations for symbolic structs (needed by concrete FromConcrete)
+    for struct in module.structs:
+        lines.append(f"struct {struct.name}Symbolic;")
+    lines.append("")
+
     # Concrete and symbolic structs
     for struct in module.structs:
         # Concrete struct
@@ -79,11 +317,9 @@ def emit_header(module: ResolvedModule, proto_header: str) -> str:
         for field in struct.fields:
             lines.append(f"  {_field_decl(_concrete_type(field), field)}")
         lines.append("")
-        lines.append(f"  {struct.name}Proto ToProto() const;")
-        lines.append(
-            f"  static {struct.name}Concrete FromProto("
-            f"const {struct.name}Proto& proto);"
-        )
+        _emit_to_proto(lines, struct)
+        lines.append("")
+        _emit_from_proto(lines, struct)
         lines.append("};")
         lines.append("")
 
@@ -105,14 +341,13 @@ def emit_header(module: ResolvedModule, proto_header: str) -> str:
                 bit_comment = f"  // [{high}:{field.offset}]"
             lines.append(f"  {decl}{bit_comment}")
         lines.append("")
-        lines.append(f"  static {struct.name}Symbolic Create(z3::context& ctx,")
-        lines.append(f"      const std::string& prefix);")
-        lines.append(f"  z3w::Ubv<{struct.total_width}> Pack() const;")
-        lines.append(
-            f"  {struct.name}Concrete ToConcrete(" f"const z3::model& model) const;"
-        )
-        lines.append(f"  static {struct.name}Symbolic FromConcrete(z3::context& ctx,")
-        lines.append(f"      const {struct.name}Concrete& concrete);")
+        _emit_create(lines, struct)
+        lines.append("")
+        _emit_pack(lines, struct)
+        lines.append("")
+        _emit_to_concrete(lines, struct)
+        lines.append("")
+        _emit_from_concrete(lines, struct)
         lines.append("};")
         lines.append("")
 

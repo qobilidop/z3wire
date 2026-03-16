@@ -72,8 +72,8 @@ class EmitHeaderTest(unittest.TestCase):
         self.assertIn("bool flag;", output)
         self.assertIn("z3w::SInt<4> val;", output)
         self.assertIn("std::array<z3w::UInt<8>, 2> items;", output)
-        self.assertIn("RegProto ToProto() const;", output)
-        self.assertIn("static RegConcrete FromProto(const RegProto& proto);", output)
+        self.assertIn("RegProto ToProto() const {", output)
+        self.assertIn("static RegConcrete FromProto(const RegProto& proto) {", output)
 
     def test_symbolic_struct(self):
         module = rdl_pb2.Module(
@@ -103,8 +103,145 @@ class EmitHeaderTest(unittest.TestCase):
         self.assertIn("z3w::Ubv<7> val;", output)
         self.assertIn("// [0]", output)
         self.assertIn("// [7:1]", output)
-        self.assertIn("z3w::Ubv<8> Pack() const;", output)
+        self.assertIn("z3w::Ubv<8> Pack() const {", output)
         self.assertIn("static RegSymbolic Create(z3::context& ctx,", output)
+
+    def test_to_proto_body(self):
+        module = rdl_pb2.Module(
+            namespace="test",
+            field_pack_order=rdl_pb2.FIELD_PACK_ORDER_LSB_FIRST,
+            structs=[
+                rdl_pb2.Struct(
+                    name="Reg",
+                    fields=[
+                        rdl_pb2.Field(
+                            name="flag",
+                            type=rdl_pb2.FieldType(bool=rdl_pb2.BoolType()),
+                        ),
+                        rdl_pb2.Field(
+                            name="val",
+                            type=rdl_pb2.FieldType(bitvec=rdl_pb2.BitVecType(width=8)),
+                        ),
+                        rdl_pb2.Field(
+                            name="pad",
+                            type=rdl_pb2.FieldType(bitvec=rdl_pb2.BitVecType(width=7)),
+                            reserved=True,
+                        ),
+                    ],
+                ),
+            ],
+        )
+        resolved = resolve(module)
+        output = emit_header(resolved, proto_header="test.pb.h")
+
+        self.assertIn("RegProto ToProto() const {", output)
+        self.assertIn("proto.set_flag(flag);", output)
+        self.assertIn("proto.set_val(static_cast<uint32_t>(val.value()));", output)
+        # Reserved field should not appear in ToProto
+        self.assertNotIn("pad", output.split("ToProto")[1].split("}")[0])
+
+    def test_from_proto_body(self):
+        module = rdl_pb2.Module(
+            namespace="test",
+            field_pack_order=rdl_pb2.FIELD_PACK_ORDER_LSB_FIRST,
+            structs=[
+                rdl_pb2.Struct(
+                    name="Reg",
+                    fields=[
+                        rdl_pb2.Field(
+                            name="flag",
+                            type=rdl_pb2.FieldType(bool=rdl_pb2.BoolType()),
+                        ),
+                        rdl_pb2.Field(
+                            name="val",
+                            type=rdl_pb2.FieldType(bitvec=rdl_pb2.BitVecType(width=8)),
+                        ),
+                    ],
+                ),
+            ],
+        )
+        resolved = resolve(module)
+        output = emit_header(resolved, proto_header="test.pb.h")
+
+        self.assertIn("static RegConcrete FromProto(const RegProto& proto) {", output)
+        self.assertIn("result.flag = proto.flag();", output)
+        self.assertIn("std::get<0>(z3w::UInt<8>::checked(proto.val()))", output)
+
+    def test_pack_body(self):
+        module = rdl_pb2.Module(
+            namespace="test",
+            field_pack_order=rdl_pb2.FIELD_PACK_ORDER_LSB_FIRST,
+            structs=[
+                rdl_pb2.Struct(
+                    name="Reg",
+                    fields=[
+                        rdl_pb2.Field(
+                            name="flag",
+                            type=rdl_pb2.FieldType(bool=rdl_pb2.BoolType()),
+                        ),
+                        rdl_pb2.Field(
+                            name="val",
+                            type=rdl_pb2.FieldType(bitvec=rdl_pb2.BitVecType(width=7)),
+                        ),
+                    ],
+                ),
+            ],
+        )
+        resolved = resolve(module)
+        output = emit_header(resolved, proto_header="test.pb.h")
+
+        # LSB_FIRST: flag is bit 0, val is bits [7:1]
+        # concat(high, low) so: concat(val, to_ubv1(flag))
+        self.assertIn("return z3w::concat(val, z3w::to_ubv1(flag));", output)
+
+    def test_create_body(self):
+        module = rdl_pb2.Module(
+            namespace="test",
+            field_pack_order=rdl_pb2.FIELD_PACK_ORDER_LSB_FIRST,
+            structs=[
+                rdl_pb2.Struct(
+                    name="Reg",
+                    fields=[
+                        rdl_pb2.Field(
+                            name="flag",
+                            type=rdl_pb2.FieldType(bool=rdl_pb2.BoolType()),
+                        ),
+                        rdl_pb2.Field(
+                            name="val",
+                            type=rdl_pb2.FieldType(bitvec=rdl_pb2.BitVecType(width=7)),
+                        ),
+                    ],
+                ),
+            ],
+        )
+        resolved = resolve(module)
+        output = emit_header(resolved, proto_header="test.pb.h")
+
+        self.assertIn('z3w::Bool(ctx, prefix + ".flag")', output)
+        self.assertIn('z3w::Ubv<7>(ctx, prefix + ".val")', output)
+
+    def test_array_in_pack(self):
+        module = rdl_pb2.Module(
+            namespace="test",
+            field_pack_order=rdl_pb2.FIELD_PACK_ORDER_LSB_FIRST,
+            structs=[
+                rdl_pb2.Struct(
+                    name="Reg",
+                    fields=[
+                        rdl_pb2.Field(
+                            name="items",
+                            type=rdl_pb2.FieldType(bitvec=rdl_pb2.BitVecType(width=4)),
+                            count=3,
+                        ),
+                    ],
+                ),
+            ],
+        )
+        resolved = resolve(module)
+        output = emit_header(resolved, proto_header="test.pb.h")
+
+        # Array elements should be expanded in concat
+        self.assertIn("return z3w::concat(items[2], items[1], items[0]);", output)
 
     def test_full_example(self):
         """Test the complete StatusRegister example from the design doc."""
@@ -206,7 +343,7 @@ class EmitHeaderTest(unittest.TestCase):
         self.assertIn("std::array<z3w::UInt<4>, 4> counters;", output)
 
         # StatusRegister symbolic — bit offsets
-        self.assertIn("z3w::Ubv<32> Pack() const;", output)
+        self.assertIn("z3w::Ubv<32> Pack() const {", output)
         self.assertIn("ErrorInfoSymbolic error;", output)
         self.assertIn("std::array<z3w::Ubv<4>, 4> counters;", output)
 
