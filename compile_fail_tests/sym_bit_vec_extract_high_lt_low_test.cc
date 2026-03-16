@@ -1,4 +1,4 @@
-#include "z3wire/sym_int.h"
+#include "z3wire/sym_bit_vec.h"
 
 // extract<0, 3> should fail: High (0) must be >= Low (3).
 void trigger() {

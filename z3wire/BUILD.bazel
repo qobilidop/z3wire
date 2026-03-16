@@ -2,21 +2,21 @@ load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 
 cc_library(
-    name = "sym_int",
-    hdrs = ["sym_int.h"],
+    name = "sym_bit_vec",
+    hdrs = ["sym_bit_vec.h"],
     visibility = ["//visibility:public"],
     deps = [
-        ":int",
+        ":bit_vec",
         ":sym_bool",
         "@z3//:z3_static",
     ],
 )
 
 cc_test(
-    name = "sym_int_test",
-    srcs = ["sym_int_test.cc"],
+    name = "sym_bit_vec_test",
+    srcs = ["sym_bit_vec_test.cc"],
     deps = [
-        ":sym_int",
+        ":sym_bit_vec",
         "@googletest//:gtest_main",
     ],
 )
@@ -56,16 +56,16 @@ cc_test(
 )
 
 cc_library(
-    name = "int",
-    hdrs = ["int.h"],
+    name = "bit_vec",
+    hdrs = ["bit_vec.h"],
     visibility = ["//visibility:public"],
 )
 
 cc_test(
-    name = "int_test",
-    srcs = ["int_test.cc"],
+    name = "bit_vec_test",
+    srcs = ["bit_vec_test.cc"],
     deps = [
-        ":int",
+        ":bit_vec",
         "@googletest//:gtest_main",
     ],
 )

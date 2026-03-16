@@ -1,4 +1,4 @@
-#include "z3wire/sym_int.h"
+#include "z3wire/sym_bit_vec.h"
 
 // extract<8, 0> on SymUInt<8> should fail: High (8) must be < width (8).
 void trigger() {

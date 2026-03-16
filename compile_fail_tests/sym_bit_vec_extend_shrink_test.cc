@@ -1,4 +1,4 @@
-#include "z3wire/sym_int.h"
+#include "z3wire/sym_bit_vec.h"
 
 // extend<4, 8, false> should fail: target width < source width.
 void trigger() {

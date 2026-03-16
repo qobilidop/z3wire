@@ -1,4 +1,4 @@
-#include "z3wire/sym_int.h"
+#include "z3wire/sym_bit_vec.h"
 
 // safe_cast SymUInt<8> -> SymUInt<4> should fail: target too narrow.
 void trigger() {

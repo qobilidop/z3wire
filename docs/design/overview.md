@@ -40,7 +40,7 @@ floating-point, uninterpreted functions — but Z3Wire intentionally covers only
 **Booleans** and **fixed-width bit-vectors**.
 
 The reason is in the name: hardware is built from *wires*. Every signal in a
-digital circuit is either a single bit (Bool) or a bundle of bits with a known
+digital circuit is either a single bit (boolean) or a bundle of bits with a known
 width (bit-vector). Unbounded integers, reals, and other abstract mathematical
 types do not correspond to physical hardware and are irrelevant to RTL modeling
 and verification.
@@ -65,8 +65,8 @@ wires. The table below lists every category, its operations, and their status.
 
 | Category         | Operations                          | Status                    |
 | :--------------- | :---------------------------------- | :------------------------ |
-| Logic (Bool)     | AND, OR, NOT, equality              | Done                      |
-| Logic (Bool)     | XOR                                 | Gap (expressible as `!=`) |
+| Logic (SymBool)  | AND, OR, NOT, equality              | Done                      |
+| Logic (SymBool)  | XOR                                 | Gap (expressible as `!=`) |
 | Bitwise          | AND, OR, XOR, NOT                   | Done                      |
 | Arithmetic       | Add, subtract, negate               | Done                      |
 | Comparison       | Equality, ordered                   | Done                      |
@@ -74,7 +74,7 @@ wires. The table below lists every category, its operations, and their status.
 | Bit manipulation | Extract, single-bit extract, concat | Done                      |
 | Bit field        | Field equality constraint           | Done                      |
 | Mux              | If-then-else                        | Done                      |
-| Type conversion  | Cast (3-tier), Bool/Ubv\<1>         | Done                      |
+| Type conversion  | Cast (3-tier), SymBool/SymUInt\<1>  | Done                      |
 | Reduction        | AND, OR, XOR across all bits        | Future                    |
 
 This framing guides what belongs in Z3Wire and what does not. If an operation is
@@ -96,27 +96,31 @@ sequential semantics (clocks, state, memory), it is out of scope.
 The library centers around a zero-overhead wrapper class that holds a single
 `z3::expr` by value, adding no runtime overhead.
 
-| Type Alias    | Mapping                             | Description                      |
-| :------------ | :---------------------------------- | :------------------------------- |
-| `z3w::Ubv<W>` | `BitVec<W, false>`                  | Unsigned fixed-width bit-vector. |
-| `z3w::Sbv<W>` | `BitVec<W, true>`                   | Signed fixed-width bit-vector.   |
-| `z3w::Bool`   | wrapper over `z3::expr` (Bool sort) | Symbolic boolean.                |
+All symbolic types use a `Sym` prefix to distinguish them from concrete types.
+See the [type naming design](type-naming.md) for the rationale behind this
+convention.
+
+| Type Alias        | Mapping                             | Description                      |
+| :---------------- | :---------------------------------- | :------------------------------- |
+| `z3w::SymUInt<W>` | `SymBitVec<W, false>`               | Unsigned fixed-width bit-vector. |
+| `z3w::SymSInt<W>` | `SymBitVec<W, true>`                | Signed fixed-width bit-vector.   |
+| `z3w::SymBool`    | wrapper over `z3::expr` (Bool sort) | Symbolic boolean.                |
 
 The core template is:
 
 ```cpp
 template <size_t Width, bool IsSigned>
-class BitVec {
+class SymBitVec {
     static_assert(Width > 0, "Bit-vector width must be at least 1.");
     z3::expr expr_;
     // ...
 };
 
-template <size_t W> using Ubv = BitVec<W, false>;
-template <size_t W> using Sbv = BitVec<W, true>;
+template <size_t W> using SymUInt = SymBitVec<W, false>;
+template <size_t W> using SymSInt = SymBitVec<W, true>;
 ```
 
-Note: `BitVec<0, S>` is forbidden via `static_assert`. A zero-width bit-vector
+Note: `SymBitVec<0, S>` is forbidden via `static_assert`. A zero-width bit-vector
 has no meaning in hardware or SMT.
 
 ## Construction and literals
@@ -125,22 +129,22 @@ has no meaning in hardware or SMT.
 
 ```cpp
 template <uint64_t Value>
-static BitVec<Width, IsSigned> Literal(z3::context& ctx);
+static SymBitVec<Width, IsSigned> Literal(z3::context& ctx);
 ```
 
 Uses `static_assert` to verify the value fits in the specified width at compile
 time.
 
 ```cpp
-auto ok  = z3w::Ubv<8>::Literal<255>(ctx);  // Compiles
-auto bad = z3w::Ubv<8>::Literal<256>(ctx);  // Compile error!
+auto ok  = z3w::SymUInt<8>::Literal<255>(ctx);  // Compiles
+auto bad = z3w::SymUInt<8>::Literal<256>(ctx);  // Compile error!
 ```
 
 ### Symbolic variables
 
 ```cpp
 // Constructor taking a name creates a symbolic variable
-z3w::Ubv<32> x(ctx, "x");
+z3w::SymUInt<32> x(ctx, "x");
 ```
 
 ## Type conversions
@@ -164,42 +168,42 @@ Under the hood, uses `if constexpr` to select:
 
 Only compiles if the cast is mathematically guaranteed to be lossless.
 
-| Source    | Target    | Allowed?                                        |
-| :-------- | :-------- | :---------------------------------------------- |
-| `Ubv<W1>` | `Ubv<W2>` | Yes, if `W2 >= W1`.                             |
-| `Sbv<W1>` | `Sbv<W2>` | Yes, if `W2 >= W1`.                             |
-| `Ubv<W1>` | `Sbv<W2>` | Yes, if `W2 > W1` (needs 1 extra bit for sign). |
-| `Sbv<W1>` | `Ubv<W2>` | **Always forbidden.** Negative values corrupt.  |
-| Any       | Smaller   | **Always forbidden.** Truncation is not safe.   |
+| Source        | Target        | Allowed?                                        |
+| :------------ | :------------ | :---------------------------------------------- |
+| `SymUInt<W1>` | `SymUInt<W2>` | Yes, if `W2 >= W1`.                             |
+| `SymSInt<W1>` | `SymSInt<W2>` | Yes, if `W2 >= W1`.                             |
+| `SymUInt<W1>` | `SymSInt<W2>` | Yes, if `W2 > W1` (needs 1 extra bit for sign). |
+| `SymSInt<W1>` | `SymUInt<W2>` | **Always forbidden.** Negative values corrupt.  |
+| Any           | Smaller       | **Always forbidden.** Truncation is not safe.   |
 
 #### `z3w::checked_cast<T>(val)` —The verification cast
 
-Returns `std::tuple<T, z3w::Bool>`. Performs the cast and also returns a symbolic
+Returns `std::tuple<T, z3w::SymBool>`. Performs the cast and also returns a symbolic
 boolean formula representing whether mathematical data loss occurred. The user
 can assert the boolean into the solver to verify safety.
 
 ```cpp
-auto [result, overflowed] = z3w::checked_cast<z3w::Ubv<8>>(my_32bit_val);
+auto [result, overflowed] = z3w::checked_cast<z3w::SymUInt<8>>(my_32bit_val);
 solver.add(!overflowed.raw());  // Assert: this cast never loses data
 ```
 
-### Bool / Ubv\<1> conversion
+### SymBool / SymUInt\<1> conversion
 
-In Z3, `Bool` and a 1-bit bit-vector are distinct sorts. Hardware frequently
+In Z3, `SymBool` and a 1-bit bit-vector are distinct sorts. Hardware frequently
 needs to convert between them (e.g., a condition flag in a register vs. a
 logical condition). Z3Wire provides explicit conversion functions:
 
-- **`z3w::to_bool(Ubv<1>)`** — converts a 1-bit vector to Bool (true if bit is
-    1).
-- **`z3w::to_ubv1(Bool)`** — converts a Bool to `Ubv<1>` (1 if true, 0 if
-    false).
+- **`z3w::to_bool(SymUInt<1>)`** — converts a 1-bit vector to SymBool (true if
+    bit is 1).
+- **`z3w::to_ubv1(SymBool)`** — converts a SymBool to `SymUInt<1>` (1 if true,
+    0 if false).
 
 ```cpp
-z3w::Ubv<32> status(ctx, "status");
-z3w::Bool ready = z3w::to_bool(z3w::extract<0, 0>(status));
+z3w::SymUInt<32> status(ctx, "status");
+z3w::SymBool ready = z3w::to_bool(z3w::extract<0, 0>(status));
 
-z3w::Bool cond(ctx, "cond");
-z3w::Ubv<1> flag = z3w::to_ubv1(cond);
+z3w::SymBool cond(ctx, "cond");
+z3w::SymUInt<1> flag = z3w::to_ubv1(cond);
 ```
 
 ## Bit manipulation
@@ -210,8 +214,8 @@ z3w::Ubv<1> flag = z3w::to_ubv1(cond);
 
 ```cpp
 template <size_t High, size_t Low, size_t InWidth, bool S>
-auto extract(const BitVec<InWidth, S>& val);
-// Returns z3w::Ubv<High - Low + 1>
+auto extract(const SymBitVec<InWidth, S>& val);
+// Returns z3w::SymUInt<High - Low + 1>
 ```
 
 Example: `auto opcode = z3w::extract<31, 24>(instruction);`
@@ -220,8 +224,8 @@ Example: `auto opcode = z3w::extract<31, 24>(instruction);`
 
 ```cpp
 template <size_t TargetWidth, size_t InWidth, bool S, size_t IdxWidth>
-z3w::Ubv<TargetWidth> extract(const BitVec<InWidth, S>& val,
-                               const z3w::Ubv<IdxWidth>& start_idx);
+z3w::SymUInt<TargetWidth> extract(const SymBitVec<InWidth, S>& val,
+                               const z3w::SymUInt<IdxWidth>& start_idx);
 ```
 
 Implemented via barrel-shifting: shift right by the symbolic offset, then
@@ -232,12 +236,12 @@ Example: `auto nibble = z3w::extract<4>(packet, symbolic_offset);`
 ### Concatenation (`concat`)
 
 Glues bit-vectors together. The result width is `W1 + W2`, always returned as
-`Ubv` (raw bits have no inherent signedness). Supports variadic arguments.
+`SymUInt` (raw bits have no inherent signedness). Supports variadic arguments.
 
 ```cpp
-z3w::Ubv<16> high(ctx, "high");
-z3w::Ubv<16> low(ctx, "low");
-auto full = z3w::concat(high, low);  // -> z3w::Ubv<32>
+z3w::SymUInt<16> high(ctx, "high");
+z3w::SymUInt<16> low(ctx, "low");
+auto full = z3w::concat(high, low);  // -> z3w::SymUInt<32>
 ```
 
 ## Operations
@@ -264,34 +268,34 @@ automatically extending operands to a common type.
 - **Ordered comparison (`<`, `<=`, `>`, `>=`):** Allows different widths and
     signedness. Operands are extended to a common type. Signedness-aware:
     dispatches to unsigned or signed comparison based on the common type (signed
-    if either operand is signed). Returns `z3w::Bool`. (Relaxed.)
+    if either operand is signed). Returns `z3w::SymBool`. (Relaxed.)
 
 Example:
 
 ```cpp
-z3w::Ubv<8> a(ctx, "a");
-z3w::Ubv<8> b(ctx, "b");
-auto sum = a + b;       // -> z3w::Ubv<9>
-auto total = sum + a;   // -> z3w::Ubv<10>
+z3w::SymUInt<8> a(ctx, "a");
+z3w::SymUInt<8> b(ctx, "b");
+auto sum = a + b;       // -> z3w::SymUInt<9>
+auto total = sum + a;   // -> z3w::SymUInt<10>
 
 // To model hardware overflow, explicitly truncate:
-auto reg = z3w::cast<z3w::Ubv<8>>(total);
+auto reg = z3w::cast<z3w::SymUInt<8>>(total);
 ```
 
-### Bool operations
+### SymBool operations
 
-`z3w::Bool` supports standard logical operations:
+`z3w::SymBool` supports standard logical operations:
 
 - **Logical:** `&&`, `||`, `!`
-- **Literals:** `z3w::Bool::True(ctx)`, `z3w::Bool::False(ctx)`
+- **Literals:** `z3w::SymBool::True(ctx)`, `z3w::SymBool::False(ctx)`
 
 ```cpp
-z3w::Bool a(ctx, "a");
-z3w::Bool b(ctx, "b");
+z3w::SymBool a(ctx, "a");
+z3w::SymBool b(ctx, "b");
 
-z3w::Bool c = a && b;
-z3w::Bool d = !a || b;
-z3w::Bool t = z3w::Bool::True(ctx);
+z3w::SymBool c = a && b;
+z3w::SymBool d = !a || b;
+z3w::SymBool t = z3w::SymBool::True(ctx);
 ```
 
 ### Shifting
@@ -303,19 +307,19 @@ Z3Wire provides a three-tier shift API, mirroring the casting tiers.
 Raw hardware shift. Width stays constant, bits that shift out are silently lost.
 Widths and signedness must match exactly (strict, like bitwise ops).
 
-- **Left shift (`<<`):** Logical shift for both `Ubv` and `Sbv`.
-- **Right shift (`>>`):** Logical shift (`lshr`) for `Ubv`, arithmetic shift
-    (`ashr`) for `Sbv` (preserves the sign bit).
+- **Left shift (`<<`):** Logical shift for both `SymUInt` and `SymSInt`.
+- **Right shift (`>>`):** Logical shift (`lshr`) for `SymUInt`, arithmetic shift
+    (`ashr`) for `SymSInt` (preserves the sign bit).
 
 ```cpp
-z3w::Ubv<8> a(ctx, "a");
-z3w::Ubv<8> n(ctx, "n");
-auto result = a << n;  // -> z3w::Ubv<8>, bits may be lost
+z3w::SymUInt<8> a(ctx, "a");
+z3w::SymUInt<8> n(ctx, "n");
+auto result = a << n;  // -> z3w::SymUInt<8>, bits may be lost
 ```
 
 #### `checked_shl`, `checked_shr` —Checked shift
 
-Performs the shift and returns a symbolic Bool indicating whether any non-zero
+Performs the shift and returns a symbolic SymBool indicating whether any non-zero
 bits were lost. Width stays constant.
 
 ```cpp
@@ -329,37 +333,37 @@ Result type is wide enough to guarantee no bits are ever lost. Works with both
 compile-time constant and symbolic shift amounts.
 
 - **Constant shift `N`:** result width = `W + N`.
-- **Symbolic shift `Ubv<K>`:** result width = `W + 2^K - 1` (assumes the
+- **Symbolic shift `SymUInt<K>`:** result width = `W + 2^K - 1` (assumes the
     maximum representable shift amount).
 
 ```cpp
-z3w::Ubv<8> a(ctx, "a");
+z3w::SymUInt<8> a(ctx, "a");
 
 // Compile-time constant shift
-auto r1 = z3w::lossless_shl<3>(a);    // -> z3w::Ubv<11>
+auto r1 = z3w::lossless_shl<3>(a);    // -> z3w::SymUInt<11>
 
 // Symbolic shift
-z3w::Ubv<3> n(ctx, "n");
-auto r2 = z3w::lossless_shl(a, n);    // -> z3w::Ubv<15>
+z3w::SymUInt<3> n(ctx, "n");
+auto r2 = z3w::lossless_shl(a, n);    // -> z3w::SymUInt<15>
 ```
 
 ### Conditional selection (`ite`)
 
-Symbolic If-Then-Else. Works for any Z3Wire type (`Bool`, `Ubv<W>`, `Sbv<W>`).
+Symbolic If-Then-Else. Works for any Z3Wire symbolic type (`SymBool`, `SymUInt<W>`, `SymSInt<W>`).
 Both branches must be the exact same type.
 
 ```cpp
 template <typename T>
-T ite(const z3w::Bool& cond, const T& true_val, const T& false_val);
+T ite(const z3w::SymBool& cond, const T& true_val, const T& false_val);
 ```
 
 ```cpp
-z3w::Ubv<8> a(ctx, "a");
-z3w::Ubv<8> b(ctx, "b");
-z3w::Bool sel(ctx, "sel");
+z3w::SymUInt<8> a(ctx, "a");
+z3w::SymUInt<8> b(ctx, "b");
+z3w::SymBool sel(ctx, "sel");
 
-auto result = z3w::ite(sel, a, b);  // -> z3w::Ubv<8>
-auto flag = z3w::ite(sel, z3w::Bool::True(ctx), z3w::Bool::False(ctx));
+auto result = z3w::ite(sel, a, b);  // -> z3w::SymUInt<8>
+auto flag = z3w::ite(sel, z3w::SymBool::True(ctx), z3w::SymBool::False(ctx));
 ```
 
 ## Concrete types
@@ -373,7 +377,10 @@ Concrete types (`UInt<W>`, `SInt<W>`) serve as type-safe value holders:
 1. **Type-safe storage.** `UInt<5>` or `SInt<12>` enforce bit-width at the
     type level, even without Z3.
 
-`Bool` does not need a concrete counterpart — native C++ `bool` is sufficient.
+A concrete `Bool` type wraps native `bool` with type-safe construction (deleted
+integral constructor prevents implicit conversion from integers). This
+supersedes the earlier statement that "Bool does not need a concrete
+counterpart." See the [type naming design](type-naming.md) for the rationale.
 
 ### Storage
 

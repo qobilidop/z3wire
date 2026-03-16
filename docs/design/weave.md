@@ -12,8 +12,8 @@ structs, and serialization formats in sync.
 When modeling hardware registers, wire protocols, or arbitrary bit-packed layouts
 with Z3Wire, users currently write boilerplate by hand:
 
-- A symbolic struct with `z3w::Bool`, `z3w::Ubv<W>`, `z3w::Sbv<W>` fields.
-- A concrete struct with `bool`, `z3w::UInt<W>`, `z3w::SInt<W>` fields.
+- A symbolic struct with `z3w::SymBool`, `z3w::SymUInt<W>`, `z3w::SymSInt<W>` fields.
+- A concrete struct with `z3w::Bool`, `z3w::UInt<W>`, `z3w::SInt<W>` fields.
 - Conversion methods between them.
 - `extract` / `concat` logic to pack and unpack flat bit-vectors.
 - A protobuf message for serialization.
@@ -203,8 +203,9 @@ for quick scanning; method bodies follow at the bottom.
 #include <tuple>
 
 #include "z3wire/bool.h"
-#include "z3wire/bitvec.h"
-#include "z3wire/int.h"
+#include "z3wire/sym_bool.h"
+#include "z3wire/sym_bit_vec.h"
+#include "z3wire/bit_vec.h"
 #include "status_register.pb.h"
 
 namespace example {
@@ -228,7 +229,7 @@ struct OpMode {
 struct ErrorInfoConcrete {
   z3w::UInt<4> code;
   z3w::SInt<2> severity;
-  bool fatal;
+  z3w::Bool fatal;
   z3w::UInt<1> reserved;
 
   ErrorInfoProto ToProto() const;
@@ -237,7 +238,7 @@ struct ErrorInfoConcrete {
 
 // Device status register
 struct StatusRegisterConcrete {
-  bool ready;
+  z3w::Bool ready;
   z3w::UInt<2> mode;
   ErrorInfoConcrete error;
   std::array<z3w::UInt<4>, 4> counters;
@@ -254,14 +255,14 @@ struct StatusRegisterConcrete {
 // Error information (symbolic)
 // Total width: 8 bits, field pack order: LSB first
 struct ErrorInfoSymbolic {
-  z3w::Ubv<4> code;  // [3:0]
-  z3w::Sbv<2> severity;  // [5:4]
-  z3w::Bool fatal;  // [6]
-  z3w::Ubv<1> reserved;  // [7]
+  z3w::SymUInt<4> code;  // [3:0]
+  z3w::SymSInt<2> severity;  // [5:4]
+  z3w::SymBool fatal;  // [6]
+  z3w::SymUInt<1> reserved;  // [7]
 
   static ErrorInfoSymbolic Create(z3::context& ctx,
       const std::string& prefix);
-  z3w::Ubv<8> Pack() const;
+  z3w::SymUInt<8> Pack() const;
   ErrorInfoConcrete ToConcrete(const z3::model& model) const;
   static ErrorInfoSymbolic FromConcrete(z3::context& ctx,
       const ErrorInfoConcrete& concrete);
@@ -270,15 +271,15 @@ struct ErrorInfoSymbolic {
 // Device status register (symbolic)
 // Total width: 32 bits, field pack order: LSB first
 struct StatusRegisterSymbolic {
-  z3w::Bool ready;  // [0]
-  z3w::Ubv<2> mode;  // [2:1]
+  z3w::SymBool ready;  // [0]
+  z3w::SymUInt<2> mode;  // [2:1]
   ErrorInfoSymbolic error;  // [10:3]
-  std::array<z3w::Ubv<4>, 4> counters;  // [26:11]
-  z3w::Ubv<5> reserved;  // [31:27]
+  std::array<z3w::SymUInt<4>, 4> counters;  // [26:11]
+  z3w::SymUInt<5> reserved;  // [31:27]
 
   static StatusRegisterSymbolic Create(z3::context& ctx,
       const std::string& prefix);
-  z3w::Ubv<32> Pack() const;
+  z3w::SymUInt<32> Pack() const;
   StatusRegisterConcrete ToConcrete(const z3::model& model) const;
   static StatusRegisterSymbolic FromConcrete(z3::context& ctx,
       const StatusRegisterConcrete& concrete);
@@ -311,14 +312,14 @@ Users write target-language names directly (e.g., `kIdle` not `IDLE`).
 #### Concrete structs
 
 POD data holders with no Z3 dependency. They hold field values using Z3Wire
-concrete types (`bool`, `UInt<W>`, `SInt<W>`) and provide proto conversion
+concrete types (`Bool`, `UInt<W>`, `SInt<W>`) and provide proto conversion
 methods (`ToProto`, `FromProto`). Nested structs become concrete struct members.
 Arrays become `std::array`.
 
 #### Symbolic structs
 
-Mirror the concrete layout using Z3Wire symbolic types (`Bool`, `Ubv<W>`,
-`Sbv<W>`). Generated methods:
+Mirror the concrete layout using Z3Wire symbolic types (`SymBool`, `SymUInt<W>`,
+`SymSInt<W>`). Generated methods:
 
 - **`Create(ctx, prefix)`**: Creates fresh Z3 symbolic variables. Each variable
     is named `prefix.field_name`. Nested structs chain the prefix automatically

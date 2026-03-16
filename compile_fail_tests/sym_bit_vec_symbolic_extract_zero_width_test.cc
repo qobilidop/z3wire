@@ -1,4 +1,4 @@
-#include "z3wire/sym_int.h"
+#include "z3wire/sym_bit_vec.h"
 
 // Symbolic extract<0> should fail: TargetWidth must be > 0.
 void trigger() {

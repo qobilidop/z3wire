@@ -86,22 +86,22 @@ Here's a minimal example that verifies a property of 8-bit addition:
 ```cpp
 #include <z3++.h>
 #include <iostream>
-#include "z3wire/bitvec.h"
+#include "z3wire/sym_bit_vec.h"
 
 int main() {
     z3::context ctx;
     z3::solver solver(ctx);
 
     // Create two symbolic 8-bit unsigned values.
-    z3w::Ubv<8> a(ctx, "a");
-    z3w::Ubv<8> b(ctx, "b");
+    z3w::SymUInt<8> a(ctx, "a");
+    z3w::SymUInt<8> b(ctx, "b");
 
     // Bit-growth addition: result is 9 bits, no overflow possible.
-    auto sum = a + b;  // z3w::Ubv<9>
+    auto sum = a + b;  // z3w::SymUInt<9>
 
     // Verify: the 9-bit sum is always >= both operands.
     // (This is trivially true because no overflow can occur.)
-    auto a_wide = z3w::safe_cast<z3w::Ubv<9>>(a);
+    auto a_wide = z3w::safe_cast<z3w::SymUInt<9>>(a);
     solver.add((sum < a_wide).raw());
 
     if (solver.check() == z3::unsat) {
@@ -114,6 +114,6 @@ int main() {
 
 ## Next steps
 
-- [Types](usage/types.md) — learn about `Bool`, `Ubv<W>`, and `Sbv<W>`
+- [Types](usage/types.md) — learn about `SymBool`, `SymUInt<W>`, and `SymSInt<W>`
 - [Operations](usage/operations.md) — arithmetic, bitwise, and comparison
 - [Examples](examples/safe-adder.md) — runnable verification examples

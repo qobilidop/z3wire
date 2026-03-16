@@ -22,14 +22,14 @@ Future directions for Z3Wire, roughly in priority order.
 
 ## Next features
 
-- **Bool XOR** (`^`) — Dedicated XOR operator for `Bool`. Currently expressible
+- **SymBool XOR** (`^`) — Dedicated XOR operator for `SymBool`. Currently expressible
     as `!=`, but a dedicated `^` would be more readable in logic-heavy code.
 - **Reduction operators** (`reduce_and`, `reduce_or`, `reduce_xor`) — collapse
-    all bits to a single `Bool`. Low priority: `reduce_and` and `reduce_or` are
+    all bits to a single `SymBool`. Low priority: `reduce_and` and `reduce_or` are
     expressible via comparisons (`x == ~0`, `x != 0`); `reduce_xor` (parity) is
     the only one that's hard to express today. Defer until a use case arises.
-- **`Ubv<1>` / `Bool` friction** — Consider reducing friction between
-    `Ubv<1>` and `Bool` (e.g., direct comparison), while respecting the
+- **`SymUInt<1>` / `SymBool` friction** — Consider reducing friction between
+    `SymUInt<1>` and `SymBool` (e.g., direct comparison), while respecting the
     "explicit over implicit" principle. Defer until real usage patterns emerge.
 
 ## Release and distribution
@@ -50,9 +50,9 @@ Future directions for Z3Wire, roughly in priority order.
     `model.eval()` call requires `.raw()` to unwrap Z3Wire types. A thin
     `z3w::Solver` wrapper (or free-function helpers like `z3w::eval()`) could
     accept Z3Wire types directly, delegating to `z3::solver` under the hood.
-- **Shorter literal construction** — `Ubv<2>::Literal<0>(ctx)` is verbose for
+- **Shorter literal construction** — `SymUInt<2>::Literal<0>(ctx)` is verbose for
     a common operation. Consider a free-function shorthand (e.g.,
-    `z3w::lit<Ubv<2>, 0>(ctx)`) or dedicated helpers.
+    `z3w::lit<SymUInt<2>, 0>(ctx)`) or dedicated helpers.
 - **Scoped solver checks** — The push/add/check/pop pattern is repeated in
     every verification. A helper like `z3w::check(solver, constraint)` could
     encapsulate this. Trades explicitness for brevity — needs careful design.
@@ -63,6 +63,6 @@ Future directions for Z3Wire, roughly in priority order.
 ## Quality
 
 - **Improve test coverage** — The [test coverage](test-coverage.md) tracks
-    which template instantiations are tested. Key gaps: signed (`Sbv`/`SInt`)
+    which template instantiations are tested. Key gaps: signed (`SymSInt`/`SInt`)
     operations are under-tested across the board, W=1 and W=64 boundary cases
     are sparse, and mixed concrete+symbolic bitwise only tests AND.

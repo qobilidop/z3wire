@@ -30,9 +30,9 @@ compile_fail_tests/
 load(":defs.bzl", "cc_compile_fail_test")
 
 cc_compile_fail_test(
-    name = "bitvec_zero_width_test",
-    src = "bitvec_zero_width_test.cc",
-    deps = ["//z3wire:bitvec"],
+    name = "sym_bit_vec_zero_width_test",
+    src = "sym_bit_vec_zero_width_test.cc",
+    deps = ["//z3wire:sym_bit_vec"],
     expected_message = "Bit-vector width must be at least 1",
 )
 ```
@@ -40,11 +40,11 @@ cc_compile_fail_test(
 ## Test file example
 
 ```cpp
-// bitvec_zero_width_test.cc
-#include "z3wire/bitvec.h"
+// sym_bit_vec_zero_width_test.cc
+#include "z3wire/sym_bit_vec.h"
 
-// BitVec<0, false> should fail: "Bit-vector width must be at least 1."
-template class z3w::BitVec<0, false>;
+// SymBitVec<0, false> should fail: "Bit-vector width must be at least 1."
+template class z3w::SymBitVec<0, false>;
 ```
 
 ## Coverage

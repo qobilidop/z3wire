@@ -7,25 +7,25 @@ store plain values, and a three-tier casting API for converting between them.
 
 Zero-overhead wrappers around `z3::expr`.
 
-| Type          | Description                      |
-| :------------ | :------------------------------- |
-| `z3w::Bool`   | Symbolic boolean                 |
-| `z3w::Ubv<W>` | Unsigned bit-vector of width `W` |
-| `z3w::Sbv<W>` | Signed bit-vector of width `W`   |
+| Type              | Description                      |
+| :---------------- | :------------------------------- |
+| `z3w::SymBool`    | Symbolic boolean                 |
+| `z3w::SymUInt<W>` | Unsigned bit-vector of width `W` |
+| `z3w::SymSInt<W>` | Signed bit-vector of width `W`   |
 
-`Ubv<W>` and `Sbv<W>` are aliases for the underlying template:
+`SymUInt<W>` and `SymSInt<W>` are aliases for the underlying template:
 
 ```cpp
 template <size_t Width, bool IsSigned>
-class BitVec;
+class SymBitVec;
 
-template <size_t W> using Ubv = BitVec<W, false>;
-template <size_t W> using Sbv = BitVec<W, true>;
+template <size_t W> using SymUInt = SymBitVec<W, false>;
+template <size_t W> using SymSInt = SymBitVec<W, true>;
 ```
 
 !!! info
 
-    `BitVec<0, S>` is forbidden via `static_assert`. A zero-width bit-vector has
+    `SymBitVec<0, S>` is forbidden via `static_assert`. A zero-width bit-vector has
     no meaning in hardware or SMT.
 
 ### Creating symbolic variables
@@ -35,25 +35,25 @@ All types are constructed with a Z3 context and a name:
 ```cpp
 z3::context ctx;
 
-z3w::Bool flag(ctx, "flag");
-z3w::Ubv<32> address(ctx, "address");
-z3w::Sbv<16> offset(ctx, "offset");
+z3w::SymBool flag(ctx, "flag");
+z3w::SymUInt<32> address(ctx, "address");
+z3w::SymSInt<16> offset(ctx, "offset");
 ```
 
 ### Literals
 
-Bool literals:
+SymBool literals:
 
 ```cpp
-z3w::Bool t = z3w::Bool::True(ctx);
-z3w::Bool f = z3w::Bool::False(ctx);
+z3w::SymBool t = z3w::SymBool::True(ctx);
+z3w::SymBool f = z3w::SymBool::False(ctx);
 ```
 
 Bit-vector literals are range-checked at compile time:
 
 ```cpp
-auto x = z3w::Ubv<8>::Literal<255>(ctx);  // OK
-auto y = z3w::Ubv<8>::Literal<256>(ctx);  // Compile error: value doesn't fit
+auto x = z3w::SymUInt<8>::Literal<255>(ctx);  // OK
+auto y = z3w::SymUInt<8>::Literal<256>(ctx);  // Compile error: value doesn't fit
 ```
 
 ### Accessing the underlying Z3 expression
@@ -61,7 +61,7 @@ auto y = z3w::Ubv<8>::Literal<256>(ctx);  // Compile error: value doesn't fit
 Use `.raw()` to get the underlying `z3::expr` for interop with Z3 APIs:
 
 ```cpp
-z3w::Ubv<8> x(ctx, "x");
+z3w::SymUInt<8> x(ctx, "x");
 solver.add(x.raw() > 0);  // Pass to Z3 solver directly
 ```
 
@@ -77,6 +77,7 @@ concrete values into symbolic expressions.
 
 | Type           | Description                                    |
 | :------------- | :--------------------------------------------- |
+| `z3w::Bool`    | Type-safe boolean wrapper                      |
 | `z3w::UInt<W>` | Unsigned concrete integer of width `W` (1--64) |
 | `z3w::SInt<W>` | Signed concrete integer of width `W` (1--64)   |
 
@@ -84,18 +85,49 @@ concrete values into symbolic expressions.
 
 ```cpp
 template <size_t W, bool IsSigned>
-class Int;
+class BitVec;
 
-template <size_t W> using UInt = Int<W, false>;
-template <size_t W> using SInt = Int<W, true>;
+template <size_t W> using UInt = BitVec<W, false>;
+template <size_t W> using SInt = BitVec<W, true>;
 ```
 
 !!! info
 
     Unlike symbolic types, concrete types do not require a `z3::context`.
-    They store plain native integers, not Z3 expressions.
+    They store plain native values, not Z3 expressions.
 
-### Construction
+### Concrete `Bool`
+
+`z3w::Bool` is a type-safe wrapper around native `bool` that prevents implicit
+construction from non-boolean types.
+
+```cpp
+z3w::Bool b = true;         // OK: implicit from bool
+z3w::Bool b2 = false;       // OK
+z3w::Bool b3;               // OK: default-initializes to false
+z3w::Bool b4 = 42;          // Compile error: deleted integral constructor
+```
+
+Accessing the value:
+
+```cpp
+z3w::Bool b = true;
+b.value();                   // true
+if (b) { /* ... */ }         // OK: contextual conversion to bool
+bool native = bool(b);       // OK: explicit operator bool()
+```
+
+Equality with `bool` is supported for testing convenience:
+
+```cpp
+z3w::Bool b = true;
+b == true;   // true
+b != false;  // true
+```
+
+Stream output prints `"true"` or `"false"`.
+
+### Integer construction
 
 Three tiers, matching the symbolic API:
 
@@ -148,11 +180,11 @@ with symbolic operands:
 
 ```cpp
 z3::context ctx;
-z3w::Ubv<8> sym(ctx, "x");
+z3w::SymUInt<8> sym(ctx, "x");
 auto conc = z3w::UInt<8>::Literal<42>();
 
-auto result = sym + conc;  // Ubv<9> — concrete promoted automatically
-z3w::Bool eq = (sym == conc);  // Symbolic equality check
+auto result = sym + conc;  // SymUInt<9> — concrete promoted automatically
+z3w::SymBool eq = (sym == conc);  // Symbolic equality check
 ```
 
 The promotion grabs the `z3::context` from the symbolic operand, so no
@@ -168,7 +200,7 @@ To convert a concrete value to symbolic manually:
 
 ```cpp
 auto conc = z3w::UInt<8>::Literal<42>();
-z3w::Ubv<8> sym = z3w::to_symbolic(conc, ctx);
+z3w::SymUInt<8> sym = z3w::to_symbolic(conc, ctx);
 ```
 
 ### Storage
@@ -195,10 +227,10 @@ Raw truncation, extension, or sign reinterpretation. No safety checks. Use when
 you intentionally want hardware-style overflow or wrap behavior.
 
 ```cpp
-z3w::Ubv<16> wide(ctx, "wide");
-auto narrow = z3w::cast<z3w::Ubv<8>>(wide);   // Truncate to 8 bits
-auto wider = z3w::cast<z3w::Ubv<32>>(wide);    // Zero-extend to 32 bits
-auto reint = z3w::cast<z3w::Sbv<16>>(wide);    // Reinterpret as signed
+z3w::SymUInt<16> wide(ctx, "wide");
+auto narrow = z3w::cast<z3w::SymUInt<8>>(wide);   // Truncate to 8 bits
+auto wider = z3w::cast<z3w::SymUInt<32>>(wide);    // Zero-extend to 32 bits
+auto reint = z3w::cast<z3w::SymSInt<16>>(wide);    // Reinterpret as signed
 ```
 
 Under the hood:
@@ -215,20 +247,20 @@ Only compiles if the cast is mathematically guaranteed to be lossless. Use when
 you want the compiler to verify that no data can be lost.
 
 ```cpp
-z3w::Ubv<8> small(ctx, "small");
-auto wide = z3w::safe_cast<z3w::Ubv<16>>(small);   // OK: widening
-auto bad = z3w::safe_cast<z3w::Ubv<4>>(small);      // Compile error!
+z3w::SymUInt<8> small(ctx, "small");
+auto wide = z3w::safe_cast<z3w::SymUInt<16>>(small);   // OK: widening
+auto bad = z3w::safe_cast<z3w::SymUInt<4>>(small);      // Compile error!
 ```
 
 **Rules:**
 
-| Source    | Target    | Allowed?                                       |
-| :-------- | :-------- | :--------------------------------------------- |
-| `Ubv<W1>` | `Ubv<W2>` | Yes, if `W2 >= W1`                             |
-| `Sbv<W1>` | `Sbv<W2>` | Yes, if `W2 >= W1`                             |
-| `Ubv<W1>` | `Sbv<W2>` | Yes, if `W2 > W1` (needs 1 extra bit for sign) |
-| `Sbv<W1>` | `Ubv<W2>` | **Always forbidden** (negative values corrupt) |
-| Any       | Smaller   | **Always forbidden** (truncation is not safe)  |
+| Source        | Target        | Allowed?                                       |
+| :------------ | :------------ | :--------------------------------------------- |
+| `SymUInt<W1>` | `SymUInt<W2>` | Yes, if `W2 >= W1`                             |
+| `SymSInt<W1>` | `SymSInt<W2>` | Yes, if `W2 >= W1`                             |
+| `SymUInt<W1>` | `SymSInt<W2>` | Yes, if `W2 > W1` (needs 1 extra bit for sign) |
+| `SymSInt<W1>` | `SymUInt<W2>` | **Always forbidden** (negative values corrupt) |
+| Any           | Smaller       | **Always forbidden** (truncation is not safe)  |
 
 ### `checked_cast<T>(val)` — Verification cast
 
@@ -236,8 +268,8 @@ Performs the cast and returns a symbolic boolean indicating whether data loss
 occurred. Use when you want to verify safety as part of a Z3 proof.
 
 ```cpp
-z3w::Ubv<16> val(ctx, "val");
-auto [result, overflowed] = z3w::checked_cast<z3w::Ubv<8>>(val);
+z3w::SymUInt<16> val(ctx, "val");
+auto [result, overflowed] = z3w::checked_cast<z3w::SymUInt<8>>(val);
 
 // Assert in the solver: this cast must never lose data.
 solver.add(!overflowed.raw());
@@ -254,19 +286,19 @@ and check if the value changed.
 | Widening where data loss is impossible     | `safe_cast`    |
 | Need to prove no data loss symbolically    | `checked_cast` |
 
-## Bool / bit-vector conversion
+## SymBool / bit-vector conversion
 
-In Z3, `Bool` and a 1-bit bit-vector are distinct sorts. Hardware frequently
+In Z3, `SymBool` and a 1-bit bit-vector are distinct sorts. Hardware frequently
 needs to convert between them. Z3Wire provides explicit conversion functions:
 
 ```cpp
-// Bit-vector to Bool
-z3w::Ubv<32> status(ctx, "status");
-z3w::Bool ready = z3w::to_bool(z3w::extract<0, 0>(status));
+// Bit-vector to SymBool
+z3w::SymUInt<32> status(ctx, "status");
+z3w::SymBool ready = z3w::to_bool(z3w::extract<0, 0>(status));
 
-// Bool to bit-vector
-z3w::Bool cond(ctx, "cond");
-z3w::Ubv<1> flag = z3w::to_ubv1(cond);
+// SymBool to bit-vector
+z3w::SymBool cond(ctx, "cond");
+z3w::SymUInt<1> flag = z3w::to_ubv1(cond);
 ```
 
 ## Design principle: explicit over implicit
@@ -274,7 +306,7 @@ z3w::Ubv<1> flag = z3w::to_ubv1(cond);
 Z3Wire never implicitly converts between types. There are no implicit
 conversions between:
 
-- `Bool` and `Ubv<1>`
+- `SymBool` and `SymUInt<1>`
 - Signed and unsigned bit-vectors
 - Bit-vectors of different widths
 

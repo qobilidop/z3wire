@@ -1,4 +1,4 @@
-#include "z3wire/sym_int.h"
+#include "z3wire/sym_bit_vec.h"
 
 // safe_cast from signed to unsigned is always forbidden.
 void trigger() {

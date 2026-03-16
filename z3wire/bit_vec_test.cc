@@ -1,4 +1,4 @@
-#include "z3wire/int.h"
+#include "z3wire/bit_vec.h"
 
 #include <cstdint>
 
@@ -9,7 +9,7 @@ namespace {
 
 // --- Storage types ---
 
-TEST(IntTest, UnsignedStorageType) {
+TEST(BitVecTest, UnsignedStorageType) {
   static_assert(std::is_same_v<UnsignedStorageType<1>, uint8_t>);
   static_assert(std::is_same_v<UnsignedStorageType<8>, uint8_t>);
   static_assert(std::is_same_v<UnsignedStorageType<9>, uint16_t>);
@@ -20,7 +20,7 @@ TEST(IntTest, UnsignedStorageType) {
   static_assert(std::is_same_v<UnsignedStorageType<64>, uint64_t>);
 }
 
-TEST(IntTest, SignedStorageType) {
+TEST(BitVecTest, SignedStorageType) {
   static_assert(std::is_same_v<SignedStorageType<1>, int8_t>);
   static_assert(std::is_same_v<SignedStorageType<8>, int8_t>);
   static_assert(std::is_same_v<SignedStorageType<9>, int16_t>);
@@ -33,14 +33,14 @@ TEST(IntTest, SignedStorageType) {
 
 // --- Type traits ---
 
-TEST(IntTest, TypeTraits) {
+TEST(BitVecTest, TypeTraits) {
   static_assert(UInt<8>::kWidth == 8);
   static_assert(!UInt<8>::kIsSigned);
   static_assert(SInt<8>::kWidth == 8);
   static_assert(SInt<8>::kIsSigned);
 }
 
-TEST(IntTest, IsConcreteV) {
+TEST(BitVecTest, IsConcreteV) {
   static_assert(is_concrete_v<UInt<8>>);
   static_assert(is_concrete_v<SInt<16>>);
   static_assert(!is_concrete_v<int>);
@@ -48,23 +48,23 @@ TEST(IntTest, IsConcreteV) {
 
 // --- Literal (compile-time checked) ---
 
-TEST(IntTest, LiteralUnsigned) {
+TEST(BitVecTest, LiteralUnsigned) {
   auto a = UInt<8>::Literal<255>();
   EXPECT_EQ(a.value(), 255);
 }
 
-TEST(IntTest, LiteralZero) {
+TEST(BitVecTest, LiteralZero) {
   auto a = UInt<8>::Literal<0>();
   EXPECT_EQ(a.value(), 0);
 }
 
-TEST(IntTest, LiteralSigned) {
+TEST(BitVecTest, LiteralSigned) {
   // SInt<8> range: -128 to 127.
   auto a = SInt<8>::Literal<127>();
   EXPECT_EQ(a.value(), 127);
 }
 
-TEST(IntTest, LiteralSignedNegative) {
+TEST(BitVecTest, LiteralSignedNegative) {
   auto a = SInt<8>::Literal<-128>();
   EXPECT_EQ(a.bits(), 0x80);   // Bit pattern
   EXPECT_EQ(a.value(), -128);  // Interpreted value
@@ -75,49 +75,49 @@ TEST(IntTest, LiteralSignedNegative) {
 
 // --- Checked construction ---
 
-TEST(IntTest, CheckedNoTruncation) {
+TEST(BitVecTest, CheckedNoTruncation) {
   auto [val, truncated] = UInt<8>::checked(200);
   EXPECT_EQ(val.bits(), 200);
   EXPECT_FALSE(truncated);
 }
 
-TEST(IntTest, CheckedWithTruncation) {
+TEST(BitVecTest, CheckedWithTruncation) {
   auto [val, truncated] = UInt<8>::checked(300);
   EXPECT_EQ(val.bits(), 44);
   EXPECT_TRUE(truncated);
 }
 
-TEST(IntTest, CheckedNegativeOnUnsigned) {
+TEST(BitVecTest, CheckedNegativeOnUnsigned) {
   auto [val, truncated] = UInt<8>::checked(-1);
   EXPECT_TRUE(truncated);
 }
 
-TEST(IntTest, SignedCheckedNoTruncation) {
+TEST(BitVecTest, SignedCheckedNoTruncation) {
   auto [val, truncated] = SInt<8>::checked(-128);
   EXPECT_EQ(val.bits(), 0x80);   // Bit pattern
   EXPECT_EQ(val.value(), -128);  // Interpreted value
   EXPECT_FALSE(truncated);
 }
 
-TEST(IntTest, SignedCheckedPositive) {
+TEST(BitVecTest, SignedCheckedPositive) {
   auto [val, truncated] = SInt<8>::checked(127);
   EXPECT_EQ(val.value(), 127);
   EXPECT_FALSE(truncated);
 }
 
-TEST(IntTest, SignedCheckedOverflowNegative) {
+TEST(BitVecTest, SignedCheckedOverflowNegative) {
   auto [val, truncated] = SInt<8>::checked(-200);
   EXPECT_TRUE(truncated);
 }
 
-TEST(IntTest, SignedCheckedOverflowPositive) {
+TEST(BitVecTest, SignedCheckedOverflowPositive) {
   auto [val, truncated] = SInt<8>::checked(200);
   EXPECT_TRUE(truncated);
 }
 
 // --- bits() vs value() ---
 
-TEST(IntTest, UnsignedBitsAndValueMatch) {
+TEST(BitVecTest, UnsignedBitsAndValueMatch) {
   auto a = UInt<8>::Literal<200>();
   EXPECT_EQ(a.bits(), 200);
   EXPECT_EQ(a.value(), 200);
@@ -125,7 +125,7 @@ TEST(IntTest, UnsignedBitsAndValueMatch) {
   static_assert(std::is_same_v<decltype(a.value()), uint8_t>);
 }
 
-TEST(IntTest, SignedBitsVsValue) {
+TEST(BitVecTest, SignedBitsVsValue) {
   auto a = SInt<8>::Literal<-1>();
   EXPECT_EQ(a.bits(), 0xFF);
   EXPECT_EQ(a.value(), -1);
@@ -133,7 +133,7 @@ TEST(IntTest, SignedBitsVsValue) {
   static_assert(std::is_same_v<decltype(a.value()), int8_t>);
 }
 
-TEST(IntTest, SignedBitsVsValueMinMax) {
+TEST(BitVecTest, SignedBitsVsValueMinMax) {
   auto min_val = SInt<8>::Literal<-128>();
   EXPECT_EQ(min_val.bits(), 0x80);
   EXPECT_EQ(min_val.value(), -128);
@@ -143,7 +143,7 @@ TEST(IntTest, SignedBitsVsValueMinMax) {
   EXPECT_EQ(max_val.value(), 127);
 }
 
-TEST(IntTest, SignedNonPowerOfTwoBitsVsValue) {
+TEST(BitVecTest, SignedNonPowerOfTwoBitsVsValue) {
   // SInt<5>: range -16 to 15. Value 0x1F = 31 unsigned = -1 signed.
   auto a = SInt<5>::Literal<-1>();
   EXPECT_EQ(a.bits(), 0x1F);
@@ -152,7 +152,7 @@ TEST(IntTest, SignedNonPowerOfTwoBitsVsValue) {
 
 // --- Exact equality ---
 
-TEST(IntTest, ExactEq) {
+TEST(BitVecTest, ExactEq) {
   auto a = UInt<8>::Literal<42>();
   auto b = UInt<8>::Literal<42>();
   auto c = UInt<8>::Literal<99>();
@@ -162,7 +162,7 @@ TEST(IntTest, ExactEq) {
 
 // --- Equality ---
 
-TEST(IntTest, Equality) {
+TEST(BitVecTest, Equality) {
   auto a = UInt<8>::Literal<42>();
   auto b = UInt<8>::Literal<42>();
   auto c = UInt<8>::Literal<99>();
@@ -170,7 +170,7 @@ TEST(IntTest, Equality) {
   EXPECT_FALSE(a == c);
 }
 
-TEST(IntTest, Inequality) {
+TEST(BitVecTest, Inequality) {
   auto a = UInt<8>::Literal<42>();
   auto b = UInt<8>::Literal<99>();
   EXPECT_TRUE(a != b);
@@ -179,13 +179,13 @@ TEST(IntTest, Inequality) {
 
 // --- W=64 boundary ---
 
-TEST(IntTest, Width64Construction) {
+TEST(BitVecTest, Width64Construction) {
   auto [val, truncated] = UInt<64>::checked(UINT64_MAX);
   EXPECT_EQ(val.bits(), UINT64_MAX);
   EXPECT_FALSE(truncated);
 }
 
-TEST(IntTest, Width1) {
+TEST(BitVecTest, Width1) {
   auto [val, truncated] = UInt<1>::checked(3);
   EXPECT_EQ(val.bits(), 1);  // 3 & 0x1
   EXPECT_TRUE(truncated);
@@ -193,21 +193,21 @@ TEST(IntTest, Width1) {
 
 // --- Cross-type equality (different widths and/or signedness) ---
 
-TEST(IntTest, CrossTypeEqualitySameSignedness) {
+TEST(BitVecTest, CrossTypeEqualitySameSignedness) {
   auto a = UInt<8>::Literal<42>();
   auto b = UInt<16>::Literal<42>();
   EXPECT_TRUE(a == b);
   EXPECT_FALSE(a != b);
 }
 
-TEST(IntTest, CrossTypeEqualityDifferentValues) {
+TEST(BitVecTest, CrossTypeEqualityDifferentValues) {
   auto a = UInt<8>::Literal<100>();
   auto b = UInt<16>::Literal<200>();
   EXPECT_FALSE(a == b);
   EXPECT_TRUE(a != b);
 }
 
-TEST(IntTest, CrossTypeEqualityMixedSignedness) {
+TEST(BitVecTest, CrossTypeEqualityMixedSignedness) {
   // UInt<8>(42) == SInt<16>(42) → true
   // Common type: signed, width = max(8,16)+1 = 17.
   auto a = UInt<8>::Literal<42>();

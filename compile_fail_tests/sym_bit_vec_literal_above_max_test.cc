@@ -1,4 +1,4 @@
-#include "z3wire/sym_int.h"
+#include "z3wire/sym_bit_vec.h"
 
 // SymUInt<8> max is 255; Literal<256> should fail.
 void trigger() {

@@ -6,8 +6,8 @@
 
 #include "z3wire/bool.h"
 #include "z3wire/sym_bool.h"
-#include "z3wire/sym_int.h"
-#include "z3wire/int.h"
+#include "z3wire/sym_bit_vec.h"
+#include "z3wire/bit_vec.h"
 #include "status_register.pb.h"
 
 namespace example {

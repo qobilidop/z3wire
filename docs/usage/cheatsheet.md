@@ -5,11 +5,11 @@ namespace. Links point to detailed documentation.
 
 ## Types
 
-| Symbolic | Concrete  | Description                    |
-| :------- | :-------- | :----------------------------- |
-| `Bool`   | `bool`    | Boolean                        |
-| `Ubv<W>` | `UInt<W>` | Unsigned bit-vector of width W |
-| `Sbv<W>` | `SInt<W>` | Signed bit-vector of width W   |
+| Symbolic     | Concrete  | Description                    |
+| :----------- | :-------- | :----------------------------- |
+| `SymBool`    | `Bool`    | Boolean                        |
+| `SymUInt<W>` | `UInt<W>` | Unsigned bit-vector of width W |
+| `SymSInt<W>` | `SInt<W>` | Signed bit-vector of width W   |
 
 Concrete values auto-promote to symbolic in mixed expressions.
 See [Types](types.md).
@@ -17,12 +17,12 @@ See [Types](types.md).
 ## Construction
 
 ```cpp
-Ubv<8> x(ctx, "x");              // Symbolic variable
-Bool b(ctx, "b");                 // Symbolic boolean
+SymUInt<8> x(ctx, "x");              // Symbolic variable
+SymBool b(ctx, "b");                  // Symbolic boolean
 
-auto lit = Ubv<8>::Literal<255>(ctx);  // Compile-time checked literal
-Bool::True(ctx);                       // Boolean literals
-Bool::False(ctx);
+auto lit = SymUInt<8>::Literal<255>(ctx);  // Compile-time checked literal
+SymBool::True(ctx);                        // Boolean literals
+SymBool::False(ctx);
 
 auto c = UInt<8>::Literal<42>();              // Compile-time checked concrete
 auto [val, truncated] = UInt<8>::checked(999); // Runtime checked
@@ -32,10 +32,10 @@ auto [val, truncated] = UInt<8>::checked(999); // Runtime checked
 
 | Op  | Expression | Width rule   |
 | :-- | :--------- | :----------- |
-| AND | `a && b`   | Bool only    |
-| OR  | `a \|\| b` | Bool only    |
-| XOR | `a ^ b`    | Bool only    |
-| NOT | `!a`       | Bool only    |
+| AND | `a && b`   | SymBool only |
+| OR  | `a \|\| b` | SymBool only |
+| XOR | `a ^ b`    | SymBool only |
+| NOT | `!a`       | SymBool only |
 | AND | `a & b`    | Strict match |
 | OR  | `a \| b`   | Strict match |
 | XOR | `a ^ b`    | Strict match |
@@ -62,7 +62,7 @@ See [Operations](operations.md).
 | `<` `<=` `>` `>=` | `a < b`         | Relaxed (any width/signedness) |
 | Exact             | `exact_eq(a,b)` | Strict (same width/signedness) |
 
-Returns `z3w::Bool`. Signedness-aware: uses signed comparison if either operand
+Returns `z3w::SymBool`. Signedness-aware: uses signed comparison if either operand
 is signed. Concrete types support `==` and `!=` only (returning `bool`).
 See [Operations](operations.md).
 
@@ -83,11 +83,11 @@ See [Operations](operations.md#shifting).
 ## Bit manipulation
 
 ```cpp
-bit<N>(val)                    // -> Ubv<1>            (single bit)
-extract<High, Low>(val)        // -> Ubv<High-Low+1>  (static bounds)
-extract<Width>(val, offset)    // -> Ubv<Width>        (symbolic offset)
-concat(high, low)              // -> Ubv<W1+W2>
-concat(a, b, c, ...)           // -> Ubv<W1+W2+W3+...> (variadic)
+bit<N>(val)                    // -> SymUInt<1>         (single bit)
+extract<High, Low>(val)        // -> SymUInt<High-Low+1>  (static bounds)
+extract<Width>(val, offset)    // -> SymUInt<Width>        (symbolic offset)
+concat(high, low)              // -> SymUInt<W1+W2>
+concat(a, b, c, ...)           // -> SymUInt<W1+W2+W3+...> (variadic)
 ```
 
 See [Operations](operations.md#bit-manipulation).
@@ -105,8 +105,8 @@ See [Types](types.md#casting).
 ## Conversion
 
 ```cpp
-to_bool(Ubv<1>)     // -> Bool
-to_ubv1(Bool)        // -> Ubv<1>
+to_bool(SymUInt<1>)     // -> SymBool
+to_ubv1(SymBool)        // -> SymUInt<1>
 ```
 
 ## Conditional selection
@@ -115,7 +115,7 @@ to_ubv1(Bool)        // -> Ubv<1>
 ite(cond, true_val, false_val)    // Both branches must be the same type
 ```
 
-Works with `z3w::Bool` condition. Concrete values auto-promote to symbolic
+Works with `z3w::SymBool` condition. Concrete values auto-promote to symbolic
 in mixed expressions.
 
 ## Interop

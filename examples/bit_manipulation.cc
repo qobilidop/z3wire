@@ -7,7 +7,7 @@
 
 #include <z3++.h>
 
-#include "z3wire/sym_int.h"
+#include "z3wire/sym_bit_vec.h"
 
 int main() {
   z3::context ctx;

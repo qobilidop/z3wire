@@ -25,24 +25,24 @@ the implicit conversion problem motivates a type-safe wrapper.
 
 All symbolic types get a `Sym` prefix. Concrete types get the natural C++ names.
 
-| Symbolic                  | Concrete               |
-| ------------------------- | ---------------------- |
-| `SymBool`                 | `Bool`                 |
-| `SymUInt<W>`              | `UInt<W>`              |
-| `SymSInt<W>`              | `SInt<W>`              |
-| `SymInt<W, S>` (template) | `Int<W, S>` (template) |
+| Symbolic                     | Concrete                  |
+| ---------------------------- | ------------------------- |
+| `SymBool`                    | `Bool`                    |
+| `SymUInt<W>`                 | `UInt<W>`                 |
+| `SymSInt<W>`                 | `SInt<W>`                 |
+| `SymBitVec<W, S>` (template) | `BitVec<W, S>` (template) |
 
 The `Sym` prefix is self-documenting: no domain knowledge is needed to
 understand which tier a type belongs to.
 
 ### Header files
 
-| Before                                         | After                                                   |
-| ---------------------------------------------- | ------------------------------------------------------- |
-| `bool.h` (`Bool` class)                        | `sym_bool.h` (`SymBool` class)                          |
-| `bitvec.h` (`BitVec<W,S>`, `Ubv<W>`, `Sbv<W>`) | `sym_int.h` (`SymInt<W,S>`, `SymUInt<W>`, `SymSInt<W>`) |
-| `int.h` (unchanged)                            | `int.h` (unchanged)                                     |
-| (none)                                         | `bool.h` (new concrete `Bool` class)                    |
+| Before                                         | After                                                          |
+| ---------------------------------------------- | -------------------------------------------------------------- |
+| `bool.h` (`Bool` class)                        | `sym_bool.h` (`SymBool` class)                                 |
+| `bitvec.h` (`BitVec<W,S>`, `Ubv<W>`, `Sbv<W>`) | `sym_bit_vec.h` (`SymBitVec<W,S>`, `SymUInt<W>`, `SymSInt<W>`) |
+| `int.h` (`Int<W,S>`, `UInt<W>`, `SInt<W>`)     | `bit_vec.h` (`BitVec<W,S>`, `UInt<W>`, `SInt<W>`)              |
+| (none)                                         | `bool.h` (new concrete `Bool` class)                           |
 
 ### Concrete `Bool`
 
@@ -74,9 +74,9 @@ class Bool {
 
 Design choices:
 
-- **`constexpr` throughout**: consistent with concrete `Int<W,S>`.
+- **`constexpr` throughout**: consistent with concrete `BitVec<W,S>`.
 - **Default-initializes to `false`**: avoids uninitialized state, consistent
-    with `Int` zero-initializing its `bits_` member.
+    with `BitVec` zero-initializing its `bits_` member.
 - **Implicit from `bool`**: `Bool b = true;` works naturally.
 - **Deleted integral constructor**: `Bool b = 42;` is a compile error.
 - **`explicit operator bool()`**: prevents accidental use in arithmetic

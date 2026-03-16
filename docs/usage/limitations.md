@@ -16,7 +16,7 @@ Known limitations of the current implementation.
 
 - **Bit-width limited to 1--64.** Concrete types (`UInt<W>`, `SInt<W>`)
     require `W <= 64` because they are backed by native C++ integers. Symbolic
-    types (`Ubv<W>`, `Sbv<W>`) have no such restriction.
+    types (`SymUInt<W>`, `SymSInt<W>`) have no such restriction.
 - **Value holders only.** Concrete types support construction, `.value()`,
     and equality (`==`, `!=`). For arithmetic, bitwise, shifts, and other
     operations, use symbolic types or native C++ integers via `.value()`.
