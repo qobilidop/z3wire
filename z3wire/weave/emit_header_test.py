@@ -258,6 +258,37 @@ class EmitHeaderTest(unittest.TestCase):
         # Array elements should be expanded in concat
         self.assertIn("return z3w::concat(items[2], items[1], items[0]);", output)
 
+    def test_msb_first_pack(self):
+        module = rdl_pb2.Module(
+            file_prefix="test",
+            namespace="test",
+            field_pack_order=rdl_pb2.FIELD_PACK_ORDER_MSB_FIRST,
+            structs=[
+                rdl_pb2.Struct(
+                    name="Reg",
+                    fields=[
+                        rdl_pb2.Field(
+                            name="high",
+                            type=rdl_pb2.FieldType(bitvec=rdl_pb2.BitVecType(width=4)),
+                        ),
+                        rdl_pb2.Field(
+                            name="low",
+                            type=rdl_pb2.FieldType(bitvec=rdl_pb2.BitVecType(width=4)),
+                        ),
+                    ],
+                ),
+            ],
+        )
+        resolved = resolve(module)
+        output = emit_header(resolved, proto_header="test.pb.h")
+
+        # MSB_FIRST: fields listed high-to-low, concat preserves order
+        self.assertIn("return z3w::concat(high, low);", output)
+        # Bit offsets: high=[7:4], low=[3:0]
+        self.assertIn("// [7:4]", output)
+        self.assertIn("// [3:0]", output)
+        self.assertIn("field pack order: MSB first", output)
+
     def test_full_example(self):
         """Test the complete StatusRegister example from the design doc."""
         module = rdl_pb2.Module(

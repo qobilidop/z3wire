@@ -237,7 +237,8 @@ class ResolverTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, re.compile("[Cc]ircular")):
             resolve(module)
 
-    def test_msb_first_not_implemented(self):
+    def test_msb_first_offsets(self):
+        """MSB_FIRST: first field in list gets highest bit offset."""
         module = rdl_pb2.Module(
             file_prefix="test",
             namespace="test",
@@ -245,17 +246,38 @@ class ResolverTest(unittest.TestCase):
             structs=[
                 rdl_pb2.Struct(
                     name="S",
+                    width=8,
                     fields=[
                         rdl_pb2.Field(
-                            name="x",
+                            name="high",
+                            type=rdl_pb2.FieldType(bitvec=rdl_pb2.BitVecType(width=3)),
+                        ),
+                        rdl_pb2.Field(
+                            name="mid",
+                            type=rdl_pb2.FieldType(bitvec=rdl_pb2.BitVecType(width=4)),
+                        ),
+                        rdl_pb2.Field(
+                            name="low",
                             type=rdl_pb2.FieldType(bool=rdl_pb2.BoolType()),
                         ),
                     ],
                 ),
             ],
         )
-        with self.assertRaises(NotImplementedError):
-            resolve(module)
+        resolved = resolve(module)
+        s = resolved.structs[0]
+        self.assertEqual(s.total_width, 8)
+        self.assertEqual(s.field_pack_order, "msb_first")
+        # high occupies [7:5], mid occupies [4:1], low occupies [0]
+        self.assertEqual(s.fields[0].name, "high")
+        self.assertEqual(s.fields[0].offset, 5)
+        self.assertEqual(s.fields[0].width, 3)
+        self.assertEqual(s.fields[1].name, "mid")
+        self.assertEqual(s.fields[1].offset, 1)
+        self.assertEqual(s.fields[1].width, 4)
+        self.assertEqual(s.fields[2].name, "low")
+        self.assertEqual(s.fields[2].offset, 0)
+        self.assertEqual(s.fields[2].width, 1)
 
     def test_reserved_field_name_collision(self):
         module = rdl_pb2.Module(

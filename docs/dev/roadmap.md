@@ -41,8 +41,8 @@ Future directions for Z3Wire, roughly in priority order.
 
 ## Weave
 
-- **Weave MSB_FIRST packing** — Implement MSB-first field pack order for
-    network protocol use cases.
+- **`Unpack()`** — Construct a symbolic struct from a flat bit-vector using
+    `extract`.
 
 ## Ergonomics
 

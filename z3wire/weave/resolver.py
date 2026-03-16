@@ -126,10 +126,7 @@ def _resolve_pack_order(module, struct):
         )
     if order == rdl_pb2.FIELD_PACK_ORDER_LSB_FIRST:
         return "lsb_first"
-    # MSB_FIRST: not yet implemented (Phase 2)
-    raise NotImplementedError(
-        f"Struct '{struct.name}': MSB_FIRST packing is not yet implemented"
-    )
+    return "msb_first"
 
 
 def _resolve_structs(module, enum_map):
@@ -173,8 +170,8 @@ def _resolve_structs(module, enum_map):
                     f"unknown enum_ref '{f.type.enum_ref}'"
                 )
 
-        fields = []
-        offset = 0
+        # First pass: compute field widths.
+        field_infos = []
         for f in struct.fields:
             kind = f.type.WhichOneof("kind")
             element_width = _field_element_width(f.type, enum_map, struct_map)
@@ -188,24 +185,53 @@ def _resolve_structs(module, enum_map):
             ):
                 signedness = "signed"
 
-            fields.append(
-                ResolvedField(
-                    name=f.name,
-                    desc=f.desc,
-                    width=total_width,
-                    offset=offset,
-                    count=count,
-                    element_width=element_width,
-                    reserved=f.reserved,
-                    kind=kind,
-                    signedness=signedness,
-                    enum_name=(f.type.enum_ref if kind == "enum_ref" else ""),
-                    struct_name=(f.type.struct_ref if kind == "struct_ref" else ""),
-                )
-            )
-            offset += total_width
+            field_infos.append((f, kind, element_width, count, total_width, signedness))
 
-        total_width = offset
+        struct_total_width = sum(fw for _, _, _, _, fw, _ in field_infos)
+
+        # Second pass: assign offsets based on pack order.
+        fields = []
+        if pack_order == "lsb_first":
+            offset = 0
+            for f, kind, element_width, count, total_width, signedness in field_infos:
+                fields.append(
+                    ResolvedField(
+                        name=f.name,
+                        desc=f.desc,
+                        width=total_width,
+                        offset=offset,
+                        count=count,
+                        element_width=element_width,
+                        reserved=f.reserved,
+                        kind=kind,
+                        signedness=signedness,
+                        enum_name=(f.type.enum_ref if kind == "enum_ref" else ""),
+                        struct_name=(f.type.struct_ref if kind == "struct_ref" else ""),
+                    )
+                )
+                offset += total_width
+        else:
+            # MSB_FIRST: first field in list occupies highest bits.
+            offset = struct_total_width
+            for f, kind, element_width, count, total_width, signedness in field_infos:
+                offset -= total_width
+                fields.append(
+                    ResolvedField(
+                        name=f.name,
+                        desc=f.desc,
+                        width=total_width,
+                        offset=offset,
+                        count=count,
+                        element_width=element_width,
+                        reserved=f.reserved,
+                        kind=kind,
+                        signedness=signedness,
+                        enum_name=(f.type.enum_ref if kind == "enum_ref" else ""),
+                        struct_name=(f.type.struct_ref if kind == "struct_ref" else ""),
+                    )
+                )
+
+        total_width = struct_total_width
         if struct.HasField("width") and struct.width != total_width:
             raise ValueError(
                 f"Struct '{struct.name}': declared width {struct.width} "

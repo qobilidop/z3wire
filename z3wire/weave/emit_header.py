@@ -172,9 +172,7 @@ def _emit_symbolic_decl(lines: list, struct: ResolvedStruct) -> None:
     lines.append(f"  static {struct.name}Symbolic Create(z3::context& ctx,")
     lines.append("      const std::string& prefix);")
     lines.append(f"  z3w::Ubv<{struct.total_width}> Pack() const;")
-    lines.append(
-        f"  {struct.name}Concrete ToConcrete(const z3::model& model) const;"
-    )
+    lines.append(f"  {struct.name}Concrete ToConcrete(const z3::model& model) const;")
     lines.append(f"  static {struct.name}Symbolic FromConcrete(z3::context& ctx,")
     lines.append(f"      const {struct.name}Concrete& concrete);")
     lines.append("};")
@@ -285,9 +283,14 @@ def _emit_pack_impl(lines: list, struct: ResolvedStruct) -> None:
     if len(pack_parts) == 1:
         lines.append(f"  return {pack_parts[0]};")
     else:
-        # LSB_FIRST: field[0] is lowest bits. concat(high, low).
-        reversed_parts = list(reversed(pack_parts))
-        lines.append(f"  return z3w::concat({', '.join(reversed_parts)});")
+        # concat(high, low): first arg is the most significant bits.
+        # LSB_FIRST: fields listed low-to-high, so reverse for concat.
+        # MSB_FIRST: fields listed high-to-low, already correct order.
+        if struct.field_pack_order == "lsb_first":
+            ordered_parts = list(reversed(pack_parts))
+        else:
+            ordered_parts = pack_parts
+        lines.append(f"  return z3w::concat({', '.join(ordered_parts)});")
     lines.append("}")
 
 
