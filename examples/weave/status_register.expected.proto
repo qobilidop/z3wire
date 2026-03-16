@@ -1,0 +1,17 @@
+syntax = "proto3";
+package example;
+
+// Error information
+message ErrorInfoProto {
+  uint32 code = 1;
+  sint32 severity = 2;
+  bool fatal = 3;
+}
+
+// Device status register
+message StatusRegisterProto {
+  bool ready = 1;
+  uint32 mode = 2;
+  ErrorInfoProto error = 3;
+  repeated uint32 counters = 4;
+}

@@ -1,3 +1,5 @@
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
+
 genrule(
     name = "status_register_gen",
     srcs = ["status_register.txtpb"],
@@ -7,4 +9,14 @@ genrule(
     ],
     cmd = "$(location //z3wire/weave) --input $(location status_register.txtpb) --output_dir $(RULEDIR)",
     tools = ["//z3wire/weave"],
+)
+
+sh_test(
+    name = "status_register_golden_test",
+    srcs = ["golden_test.sh"],
+    data = [
+        "status_register.expected.h",
+        "status_register.expected.proto",
+        ":status_register_gen",
+    ],
 )
