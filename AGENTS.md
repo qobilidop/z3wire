@@ -1,17 +1,12 @@
 # Z3Wire
 
-## Roles
-
-- You (the agent) = the developer
-- I (the human) = the project lead
-
 ## Engineering principles
 
-- TDD - Test-driven development
-- YAGNI - You aren't gonna need it
-- DRY - Don't repeat yourself
-- Local reasoning - Each piece should be understandable on its own
-- Flat structure - Prefer shallow directory hierarchies; don't nest without a reason
+- **TDD**: Test-Driven Development
+- **YAGNI**: You Aren't Gonna Need It
+- **DAMP**: Descriptive and Meaningful Phrases
+- **DRY**: Don't Repeat Yourself
+- Local reasoning
 
 ## Tooling
 
@@ -25,12 +20,6 @@
 - For non-title section headings, use Sentence case.
 - Use terminologies that best suit our intended audience.
 - Use terminologies consistently.
-
-### Commit messages
-
-- Keep the subject line under 72 characters.
-- Make sure you explain not only what changed, but also why the change is being made.
-- Optimize for human readability.
 
 ## Coding
 
@@ -55,6 +44,14 @@
 - Update `docs/usage/cheatsheet.md` when adding new API surface.
 - Don't place non-doc files (plans, specs) inside `docs/` — mkdocs strict mode
     will reject broken links in any file under that directory.
+
+## Commit style
+
+- Keep the subject line under 72 characters.
+- Explain why the change is being made.
+- Describe what has changed at a high level. Don't repeat what's obvious in the change itself.
+- Prefer one commit per logical change. Don't split into many tiny commits when they form a single unit of work.
+- Credit yourself (e.g. using the `Co-authored-by:` field) for commits you made.
 
 ## Status tracking
 
