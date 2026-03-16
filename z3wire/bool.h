@@ -1,6 +1,7 @@
 #ifndef Z3WIRE_BOOL_H_
 #define Z3WIRE_BOOL_H_
 
+#include <optional>
 #include <string>
 
 #include <z3++.h>
@@ -10,6 +11,9 @@ namespace z3w {
 // Type-safe wrapper around a Z3 Bool expression.
 class Bool {
  public:
+  // Default constructor: creates an uninitialized Bool.
+  Bool() = default;
+
   // Create a symbolic boolean variable.
   explicit Bool(z3::context& ctx, const std::string& name)
       : expr_(ctx.bool_const(name.c_str())) {}
@@ -22,34 +26,34 @@ class Bool {
   static Bool False(z3::context& ctx) { return Bool(ctx.bool_val(false)); }
 
   // Access the underlying z3::expr.
-  [[nodiscard]] const z3::expr& raw() const { return expr_; }
+  [[nodiscard]] const z3::expr& raw() const { return *expr_; }
 
   // Logical operators.
   friend Bool operator&&(const Bool& lhs, const Bool& rhs) {
-    return Bool(lhs.expr_ && rhs.expr_);
+    return Bool(*lhs.expr_ && *rhs.expr_);
   }
 
   friend Bool operator||(const Bool& lhs, const Bool& rhs) {
-    return Bool(lhs.expr_ || rhs.expr_);
+    return Bool(*lhs.expr_ || *rhs.expr_);
   }
 
   friend Bool operator^(const Bool& lhs, const Bool& rhs) {
-    return Bool(lhs.expr_ != rhs.expr_);  // XOR is boolean inequality.
+    return Bool(*lhs.expr_ != *rhs.expr_);  // XOR is boolean inequality.
   }
 
-  Bool operator!() const { return Bool(!expr_); }
+  Bool operator!() const { return Bool(!*expr_); }
 
   // Equality.
   friend Bool operator==(const Bool& lhs, const Bool& rhs) {
-    return Bool(lhs.expr_ == rhs.expr_);
+    return Bool(*lhs.expr_ == *rhs.expr_);
   }
 
   friend Bool operator!=(const Bool& lhs, const Bool& rhs) {
-    return Bool(lhs.expr_ != rhs.expr_);
+    return Bool(*lhs.expr_ != *rhs.expr_);
   }
 
  private:
-  z3::expr expr_;
+  std::optional<z3::expr> expr_;
 };
 
 }  // namespace z3w

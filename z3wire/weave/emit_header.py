@@ -372,7 +372,7 @@ def emit_header(module: ResolvedModule, proto_header: str) -> str:
             lines.append(f"struct {enum.name} {{")
             for name, desc, value in enum.values:
                 lines.append(
-                    f"  static constexpr z3w::UInt<{enum.width}> {name}{{{value}}};"
+                    f"  static constexpr auto {name} = z3w::UInt<{enum.width}>::Literal<{value}>();"
                 )
             lines.append("};")
             lines.append("")

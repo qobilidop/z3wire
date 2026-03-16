@@ -30,8 +30,13 @@ class EmitHeaderTest(unittest.TestCase):
         self.assertIn("#pragma once", output)
         self.assertIn("namespace test {", output)
         self.assertIn("struct OpMode {", output)
-        self.assertIn("static constexpr z3w::UInt<2> kIdle{0};", output)
-        self.assertIn("static constexpr z3w::UInt<2> kActive{1};", output)
+        self.assertIn(
+            "static constexpr auto kIdle = z3w::UInt<2>::Literal<0>();", output
+        )
+        self.assertIn(
+            "static constexpr auto kActive = z3w::UInt<2>::Literal<1>();",
+            output,
+        )
         self.assertIn("}  // namespace test", output)
 
     def test_concrete_struct(self):
@@ -328,8 +333,13 @@ class EmitHeaderTest(unittest.TestCase):
 
         # Enum
         self.assertIn("struct OpMode {", output)
-        self.assertIn("static constexpr z3w::UInt<2> kIdle{0};", output)
-        self.assertIn("static constexpr z3w::UInt<2> kSleep{2};", output)
+        self.assertIn(
+            "static constexpr auto kIdle = z3w::UInt<2>::Literal<0>();", output
+        )
+        self.assertIn(
+            "static constexpr auto kSleep = z3w::UInt<2>::Literal<2>();",
+            output,
+        )
 
         # ErrorInfo concrete
         self.assertIn("struct ErrorInfoConcrete {", output)

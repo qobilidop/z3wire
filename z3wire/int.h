@@ -36,7 +36,7 @@ class Int {
 
   // Compile-time range-checked literal.
   template <int64_t Value>
-  static Int Literal() {
+  static constexpr Int Literal() {
     if constexpr (IsSigned) {
       static_assert(Value >= min_signed() && Value <= max_signed(),
                     "Literal value does not fit in signed bit-width.");
@@ -72,12 +72,12 @@ class Int {
   }
 
   // Access the raw bit pattern (always unsigned).
-  [[nodiscard]] Storage bits() const { return bits_; }
+  [[nodiscard]] constexpr Storage bits() const { return bits_; }
 
   // Access the interpreted value.
   // For unsigned types, same as bits(). For signed types, sign-extends to
   // the corresponding signed storage type.
-  [[nodiscard]] auto value() const {
+  [[nodiscard]] constexpr auto value() const {
     if constexpr (IsSigned) {
       return static_cast<SignedStorageType<W>>(sign_extend(bits_));
     } else {
@@ -90,9 +90,12 @@ class Int {
     return sign_extend(val);
   }
 
+  // Default constructor: zero-initializes.
+  constexpr Int() : bits_(0) {}
+
  private:
   // Raw constructor: masks to W bits. Private to prevent silent truncation.
-  explicit Int(uint64_t raw) : bits_(mask(raw)) {}
+  constexpr explicit Int(uint64_t raw) : bits_(mask(raw)) {}
 
   static constexpr Storage mask(uint64_t val) {
     if constexpr (W >= 64) {

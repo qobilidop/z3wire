@@ -1,3 +1,7 @@
+load("@protobuf//bazel:cc_proto_library.bzl", "cc_proto_library")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
+load("@rules_proto//proto:defs.bzl", "proto_library")
 load("@rules_shell//shell:sh_test.bzl", "sh_test")
 
 genrule(
@@ -18,5 +22,34 @@ sh_test(
         "status_register.expected.h",
         "status_register.expected.proto",
         ":status_register_gen",
+    ],
+)
+
+proto_library(
+    name = "status_register_proto",
+    srcs = [":status_register.proto"],
+)
+
+cc_proto_library(
+    name = "status_register_cc_proto",
+    deps = [":status_register_proto"],
+)
+
+cc_library(
+    name = "status_register",
+    hdrs = [":status_register.h"],
+    deps = [
+        ":status_register_cc_proto",
+        "//z3wire:bitvec",
+        "//z3wire:int",
+    ],
+)
+
+cc_test(
+    name = "status_register_test",
+    srcs = ["status_register_test.cc"],
+    deps = [
+        ":status_register",
+        "@googletest//:gtest_main",
     ],
 )

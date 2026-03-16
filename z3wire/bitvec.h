@@ -5,6 +5,7 @@
 #include <concepts>
 #include <cstddef>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <tuple>
 #include <type_traits>
@@ -24,6 +25,9 @@ class BitVec {
   static constexpr size_t kWidth = Width;
   static constexpr bool kIsSigned = IsSigned;
 
+  // Default constructor: creates an uninitialized BitVec.
+  BitVec() = default;
+
   // Create a symbolic bit-vector variable.
   explicit BitVec(z3::context& ctx, const std::string& name)
       : expr_(ctx.bv_const(name.c_str(), Width)) {}
@@ -39,40 +43,40 @@ class BitVec {
     return BitVec(ctx.bv_val(Value, Width));
   }
 
-  [[nodiscard]] const z3::expr& raw() const { return expr_; }
+  [[nodiscard]] const z3::expr& raw() const { return *expr_; }
 
   // --- Bitwise operators (strict: same width and signedness) ---
 
   friend BitVec operator&(const BitVec& lhs, const BitVec& rhs) {
-    return BitVec(lhs.expr_ & rhs.expr_);
+    return BitVec(*lhs.expr_ & *rhs.expr_);
   }
 
   friend BitVec operator|(const BitVec& lhs, const BitVec& rhs) {
-    return BitVec(lhs.expr_ | rhs.expr_);
+    return BitVec(*lhs.expr_ | *rhs.expr_);
   }
 
   friend BitVec operator^(const BitVec& lhs, const BitVec& rhs) {
-    return BitVec(lhs.expr_ ^ rhs.expr_);
+    return BitVec(*lhs.expr_ ^ *rhs.expr_);
   }
 
-  BitVec operator~() const { return BitVec(~expr_); }
+  BitVec operator~() const { return BitVec(~*expr_); }
 
   // --- Hardware shifts (strict: same width and signedness) ---
 
   friend BitVec operator<<(const BitVec& lhs, const BitVec& rhs) {
-    return BitVec(z3::shl(lhs.expr_, rhs.expr_));
+    return BitVec(z3::shl(*lhs.expr_, *rhs.expr_));
   }
 
   friend BitVec operator>>(const BitVec& lhs, const BitVec& rhs) {
     if constexpr (IsSigned) {
-      return BitVec(z3::ashr(lhs.expr_, rhs.expr_));
+      return BitVec(z3::ashr(*lhs.expr_, *rhs.expr_));
     } else {
-      return BitVec(z3::lshr(lhs.expr_, rhs.expr_));
+      return BitVec(z3::lshr(*lhs.expr_, *rhs.expr_));
     }
   }
 
  private:
-  z3::expr expr_;
+  std::optional<z3::expr> expr_;
 };
 
 template <size_t W>
