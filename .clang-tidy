@@ -7,12 +7,14 @@ Checks: >
   readability-*,
   -bugprone-easily-swappable-parameters,
   -bugprone-exception-escape,
+  -bugprone-unchecked-optional-access,
   -google-readability-todo,
   -modernize-use-trailing-return-type,
   -performance-unnecessary-value-param,
   -readability-identifier-length,
   -readability-identifier-naming,
   -readability-magic-numbers,
+  -readability-convert-member-functions-to-static,
   -readability-named-parameter,
 
 WarningsAsErrors: '*'

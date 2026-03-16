@@ -172,7 +172,9 @@ def _emit_symbolic_decl(lines: list, struct: ResolvedStruct) -> None:
     lines.append(f"  static {struct.name}Symbolic Create(z3::context& ctx,")
     lines.append("      const std::string& prefix);")
     lines.append(f"  z3w::Ubv<{struct.total_width}> Pack() const;")
-    lines.append(f"  {struct.name}Concrete ToConcrete(const z3::model& model) const;")
+    lines.append(
+        f"  {struct.name}Concrete ToConcrete(const z3::model& model) const;"
+    )
     lines.append(f"  static {struct.name}Symbolic FromConcrete(z3::context& ctx,")
     lines.append(f"      const {struct.name}Concrete& concrete);")
     lines.append("};")

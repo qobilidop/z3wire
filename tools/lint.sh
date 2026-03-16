@@ -41,7 +41,10 @@ fi
 gtest_include_dir=$(dirname "$(dirname "$gtest_header")")
 
 # Generate a compile_commands.json so clang-tidy knows the compilation flags.
-files=$(find z3wire examples -name '*.h' -o -name '*.cc')
+files=$(find z3wire examples -name '*.h' -o -name '*.cc' |
+  grep -v '\.expected\.' |
+  grep -v 'examples/weave/status_register_test\.cc' |
+  grep -v 'examples/weave/status_register_verification\.cc')
 entries=""
 for f in $files; do
   abs_path="$(pwd)/$f"
