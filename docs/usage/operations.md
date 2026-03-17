@@ -83,11 +83,11 @@ auto neg = -a;  // z3w::SymSInt<9>
 
 !!! tip
 
-    To model hardware-style fixed-width arithmetic, use `cast` to explicitly
-    truncate the result:
+    To model hardware-style fixed-width arithmetic, use `unsafe_cast` to
+    explicitly truncate the result:
 
     ```cpp
-    auto reg = z3w::cast<z3w::SymUInt<8>>(a + b);  // Truncate to 8 bits
+    auto reg = z3w::unsafe_cast<z3w::SymUInt<8>>(a + b);  // Truncate to 8 bits
     ```
 
 ## Comparison
@@ -137,7 +137,7 @@ z3w::SymBool less_m = (a < x);  // Common type: SymSInt<9>
 ## Shifting
 
 Z3Wire provides a three-tier shift API, mirroring the
-[casting tiers](types.md#casting).
+[casting tiers](types.md#symbolic-casting).
 
 ### `<<`, `>>` — Hardware shift
 

@@ -118,7 +118,7 @@ inline ErrorInfoSymbolic ErrorInfoSymbolic::Create(z3::context& ctx,
 }
 
 inline z3w::SymUInt<8> ErrorInfoSymbolic::Pack() const {
-  return z3w::concat(reserved, z3w::to_ubv1(fatal), z3w::cast<z3w::SymUInt<2>>(severity), code);
+  return z3w::concat(reserved, z3w::to_ubv1(fatal), z3w::unsafe_cast<z3w::SymUInt<2>>(severity), code);
 }
 
 inline ErrorInfoConcrete ErrorInfoSymbolic::ToConcrete(const z3::model& model) const {

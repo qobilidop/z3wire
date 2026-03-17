@@ -33,16 +33,16 @@ strength, each name self-documenting its contract.
 ## Naming rationale
 
 - **`safe_cast`** - Explicit about what it guarantees. Consistent with
-  Z3Wire's "explicit over implicit" principle. Self-documenting when read
-  in isolation (local reasoning). No surprise for C++ developers, who
-  associate bare `cast` with "just do it."
+    Z3Wire's "explicit over implicit" principle. Self-documenting when read
+    in isolation (local reasoning). No surprise for C++ developers, who
+    associate bare `cast` with "just do it."
 - **`checked_cast`** - Unchanged. Matches the Rust/C++ convention where
-  `checked_*` means "do it and report success/failure." Accurate for the
-  return-a-flag semantics.
+    `checked_*` means "do it and report success/failure." Accurate for the
+    return-a-flag semantics.
 - **`unsafe_cast`** - Parallels Rust's `unsafe`: not "this is wrong" but
-  "the compiler can't verify this for you." Appropriate for Z3Wire's
-  formal verification audience, who understand the verified/unverified
-  distinction.
+    "the compiler can't verify this for you." Appropriate for Z3Wire's
+    formal verification audience, who understand the verified/unverified
+    distinction.
 
 ## Scope
 
@@ -68,7 +68,7 @@ separately.
 
 - Update emitted `z3w::cast<...>` calls to `z3w::unsafe_cast<...>`.
 - Regenerate `examples/weave/status_register.expected.h` from the updated
-  generator.
+    generator.
 
 ### Tests (`z3wire/sym_bit_vec_test.cc`)
 

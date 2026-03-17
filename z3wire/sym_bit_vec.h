@@ -374,9 +374,9 @@ SymBitVec<W, S> ite(bool cond, const SymBitVec<W, S>& true_val,
 
 // --- Three-tier casting API ---
 
-// cast<T>(val): raw hardware cast (truncation, extension, or bitcast).
+// unsafe_cast<T>(val): raw hardware cast (truncation, extension, or bitcast).
 template <typename Target, size_t SrcW, bool SrcS>
-Target cast(const SymBitVec<SrcW, SrcS>& val) {
+Target unsafe_cast(const SymBitVec<SrcW, SrcS>& val) {
   constexpr size_t kTgtW = Target::kWidth;
   if constexpr (kTgtW == SrcW) {
     // Same width: zero-overhead type reinterpretation.
@@ -419,16 +419,16 @@ Target safe_cast(const SymBitVec<SrcW, SrcS>& val) {
                   "width.");
   }
 
-  return cast<Target>(val);
+  return unsafe_cast<Target>(val);
 }
 
 // checked_cast<T>(val): returns {result, overflow_flag}.
 template <typename Target, size_t SrcW, bool SrcS>
 [[nodiscard]] std::tuple<Target, SymBool> checked_cast(
     const SymBitVec<SrcW, SrcS>& val) {
-  auto result = cast<Target>(val);
+  auto result = unsafe_cast<Target>(val);
   // Round-trip: cast back to source type and check equality.
-  auto roundtrip = cast<SymBitVec<SrcW, SrcS>>(result);
+  auto roundtrip = unsafe_cast<SymBitVec<SrcW, SrcS>>(result);
   SymBool overflowed = (roundtrip != val);
   return {result, overflowed};
 }
@@ -519,7 +519,7 @@ template <size_t W, bool S>
 // Constant shift: result width = W + N.
 template <size_t N, size_t W, bool S>
 SymUInt<W + N> lossless_shl(const SymBitVec<W, S>& val) {
-  auto widened = cast<SymUInt<W + N>>(val);
+  auto widened = unsafe_cast<SymUInt<W + N>>(val);
   auto amount = SymUInt<W + N>::template Literal<N>(val.raw().ctx());
   return SymUInt<W + N>(z3::shl(widened.raw(), amount.raw()));
 }
@@ -529,8 +529,8 @@ template <size_t W, bool S, size_t K>
 auto lossless_shl(const SymBitVec<W, S>& val, const SymUInt<K>& amount) {
   constexpr size_t kMaxShift = (size_t{1} << K) - 1;
   constexpr size_t kResultWidth = W + kMaxShift;
-  auto widened = cast<SymUInt<kResultWidth>>(val);
-  auto amt_ext = cast<SymUInt<kResultWidth>>(amount);
+  auto widened = unsafe_cast<SymUInt<kResultWidth>>(val);
+  auto amt_ext = unsafe_cast<SymUInt<kResultWidth>>(amount);
   return SymUInt<kResultWidth>(z3::shl(widened.raw(), amt_ext.raw()));
 }
 

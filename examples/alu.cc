@@ -19,8 +19,8 @@ int main() {
   z3w::SymUInt<2> opcode(ctx, "opcode");
 
   // ALU operations (all truncated to 8-bit hardware width).
-  auto add_result = z3w::cast<z3w::SymUInt<8>>(a + b);
-  auto sub_result = z3w::cast<z3w::SymUInt<8>>(a - b);
+  auto add_result = z3w::unsafe_cast<z3w::SymUInt<8>>(a + b);
+  auto sub_result = z3w::unsafe_cast<z3w::SymUInt<8>>(a - b);
   auto and_result = a & b;
   auto or_result = a | b;
 

@@ -151,7 +151,7 @@ z3w::SymUInt<32> x(ctx, "x");
 
 ### Three-tier casting API
 
-#### `z3w::cast<T>(val)` —The hardware cast
+#### `z3w::unsafe_cast<T>(val)` - The hardware cast
 
 Performs raw truncation, extension, or sign reinterpretation based on source and
 target types. No safety checks. Use when you intentionally want hardware-style
@@ -279,7 +279,7 @@ auto sum = a + b;       // -> z3w::SymUInt<9>
 auto total = sum + a;   // -> z3w::SymUInt<10>
 
 // To model hardware overflow, explicitly truncate:
-auto reg = z3w::cast<z3w::SymUInt<8>>(total);
+auto reg = z3w::unsafe_cast<z3w::SymUInt<8>>(total);
 ```
 
 ### SymBool operations

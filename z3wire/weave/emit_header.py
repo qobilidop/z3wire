@@ -122,7 +122,7 @@ def _pack_expr(field: ResolvedField, accessor: str) -> str:
         return f"z3w::to_ubv1({accessor})"
     elif field.kind == "bitvec" or field.kind == "enum_ref":
         if field.signedness == "signed":
-            return f"z3w::cast<z3w::SymUInt<{field.element_width}>>({accessor})"
+            return f"z3w::unsafe_cast<z3w::SymUInt<{field.element_width}>>({accessor})"
         return accessor
     elif field.kind == "struct_ref":
         return f"{accessor}.Pack()"

@@ -301,11 +301,11 @@ TEST_F(SymBitVecTest, Ite) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-// --- cast ---
+// --- unsafe_cast ---
 
 TEST_F(SymBitVecTest, CastTruncation) {
   SymUInt<16> a(ctx_, "a");
-  auto b = cast<SymUInt<8>>(a);
+  auto b = unsafe_cast<SymUInt<8>>(a);
 
   static_assert(decltype(b)::kWidth == 8);
 
@@ -317,7 +317,7 @@ TEST_F(SymBitVecTest, CastTruncation) {
 
 TEST_F(SymBitVecTest, CastZeroExtension) {
   SymUInt<8> a(ctx_, "a");
-  auto b = cast<SymUInt<16>>(a);
+  auto b = unsafe_cast<SymUInt<16>>(a);
 
   static_assert(decltype(b)::kWidth == 16);
 
@@ -329,7 +329,7 @@ TEST_F(SymBitVecTest, CastZeroExtension) {
 
 TEST_F(SymBitVecTest, CastSignExtension) {
   SymSInt<8> a(ctx_, "a");
-  auto b = cast<SymSInt<16>>(a);
+  auto b = unsafe_cast<SymSInt<16>>(a);
 
   z3::solver s(ctx_);
   s.add(a.raw() == ctx_.bv_val(0x80, 8));     // -128
@@ -339,7 +339,7 @@ TEST_F(SymBitVecTest, CastSignExtension) {
 
 TEST_F(SymBitVecTest, CastBitcast) {
   SymUInt<8> a(ctx_, "a");
-  auto b = cast<SymSInt<8>>(a);
+  auto b = unsafe_cast<SymSInt<8>>(a);
 
   static_assert(decltype(b)::kIsSigned);
 

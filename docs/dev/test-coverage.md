@@ -210,9 +210,9 @@ Hardware shifts require strict width and signedness matching.
 | Symbolic constant N     | `SymBitVecTest::LosslessShlConstant` |
 | Symbolic dynamic amount | `SymBitVecTest::LosslessShlSymbolic` |
 
-## Casting (`cast`, `safe_cast`, `checked_cast`)
+## Casting (`unsafe_cast`, `safe_cast`, `checked_cast`)
 
-### cast (raw)
+### unsafe_cast (raw)
 
 | Case                      | Test                               |
 | :------------------------ | :--------------------------------- |
