@@ -369,25 +369,25 @@ TEST_F(SymBitVecTest, SafeCastUnsignedToSigned) {
 
 // --- checked_cast ---
 
-TEST_F(SymBitVecTest, CheckedCastNoOverflow) {
+TEST_F(SymBitVecTest, CheckedCastValuePreserved) {
   SymUInt<16> a(ctx_, "a");
-  auto [result, overflowed] = checked_cast<SymUInt<8>>(a);
+  auto [result, value_preserved] = checked_cast<SymUInt<8>>(a);
 
-  // When value fits in 8 bits, overflow should be false.
+  // When value fits in 8 bits, value_preserved should be true.
   z3::solver s(ctx_);
   s.add(a.raw() == ctx_.bv_val(42, 16));
-  s.add(overflowed.raw());
+  s.add(!value_preserved.raw());
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-TEST_F(SymBitVecTest, CheckedCastWithOverflow) {
+TEST_F(SymBitVecTest, CheckedCastValueNotPreserved) {
   SymUInt<16> a(ctx_, "a");
-  auto [result, overflowed] = checked_cast<SymUInt<8>>(a);
+  auto [result, value_preserved] = checked_cast<SymUInt<8>>(a);
 
-  // When value doesn't fit, overflow should be true.
+  // When value doesn't fit, value_preserved should be false.
   z3::solver s(ctx_);
   s.add(a.raw() == ctx_.bv_val(256, 16));
-  s.add(!overflowed.raw());
+  s.add(value_preserved.raw());
   EXPECT_EQ(s.check(), z3::unsat);
 }
 

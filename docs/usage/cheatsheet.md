@@ -94,11 +94,11 @@ See [Operations](operations.md#bit-manipulation).
 
 ## Casting
 
-| Tier     | Expression             | Behavior                          |
-| :------- | :--------------------- | :-------------------------------- |
-| Safe     | `safe_cast<T>(val)`    | Compile error if lossy            |
-| Checked  | `checked_cast<T>(val)` | Returns `{result, overflow_flag}` |
-| Hardware | `unsafe_cast<T>(val)`  | Raw truncation/extension/bitcast  |
+| Tier     | Expression             | Behavior                            |
+| :------- | :--------------------- | :---------------------------------- |
+| Safe     | `safe_cast<T>(val)`    | Compile error if lossy              |
+| Checked  | `checked_cast<T>(val)` | Returns `{result, value_preserved}` |
+| Hardware | `unsafe_cast<T>(val)`  | Raw truncation/extension/bitcast    |
 
 See [Types](types.md#symbolic-casting).
 

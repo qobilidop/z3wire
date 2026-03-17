@@ -17,14 +17,14 @@ out explicitly.
 | :---------------- | :---------------------------------- |
 | `cast<T>`         | Raw HW truncation/extension/bitcast |
 | `safe_cast<T>`    | Compile error if lossy              |
-| `checked_cast<T>` | Returns `{result, overflow_flag}`   |
+| `checked_cast<T>` | Returns `{result, value_preserved}` |
 
 ## New API
 
 | Name              | Semantics                           | Who verifies |
 | :---------------- | :---------------------------------- | :----------- |
 | `safe_cast<T>`    | Compile error if lossy              | Compiler     |
-| `checked_cast<T>` | Returns `{result, overflow_flag}`   | Solver       |
+| `checked_cast<T>` | Returns `{result, value_preserved}` | Solver       |
 | `unsafe_cast<T>`  | Raw HW truncation/extension/bitcast | You          |
 
 The `safe` / `checked` / `unsafe` prefixes form a spectrum of verification

@@ -422,15 +422,15 @@ Target safe_cast(const SymBitVec<SrcW, SrcS>& val) {
   return unsafe_cast<Target>(val);
 }
 
-// checked_cast<T>(val): returns {result, overflow_flag}.
+// checked_cast<T>(val): returns {result, value_preserved}.
 template <typename Target, size_t SrcW, bool SrcS>
 [[nodiscard]] std::tuple<Target, SymBool> checked_cast(
     const SymBitVec<SrcW, SrcS>& val) {
   auto result = unsafe_cast<Target>(val);
   // Round-trip: cast back to source type and check equality.
   auto roundtrip = unsafe_cast<SymBitVec<SrcW, SrcS>>(result);
-  SymBool overflowed = (roundtrip != val);
-  return {result, overflowed};
+  SymBool value_preserved = (roundtrip == val);
+  return {result, value_preserved};
 }
 
 // --- SymBool / SymUInt<1> conversion ---

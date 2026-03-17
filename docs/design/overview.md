@@ -179,12 +179,12 @@ Only compiles if the cast is mathematically guaranteed to be lossless.
 #### `z3w::checked_cast<T>(val)` —The verification cast
 
 Returns `std::tuple<T, z3w::SymBool>`. Performs the cast and also returns a symbolic
-boolean formula representing whether mathematical data loss occurred. The user
+boolean formula representing whether the mathematical value was preserved. The user
 can assert the boolean into the solver to verify safety.
 
 ```cpp
-auto [result, overflowed] = z3w::checked_cast<z3w::SymUInt<8>>(my_32bit_val);
-solver.add(!overflowed.raw());  // Assert: this cast never loses data
+auto [result, value_preserved] = z3w::checked_cast<z3w::SymUInt<8>>(my_32bit_val);
+solver.add(value_preserved.raw());  // Assert: this cast never loses data
 ```
 
 ### SymBool / SymUInt\<1> conversion

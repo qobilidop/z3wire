@@ -22,10 +22,12 @@ int main() {
   z3w::SymUInt<8> b(ctx, "b");
   auto sum = a + b;                                    // z3w::SymUInt<9>
   auto carry = z3w::to_bool(z3w::extract<8, 8>(sum));  // bit 8 = carry
-  auto [truncated, overflowed] = z3w::checked_cast<z3w::SymUInt<8>>(sum);
+  auto [truncated, value_preserved] = z3w::checked_cast<z3w::SymUInt<8>>(sum);
 
-  // Ask Z3: is there any case where carry != overflowed?
-  solver.add((carry != overflowed).raw());
+  // Ask Z3: is there any case where carry == value_preserved?
+  // (carry=true means overflow, value_preserved=false means overflow, so they
+  // should always be opposite.)
+  solver.add((carry == value_preserved).raw());
 
   if (solver.check() == z3::unsat) {
     std::cout << "Verified: carry flag matches overflow detection.\n";
@@ -45,7 +47,7 @@ int main() {
 - **Bit-growth arithmetic:** `a + b` produces a 9-bit result, so no information
     is lost.
 - **`extract`:** Pulling out the carry bit.
-- **`checked_cast`:** Getting a symbolic overflow flag.
+- **`checked_cast`:** Getting a symbolic value-preservation flag.
 - **Verification pattern:** Assert a property and check for `unsat` to prove it
     holds for all possible inputs.
 

@@ -60,10 +60,12 @@ z3w::SymUInt<8> a(ctx, "a");
 z3w::SymUInt<8> b(ctx, "b");
 auto sum = a + b;  // z3w::SymUInt<9>
 auto carry = z3w::to_bool(z3w::extract<8, 8>(sum));  // bit 8 = carry
-auto [truncated, overflowed] = z3w::checked_cast<z3w::SymUInt<8>>(sum);
+auto [truncated, value_preserved] = z3w::checked_cast<z3w::SymUInt<8>>(sum);
 
-// Ask Z3: is there any case where carry != overflowed?
-solver.add((carry != overflowed).raw());
+// Ask Z3: is there any case where carry == value_preserved?
+// (carry=true means overflow, value_preserved=false means overflow, so they
+// should always be opposite.)
+solver.add((carry == value_preserved).raw());
 assert(solver.check() == z3::unsat);  // No — carry is always correct.
 ```
 

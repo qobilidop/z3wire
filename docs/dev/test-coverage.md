@@ -238,16 +238,16 @@ Hardware shifts require strict width and signedness matching.
 | Symbolic US widening | `SymBitVecTest::SafeCastUnsignedToSigned` |
 | Symbolic SS widening | —                                         |
 
-### checked_cast (runtime overflow flag)
+### checked_cast (runtime value-preservation flag)
 
-| Case                   | Test                                     |
-| :--------------------- | :--------------------------------------- |
-| Concrete no overflow   | `BitVecTest::CheckedCastNoOverflow`      |
-| Concrete with overflow | `BitVecTest::CheckedCastWithOverflow`    |
-| Concrete cross-sign    | —                                        |
-| Symbolic no overflow   | `SymBitVecTest::CheckedCastNoOverflow`   |
-| Symbolic with overflow | `SymBitVecTest::CheckedCastWithOverflow` |
-| Symbolic cross-sign    | —                                        |
+| Case                         | Test                                          |
+| :--------------------------- | :-------------------------------------------- |
+| Concrete value preserved     | `BitVecTest::CheckedCastNoOverflow`           |
+| Concrete value not preserved | `BitVecTest::CheckedCastWithOverflow`         |
+| Concrete cross-sign          | —                                             |
+| Symbolic value preserved     | `SymBitVecTest::CheckedCastValuePreserved`    |
+| Symbolic value not preserved | `SymBitVecTest::CheckedCastValueNotPreserved` |
+| Symbolic cross-sign          | —                                             |
 
 ## Bit manipulation (`extract`, `concat`)
 

@@ -110,19 +110,19 @@ auto bad = z3w::safe_cast<z3w::SymUInt<4>>(small);      // Compile error!
 
 ### `checked_cast<T>(val)` — Verification cast
 
-Performs the cast and returns a symbolic boolean indicating whether data loss
-occurred. Use when you want to verify safety as part of a Z3 proof.
+Performs the cast and returns a symbolic boolean indicating whether the value was
+preserved. Use when you want to verify safety as part of a Z3 proof.
 
 ```cpp
 z3w::SymUInt<16> val(ctx, "val");
-auto [result, overflowed] = z3w::checked_cast<z3w::SymUInt<8>>(val);
+auto [result, value_preserved] = z3w::checked_cast<z3w::SymUInt<8>>(val);
 
 // Assert in the solver: this cast must never lose data.
-solver.add(!overflowed.raw());
+solver.add(value_preserved.raw());
 ```
 
-The overflow flag works by round-tripping: cast to the target type, cast back,
-and check if the value changed.
+The value-preservation flag works by round-tripping: cast to the target type,
+cast back, and check if the value changed.
 
 ### Choosing the right tier
 

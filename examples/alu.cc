@@ -48,10 +48,10 @@ int main() {
 
   // Property: for ADD, find inputs where overflow occurs.
   auto sum9 = a + b;
-  auto [_, overflowed] = z3w::checked_cast<z3w::SymUInt<8>>(sum9);
+  auto [_, value_preserved] = z3w::checked_cast<z3w::SymUInt<8>>(sum9);
 
   solver.push();
-  solver.add(overflowed.raw());
+  solver.add(!value_preserved.raw());
 
   if (solver.check() == z3::sat) {
     auto model = solver.get_model();
