@@ -18,7 +18,7 @@ echo "buildifier: all checks passed."
 # --- C++ ---
 
 # Build a test target to ensure external dependencies (z3, googletest) are fetched.
-bazel build //z3wire:bool_test
+bazel build //z3wire:sym_bit_vec_test
 
 output_base=$(bazel info output_base)
 

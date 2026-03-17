@@ -53,10 +53,7 @@ RUN pip install --break-system-packages protobuf pytest black
 
 # Non-root user (required by rules_python for bazel coverage).
 RUN useradd -m -s /bin/bash dev && \
-    mkdir -p /home/dev/.cache && chown dev:dev /home/dev/.cache && \
+    mkdir -p /home/dev/.cache/bazel && chown -R dev:dev /home/dev/.cache && \
     git config --system --add safe.directory /workspace
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-ENTRYPOINT ["entrypoint.sh"]
-
 # Default to clang for Bazel's C++ toolchain auto-detection.
 ENV CC=clang

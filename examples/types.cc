@@ -28,7 +28,7 @@ void demo_symbolic_types() {
   auto c = z3w::SymSInt<8>::Literal<127>(ctx);  // OK
 
   // Compile error: value doesn't fit
-  //auto d = z3w::SymSInt<8>::Literal<128>(ctx);
+  // auto d = z3w::SymSInt<8>::Literal<128>(ctx);
 
   z3w::SymUInt<8> x(ctx, "x");
   solver.add(x.raw() > 0);  // Pass to Z3 solver directly
