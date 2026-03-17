@@ -552,11 +552,11 @@ TEST_F(SymBitVecTest, CheckedShrWithLoss) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-// --- lossless_shl ---
+// --- shl ---
 
-TEST_F(SymBitVecTest, LosslessShlConstant) {
+TEST_F(SymBitVecTest, ShlConstant) {
   SymUInt<8> a(ctx_, "a");
-  auto result = lossless_shl<3>(a);
+  auto result = shl<3>(a);
 
   static_assert(decltype(result)::kWidth == 11);
 
@@ -567,10 +567,10 @@ TEST_F(SymBitVecTest, LosslessShlConstant) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-TEST_F(SymBitVecTest, LosslessShlSymbolic) {
+TEST_F(SymBitVecTest, ShlSymbolic) {
   SymUInt<8> a(ctx_, "a");
   SymUInt<3> n(ctx_, "n");
-  auto result = lossless_shl(a, n);
+  auto result = shl(a, n);
 
   // Result width = 8 + 2^3 - 1 = 15.
   static_assert(decltype(result)::kWidth == 15);

@@ -36,7 +36,7 @@ int main() {
   // Demonstrate lossless shift: shift an 8-bit value left by 3 without
   // losing any bits.
   z3w::SymUInt<8> value(ctx, "value");
-  auto shifted = z3w::lossless_shl<3>(value);  // SymUInt<11>
+  auto shifted = z3w::shl<3>(value);  // SymUInt<11>
 
   // Verify we can recover the original by shifting back.
   auto recovered = z3w::extract<10, 3>(shifted);
@@ -45,7 +45,7 @@ int main() {
   s2.add((recovered != value).raw());
 
   if (s2.check() == z3::unsat) {
-    std::cout << "Verified: lossless_shl preserves all bits.\n";
+    std::cout << "Verified: shl preserves all bits.\n";
   } else {
     std::cout << "Bug found!\n";
   }

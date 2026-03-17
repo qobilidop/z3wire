@@ -528,11 +528,11 @@ template <size_t W, bool S>
   return {shifted, lost};
 }
 
-// --- Lossless left shift ---
+// --- Left shift (lossless, auto-widening) ---
 
 // Constant shift: result width = W + N.
 template <size_t N, size_t W, bool S>
-SymUInt<W + N> lossless_shl(const SymBitVec<W, S>& val) {
+SymUInt<W + N> shl(const SymBitVec<W, S>& val) {
   auto widened = unsafe_cast<SymUInt<W + N>>(val);
   auto amount = SymUInt<W + N>::template Literal<N>(val.raw().ctx());
   return SymUInt<W + N>(z3::shl(widened.raw(), amount.raw()));
@@ -540,7 +540,7 @@ SymUInt<W + N> lossless_shl(const SymBitVec<W, S>& val) {
 
 // Symbolic shift: result width = W + 2^K - 1.
 template <size_t W, bool S, size_t K>
-auto lossless_shl(const SymBitVec<W, S>& val, const SymUInt<K>& amount) {
+auto shl(const SymBitVec<W, S>& val, const SymUInt<K>& amount) {
   constexpr size_t kMaxShift = (size_t{1} << K) - 1;
   constexpr size_t kResultWidth = W + kMaxShift;
   auto widened = unsafe_cast<SymUInt<kResultWidth>>(val);
