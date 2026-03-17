@@ -421,12 +421,12 @@ SymSInt<W> as_signed(const SymBitVec<W, S>& val) {
 
 // --- SymBool / SymUInt<1> conversion ---
 
-inline SymUInt<1> to_ubv1(const SymBool& b) {
+inline SymUInt<1> as_ubv1(const SymBool& b) {
   return SymUInt<1>(z3::ite(b.expr(), b.expr().ctx().bv_val(1, 1),
                             b.expr().ctx().bv_val(0, 1)));
 }
 
-inline SymBool to_bool(const SymUInt<1>& v) {
+inline SymBool as_bool(const SymUInt<1>& v) {
   return SymBool(v.expr() == v.expr().ctx().bv_val(1, 1));
 }
 

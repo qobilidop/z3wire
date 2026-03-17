@@ -387,7 +387,7 @@ TEST_F(SymBitVecTest, AsSigned) {
 
 TEST_F(SymBitVecTest, ToUbv1) {
   SymBool b = SymBool::True(ctx_);
-  SymUInt<1> v = to_ubv1(b);
+  SymUInt<1> v = as_ubv1(b);
 
   z3::solver s(ctx_);
   s.add(v.expr() != ctx_.bv_val(1, 1));
@@ -396,7 +396,7 @@ TEST_F(SymBitVecTest, ToUbv1) {
 
 TEST_F(SymBitVecTest, ToBool) {
   auto v = SymUInt<1>::Literal<1>(ctx_);
-  SymBool b = to_bool(v);
+  SymBool b = as_bool(v);
 
   z3::solver s(ctx_);
   s.add(!b.expr());
@@ -405,7 +405,7 @@ TEST_F(SymBitVecTest, ToBool) {
 
 TEST_F(SymBitVecTest, ToBoolRoundtrip) {
   SymBool orig(ctx_, "orig");
-  SymBool roundtrip = to_bool(to_ubv1(orig));
+  SymBool roundtrip = as_bool(as_ubv1(orig));
 
   // orig <=> roundtrip should always hold.
   z3::solver s(ctx_);

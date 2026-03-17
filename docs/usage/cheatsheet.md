@@ -107,8 +107,8 @@ See [Types](types.md#symbolic-casting).
 ## Conversion
 
 ```cpp
-to_bool(SymUInt<1>)     // -> SymBool
-to_ubv1(SymBool)        // -> SymUInt<1>
+as_bool(SymUInt<1>)     // -> SymBool
+as_ubv1(SymBool)        // -> SymUInt<1>
 ```
 
 ## Conditional selection

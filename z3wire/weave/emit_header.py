@@ -119,7 +119,7 @@ def _create_expr(field: ResolvedField, prefix_expr: str) -> str:
 def _pack_expr(field: ResolvedField, accessor: str) -> str:
     """Generate expression to convert a symbolic field to Ubv for packing."""
     if field.kind == "bool":
-        return f"z3w::to_ubv1({accessor})"
+        return f"z3w::as_ubv1({accessor})"
     elif field.kind == "bitvec" or field.kind == "enum_ref":
         if field.signedness == "signed":
             return f"z3w::unsafe_cast<z3w::SymUInt<{field.element_width}>>({accessor})"

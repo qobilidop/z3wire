@@ -193,17 +193,17 @@ In Z3, `SymBool` and a 1-bit bit-vector are distinct sorts. Hardware frequently
 needs to convert between them (e.g., a condition flag in a register vs. a
 logical condition). Z3Wire provides explicit conversion functions:
 
-- **`z3w::to_bool(SymUInt<1>)`** — converts a 1-bit vector to SymBool (true if
+- **`z3w::as_bool(SymUInt<1>)`** — converts a 1-bit vector to SymBool (true if
     bit is 1).
-- **`z3w::to_ubv1(SymBool)`** — converts a SymBool to `SymUInt<1>` (1 if true,
+- **`z3w::as_ubv1(SymBool)`** — converts a SymBool to `SymUInt<1>` (1 if true,
     0 if false).
 
 ```cpp
 z3w::SymUInt<32> status(ctx, "status");
-z3w::SymBool ready = z3w::to_bool(z3w::extract<0, 0>(status));
+z3w::SymBool ready = z3w::as_bool(z3w::extract<0, 0>(status));
 
 z3w::SymBool cond(ctx, "cond");
-z3w::SymUInt<1> flag = z3w::to_ubv1(cond);
+z3w::SymUInt<1> flag = z3w::as_ubv1(cond);
 ```
 
 ## Bit manipulation
