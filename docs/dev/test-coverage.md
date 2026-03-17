@@ -170,25 +170,25 @@ Arithmetic uses bit-growth: result width = `max(W1, W2) + 1`.
 
 ### Left shift (`shl`)
 
-| Case                          | Test                            |
-| :---------------------------- | :------------------------------ |
-| Symbolic constant N           | `SymBitVecTest::ShlConstant`    |
-| Symbolic dynamic amount       | `SymBitVecTest::ShlSymbolic`    |
+| Case                          | Test                               |
+| :---------------------------- | :--------------------------------- |
+| Symbolic constant N           | `SymBitVecTest::ShlConstant`       |
+| Symbolic dynamic amount       | `SymBitVecTest::ShlSymbolic`       |
 | Shl with truncation (compose) | `SymBitVecTest::ShlWithTruncation` |
 
 ### Right shift (`shr`)
 
-| Case                       | Test                            |
-| :------------------------- | :------------------------------ |
-| Symbolic U (logical)       | `SymBitVecTest::ShrUnsigned`    |
-| Symbolic S (arithmetic)    | `SymBitVecTest::ShrSigned`      |
+| Case                    | Test                         |
+| :---------------------- | :--------------------------- |
+| Symbolic U (logical)    | `SymBitVecTest::ShrUnsigned` |
+| Symbolic S (arithmetic) | `SymBitVecTest::ShrSigned`   |
 
 ### Signedness reinterpretation
 
-| Case           | Test                         |
-| :------------- | :--------------------------- |
-| `as_unsigned`  | `SymBitVecTest::AsUnsigned`  |
-| `as_signed`    | `SymBitVecTest::AsSigned`    |
+| Case          | Test                        |
+| :------------ | :-------------------------- |
+| `as_unsigned` | `SymBitVecTest::AsUnsigned` |
+| `as_signed`   | `SymBitVecTest::AsSigned`   |
 
 ## Casting (`unsafe_cast`, `safe_cast`, `checked_cast`)
 

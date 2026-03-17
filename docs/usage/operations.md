@@ -179,11 +179,11 @@ auto r2 = z3w::shr(s, m);  // SymSInt<8>, sign bit preserved
 The `shl`/`shr` primitives compose with casting and signedness reinterpretation
 to cover all common shift patterns:
 
-| Goal                           | Expression                                    |
-| :----------------------------- | :-------------------------------------------- |
-| Raw left shift (fixed width)   | `unsafe_cast<SymUInt<W>>(shl<N>(val))`        |
-| Checked left shift (verify)    | `checked_cast<SymUInt<W>>(shl<N>(val))`       |
-| Logical right shift on signed  | `shr(as_unsigned(val), as_unsigned(amt))`      |
+| Goal                          | Expression                                |
+| :---------------------------- | :---------------------------------------- |
+| Raw left shift (fixed width)  | `unsafe_cast<SymUInt<W>>(shl<N>(val))`    |
+| Checked left shift (verify)   | `checked_cast<SymUInt<W>>(shl<N>(val))`   |
+| Logical right shift on signed | `shr(as_unsigned(val), as_unsigned(amt))` |
 
 ## Bit manipulation
 

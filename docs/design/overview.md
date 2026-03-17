@@ -341,11 +341,11 @@ auto r = z3w::shr(a, n);  // -> z3w::SymUInt<8>
 Rather than providing multiple shift tiers, `shl`/`shr` compose with the
 existing casting and signedness APIs:
 
-| Goal                           | Expression                                    |
-| :----------------------------- | :-------------------------------------------- |
-| Raw left shift (fixed width)   | `unsafe_cast<SymUInt<W>>(shl<N>(val))`        |
-| Checked left shift (verify)    | `checked_cast<SymUInt<W>>(shl<N>(val))`       |
-| Logical right shift on signed  | `shr(as_unsigned(val), as_unsigned(amt))`      |
+| Goal                          | Expression                                |
+| :---------------------------- | :---------------------------------------- |
+| Raw left shift (fixed width)  | `unsafe_cast<SymUInt<W>>(shl<N>(val))`    |
+| Checked left shift (verify)   | `checked_cast<SymUInt<W>>(shl<N>(val))`   |
+| Logical right shift on signed | `shr(as_unsigned(val), as_unsigned(amt))` |
 
 ### Conditional selection (`ite`)
 

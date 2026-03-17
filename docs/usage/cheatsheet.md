@@ -68,11 +68,11 @@ See [Operations](operations.md).
 
 ## Shifting
 
-| Function          | Result width    |
-| :---------------- | :-------------- |
-| `shl<N>(val)`     | `W + N`         |
-| `shl(val, amt)`   | `W + 2^K - 1`  |
-| `shr(val, amt)`   | `W`             |
+| Function        | Result width  |
+| :-------------- | :------------ |
+| `shl<N>(val)`   | `W + N`       |
+| `shl(val, amt)` | `W + 2^K - 1` |
+| `shr(val, amt)` | `W`           |
 
 - `shl` always returns `SymUInt` regardless of input signedness.
 - `shr` is arithmetic (sign-preserving for signed types).
@@ -94,13 +94,13 @@ See [Operations](operations.md#bit-manipulation).
 
 ## Casting
 
-| Tier          | Expression             | Behavior                            |
-| :------------ | :--------------------- | :---------------------------------- |
-| Safe          | `safe_cast<T>(val)`    | Compile error if lossy              |
-| Checked       | `checked_cast<T>(val)` | Returns `{result, value_preserved}` |
-| Hardware      | `unsafe_cast<T>(val)`  | Raw truncation/extension/bitcast    |
-| Reinterpret   | `as_signed(val)`       | Same-width reinterpret to signed    |
-| Reinterpret   | `as_unsigned(val)`     | Same-width reinterpret to unsigned  |
+| Tier        | Expression             | Behavior                            |
+| :---------- | :--------------------- | :---------------------------------- |
+| Safe        | `safe_cast<T>(val)`    | Compile error if lossy              |
+| Checked     | `checked_cast<T>(val)` | Returns `{result, value_preserved}` |
+| Hardware    | `unsafe_cast<T>(val)`  | Raw truncation/extension/bitcast    |
+| Reinterpret | `as_signed(val)`       | Same-width reinterpret to signed    |
+| Reinterpret | `as_unsigned(val)`     | Same-width reinterpret to unsigned  |
 
 See [Types](types.md#symbolic-casting).
 
