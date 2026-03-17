@@ -16,6 +16,9 @@ composable from the lossless shift and the cast API:
 Operator overloading (`<<`, `>>`) is also inconsistent with the rest of
 the API, which uses named functions for casts and other operations.
 
+This spec is the companion to [cast-rename.md](cast-rename.md), which
+deferred shift operations to a separate spec.
+
 ## Current API
 
 | Name               | Semantics                         | Returns                       |
@@ -49,20 +52,27 @@ any ambiguity about result width.
 
 There is only one left shift primitive, and it always widens the result
 to guarantee no bit loss. The `lossless_` prefix is dropped since there
-is no other left shift to distinguish from. Users who want same-width
-left shift compose with `unsafe_cast` or `checked_cast`.
+is no other left shift to distinguish from. `shl` always returns
+`SymUInt` regardless of input signedness, consistent with other raw bit
+operations like `concat` and `extract`. Users who want same-width left
+shift compose with `unsafe_cast` or `checked_cast`.
 
 ### `shr` is arithmetic
 
-`shr` always performs arithmetic right shift (`z3::ashr`). For unsigned
-types, arithmetic and logical right shift are equivalent (sign bit is 0).
-For signed types, arithmetic shift is the natural choice (preserves sign).
+`shr` dispatches based on signedness: `z3::ashr` for signed types,
+`z3::lshr` for unsigned types. The results are equivalent for unsigned
+(sign bit is 0), but dispatching preserves the expected SMT operation
+in generated formulas.
+
+Signature: `shr(SymBitVec<W, S> val, SymBitVec<W, S> amt)` - both
+operands must match in width and signedness (same as the current
+`operator>>`).
 
 Users who need logical right shift on signed values compose with
 `as_unsigned`:
 
 ```cpp
-shr(as_unsigned(signed_val), amt)
+shr(as_unsigned(signed_val), as_unsigned(amt))
 ```
 
 ### No `shr<N>` overload
