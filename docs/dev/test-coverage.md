@@ -166,49 +166,29 @@ Arithmetic uses bit-growth: result width = `max(W1, W2) + 1`.
 | Mixed sym-conc               | `SymBitVecTest::MixedSubSymbolicMinusConcrete` |
 | Mixed conc-sym               | —                                              |
 
-## Shifts (`<<`, `>>`)
+## Shifts (`shl`, `shr`)
 
-Hardware shifts require strict width and signedness matching.
+### Left shift (`shl`)
 
-### Hardware shifts
+| Case                          | Test                            |
+| :---------------------------- | :------------------------------ |
+| Symbolic constant N           | `SymBitVecTest::ShlConstant`    |
+| Symbolic dynamic amount       | `SymBitVecTest::ShlSymbolic`    |
+| Shl with truncation (compose) | `SymBitVecTest::ShlWithTruncation` |
 
-| Case                       | Test                                |
-| :------------------------- | :---------------------------------- |
-| Concrete U \<<             | `BitVecTest::LeftShift`             |
-| Concrete U \<< overflow    | `BitVecTest::LeftShiftOverflow`     |
-| Concrete U >>              | `BitVecTest::UnsignedRightShift`    |
-| Concrete S >> (arithmetic) | `BitVecTest::SignedRightShift`      |
-| Concrete S \<<             | —                                   |
-| Concrete W=1               | —                                   |
-| Concrete W=64              | —                                   |
-| Symbolic U \<<             | `SymBitVecTest::LeftShift`          |
-| Symbolic U >>              | `SymBitVecTest::UnsignedRightShift` |
-| Symbolic S >> (arithmetic) | `SymBitVecTest::SignedRightShift`   |
-| Symbolic S \<<             | —                                   |
-| Mixed \<<                  | `SymBitVecTest::MixedLeftShift`     |
-| Mixed >>                   | `SymBitVecTest::MixedRightShift`    |
+### Right shift (`shr`)
 
-### Checked shifts
+| Case                       | Test                            |
+| :------------------------- | :------------------------------ |
+| Symbolic U (logical)       | `SymBitVecTest::ShrUnsigned`    |
+| Symbolic S (arithmetic)    | `SymBitVecTest::ShrSigned`      |
 
-| Case                            | Test                                |
-| :------------------------------ | :---------------------------------- |
-| Concrete checked_shl, no loss   | `BitVecTest::CheckedShlNoLoss`      |
-| Concrete checked_shl, with loss | `BitVecTest::CheckedShlWithLoss`    |
-| Concrete checked_shr, with loss | `BitVecTest::CheckedShrWithLoss`    |
-| Concrete checked_shr, no loss   | —                                   |
-| Concrete S checked_shl          | —                                   |
-| Symbolic checked_shl, no loss   | `SymBitVecTest::CheckedShlNoLoss`   |
-| Symbolic checked_shl, with loss | `SymBitVecTest::CheckedShlWithLoss` |
-| Symbolic checked_shr, with loss | `SymBitVecTest::CheckedShrWithLoss` |
-| Symbolic checked_shr, no loss   | —                                   |
+### Signedness reinterpretation
 
-### Lossless left shift
-
-| Case                    | Test                                 |
-| :---------------------- | :----------------------------------- |
-| Concrete constant N     | `BitVecTest::LosslessShlConstant`    |
-| Symbolic constant N     | `SymBitVecTest::LosslessShlConstant` |
-| Symbolic dynamic amount | `SymBitVecTest::LosslessShlSymbolic` |
+| Case           | Test                         |
+| :------------- | :--------------------------- |
+| `as_unsigned`  | `SymBitVecTest::AsUnsigned`  |
+| `as_signed`    | `SymBitVecTest::AsSigned`    |
 
 ## Casting (`unsafe_cast`, `safe_cast`, `checked_cast`)
 

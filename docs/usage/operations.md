@@ -136,68 +136,54 @@ z3w::SymBool less_m = (a < x);  // Common type: SymSInt<9>
 
 ## Shifting
 
-Z3Wire provides a three-tier shift API, mirroring the
-[casting tiers](types.md#symbolic-casting).
+Z3Wire provides two shift functions - `shl` (left shift) and `shr` (right
+shift). Left shifts always widen the result to guarantee no bits are lost.
 
-### `<<`, `>>` — Hardware shift
+### `shl` - Left shift
 
-Raw hardware shift. Width stays constant, bits that shift out are silently lost.
-Operands must have the same width and signedness.
+Left shift always returns `SymUInt` regardless of input signedness.
 
-- **Left shift (`<<`):** Logical shift for both `SymUInt` and `SymSInt`.
-- **Right shift (`>>`):** Logical shift (`lshr`) for `SymUInt`, arithmetic shift
-    (`ashr`) for `SymSInt` (preserves the sign bit).
+**Constant shift** - result width = `W + N`:
 
 ```cpp
 z3w::SymUInt<8> a(ctx, "a");
-z3w::SymUInt<8> n(ctx, "n");
-auto result = a << n;  // SymUInt<8>, bits may be lost
-auto shifted = a >> n;  // SymUInt<8>, zero-filled from the left
+auto r = z3w::shl<3>(a);  // SymUInt<11>
 ```
 
-### `checked_shl`, `checked_shr` — Checked shift
-
-Performs the shift and returns a symbolic `SymBool` indicating whether any non-zero
-bits were lost. Width stays constant.
-
-```cpp
-z3w::SymUInt<8> val(ctx, "val");
-z3w::SymUInt<8> amount(ctx, "amount");
-
-auto [shifted, lost] = z3w::checked_shl(val, amount);
-// shifted: SymUInt<8>
-// lost: SymBool (true if any bits were shifted out)
-
-solver.add(!lost.raw());  // Assert: this shift never loses bits
-```
-
-### `lossless_shl` — Lossless left shift
-
-The result type is wide enough to guarantee no bits are ever lost.
-
-**Constant shift** — result width = `W + N`:
-
-```cpp
-z3w::SymUInt<8> a(ctx, "a");
-auto r = z3w::lossless_shl<3>(a);  // SymUInt<11>
-```
-
-**Symbolic shift** — result width = `W + 2^K - 1`, where `K` is the shift
+**Symbolic shift** - result width = `W + 2^K - 1`, where `K` is the shift
 amount width:
 
 ```cpp
 z3w::SymUInt<8> a(ctx, "a");
-z3w::SymUInt<3> n(ctx, "n");      // Can shift by 0..7
-auto r = z3w::lossless_shl(a, n);  // SymUInt<15> (8 + 2^3 - 1)
+z3w::SymUInt<3> n(ctx, "n");    // Can shift by 0..7
+auto r = z3w::shl(a, n);        // SymUInt<15> (8 + 2^3 - 1)
 ```
 
-### Choosing the right shift tier
+### `shr` - Right shift
 
-| Situation                                                  | Use                          |
-| :--------------------------------------------------------- | :--------------------------- |
-| Modeling hardware shift registers (intentional truncation) | `<<`, `>>`                   |
-| Need to prove no bits are lost symbolically                | `checked_shl`, `checked_shr` |
-| Want the compiler to guarantee no loss                     | `lossless_shl`               |
+Arithmetic right shift. Preserves sign for signed types (`ashr`), zero-fills
+for unsigned types (`lshr`). Result width stays the same.
+
+```cpp
+z3w::SymUInt<8> a(ctx, "a");
+z3w::SymUInt<3> n(ctx, "n");
+auto r = z3w::shr(a, n);  // SymUInt<8>, zero-filled from the left
+
+z3w::SymSInt<8> s(ctx, "s");
+z3w::SymUInt<3> m(ctx, "m");
+auto r2 = z3w::shr(s, m);  // SymSInt<8>, sign bit preserved
+```
+
+### Composability
+
+The `shl`/`shr` primitives compose with casting and signedness reinterpretation
+to cover all common shift patterns:
+
+| Goal                           | Expression                                    |
+| :----------------------------- | :-------------------------------------------- |
+| Raw left shift (fixed width)   | `unsafe_cast<SymUInt<W>>(shl<N>(val))`        |
+| Checked left shift (verify)    | `checked_cast<SymUInt<W>>(shl<N>(val))`       |
+| Logical right shift on signed  | `shr(as_unsigned(val), as_unsigned(amt))`      |
 
 ## Bit manipulation
 

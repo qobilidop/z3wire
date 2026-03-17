@@ -68,16 +68,16 @@ See [Operations](operations.md).
 
 ## Shifting
 
-| Tier     | Expression           | Result width            |
-| :------- | :------------------- | :---------------------- |
-| Hardware | `a << b`, `a >> b`   | Same (bits may be lost) |
-| Checked  | `checked_shl(a, b)`  | Same + loss flag        |
-| Checked  | `checked_shr(a, b)`  | Same + loss flag        |
-| Lossless | `lossless_shl<N>(a)` | `W + N`                 |
-| Lossless | `lossless_shl(a, n)` | `W + 2^K - 1`           |
+| Function          | Result width    |
+| :---------------- | :-------------- |
+| `shl<N>(val)`     | `W + N`         |
+| `shl(val, amt)`   | `W + 2^K - 1`  |
+| `shr(val, amt)`   | `W`             |
 
-Hardware shifts require strict width/signedness match. Right shift is logical
-for unsigned, arithmetic for signed.
+- `shl` always returns `SymUInt` regardless of input signedness.
+- `shr` is arithmetic (sign-preserving for signed types).
+- For logical right shift on signed values: `shr(as_unsigned(val), as_unsigned(amt))`.
+
 See [Operations](operations.md#shifting).
 
 ## Bit manipulation
@@ -94,11 +94,13 @@ See [Operations](operations.md#bit-manipulation).
 
 ## Casting
 
-| Tier     | Expression             | Behavior                            |
-| :------- | :--------------------- | :---------------------------------- |
-| Safe     | `safe_cast<T>(val)`    | Compile error if lossy              |
-| Checked  | `checked_cast<T>(val)` | Returns `{result, value_preserved}` |
-| Hardware | `unsafe_cast<T>(val)`  | Raw truncation/extension/bitcast    |
+| Tier          | Expression             | Behavior                            |
+| :------------ | :--------------------- | :---------------------------------- |
+| Safe          | `safe_cast<T>(val)`    | Compile error if lossy              |
+| Checked       | `checked_cast<T>(val)` | Returns `{result, value_preserved}` |
+| Hardware      | `unsafe_cast<T>(val)`  | Raw truncation/extension/bitcast    |
+| Reinterpret   | `as_signed(val)`       | Same-width reinterpret to signed    |
+| Reinterpret   | `as_unsigned(val)`     | Same-width reinterpret to unsigned  |
 
 See [Types](types.md#symbolic-casting).
 

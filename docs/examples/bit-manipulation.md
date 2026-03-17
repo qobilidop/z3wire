@@ -1,6 +1,6 @@
 # Bit Manipulation
 
-This example demonstrates extract, concat, and lossless shifts by modeling the
+This example demonstrates extract, concat, and shifts by modeling the
 unpacking and repacking of a 16-bit instruction word.
 
 ```cpp title="examples/bit_manipulation.cc"
@@ -34,10 +34,10 @@ int main() {
     std::cout << "Bug found!\n";
   }
 
-  // Demonstrate lossless shift: shift an 8-bit value left by 3 without
+  // Demonstrate left shift: shift an 8-bit value left by 3 without
   // losing any bits.
   z3w::SymUInt<8> value(ctx, "value");
-  auto shifted = z3w::lossless_shl<3>(value);  // SymUInt<11>
+  auto shifted = z3w::shl<3>(value);  // SymUInt<11>
 
   // Verify we can recover the original by shifting back.
   auto recovered = z3w::extract<10, 3>(shifted);
@@ -46,7 +46,7 @@ int main() {
   s2.add((recovered != value).raw());
 
   if (s2.check() == z3::unsat) {
-    std::cout << "Verified: lossless_shl preserves all bits.\n";
+    std::cout << "Verified: shl preserves all bits.\n";
   } else {
     std::cout << "Bug found!\n";
   }
@@ -59,8 +59,8 @@ int main() {
 
 - **`extract`:** Slicing a word into fields with compile-time bounds checking.
 - **`concat`:** Variadic concatenation to repack fields.
-- **`lossless_shl`:** Shifting without losing bits (result type widens
-    automatically).
+- **`shl`:** Left shift that widens the result type automatically, preserving
+    all bits.
 - **Round-trip verification:** Proving that unpack/repack preserves all
     information.
 
@@ -74,5 +74,5 @@ Output:
 
 ```
 Verified: extract/concat round-trip is lossless.
-Verified: lossless_shl preserves all bits.
+Verified: shl preserves all bits.
 ```

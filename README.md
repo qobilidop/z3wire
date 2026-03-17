@@ -42,8 +42,9 @@ the complete set of [combinational logic primitives](https://qobilidop.github.io
 
 - **Three-tier casting** — `safe_cast` (compile-time lossless),
     `checked_cast` (symbolic verification), `unsafe_cast` (raw hardware).
-- **Three-tier shifting** — `<<`/`>>` (hardware), `checked_shl`/`checked_shr`
-    (detect lost bits), `lossless_shl` (auto-widen result).
+    `as_signed`/`as_unsigned` for same-width reinterpretation.
+- **Shifting** — `shl` (auto-widening left shift), `shr` (arithmetic right
+    shift).
 - **Zero overhead** — each wrapper holds only a `z3::expr`.
 
 ## Quick example

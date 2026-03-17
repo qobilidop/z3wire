@@ -21,23 +21,23 @@ deferred shift operations to a separate spec.
 
 ## Current API
 
-| Name               | Semantics                         | Returns                       |
-| :----------------- | :-------------------------------- | :---------------------------- |
-| `val << amt`       | Raw left shift, same width        | `SymBitVec<W, S>`             |
-| `val >> amt`       | Raw right shift, same width       | `SymBitVec<W, S>`             |
-| `checked_shl()`    | Left shift + loss flag            | `tuple<SymBitVec<W,S>, SymBool>` |
-| `checked_shr()`    | Right shift + loss flag           | `tuple<SymBitVec<W,S>, SymBool>` |
-| `lossless_shl<N>()` | Constant left shift, widens      | `SymUInt<W+N>`                |
-| `lossless_shl()`   | Symbolic left shift, widens       | `SymUInt<W+2^K-1>`            |
+| Name                | Semantics                   | Returns                          |
+| :------------------ | :-------------------------- | :------------------------------- |
+| `val << amt`        | Raw left shift, same width  | `SymBitVec<W, S>`                |
+| `val >> amt`        | Raw right shift, same width | `SymBitVec<W, S>`                |
+| `checked_shl()`     | Left shift + loss flag      | `tuple<SymBitVec<W,S>, SymBool>` |
+| `checked_shr()`     | Right shift + loss flag     | `tuple<SymBitVec<W,S>, SymBool>` |
+| `lossless_shl<N>()` | Constant left shift, widens | `SymUInt<W+N>`                   |
+| `lossless_shl()`    | Symbolic left shift, widens | `SymUInt<W+2^K-1>`               |
 
 ## New API
 
-| Name             | Semantics                        | Returns              |
-| :--------------- | :------------------------------- | :------------------- |
-| `shl<N>(val)`    | Constant left shift, widens      | `SymUInt<W+N>`       |
-| `shl(val, amt)`  | Symbolic left shift, widens      | `SymUInt<W+2^K-1>`   |
-| `shr(val, amt)`  | Arithmetic right shift           | `SymBitVec<W, S>`    |
-| `as_signed(val)` | Same-width reinterpret to signed | `SymSInt<W>`         |
+| Name               | Semantics                          | Returns            |
+| :----------------- | :--------------------------------- | :----------------- |
+| `shl<N>(val)`      | Constant left shift, widens        | `SymUInt<W+N>`     |
+| `shl(val, amt)`    | Symbolic left shift, widens        | `SymUInt<W+2^K-1>` |
+| `shr(val, amt)`    | Arithmetic right shift             | `SymBitVec<W, S>`  |
+| `as_signed(val)`   | Same-width reinterpret to signed   | `SymSInt<W>`       |
 | `as_unsigned(val)` | Same-width reinterpret to unsigned | `SymUInt<W>`       |
 
 ## Design decisions
@@ -93,11 +93,11 @@ by the shift redesign, where they enable ergonomic composition patterns.
 
 ## Composability
 
-| Pattern                 | Composition                                     |
-| :---------------------- | :---------------------------------------------- |
-| Raw left shift          | `unsafe_cast<SymUInt<W>>(shl<N>(val))`          |
-| Checked left shift      | `checked_cast<SymUInt<W>>(shl<N>(val))`         |
-| Logical right shift     | `shr(as_unsigned(val), amt)`                    |
+| Pattern             | Composition                             |
+| :------------------ | :-------------------------------------- |
+| Raw left shift      | `unsafe_cast<SymUInt<W>>(shl<N>(val))`  |
+| Checked left shift  | `checked_cast<SymUInt<W>>(shl<N>(val))` |
+| Logical right shift | `shr(as_unsigned(val), amt)`            |
 
 ## Changes required
 
