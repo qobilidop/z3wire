@@ -8,38 +8,33 @@
 - **DRY**: Don't Repeat Yourself
 - Local reasoning
 
-## Tooling
+## Development environment
 
-- Run ALL commands through `./dev.sh`. Never run build, test, or install commands directly on the host.
-- When new tools are needed, install in the devcontainer.
+- Assume devcontainer as our only development environment and use it consistently.
+- Install ALL dependencies in devcontainer.
+- Run ALL [development commands](docs/dev/commands.md) through `./dev.sh`.
 
-## Writing
+## Doc style
 
-- Project name: "Z3Wire" in prose, `z3wire` in code/paths/URLs.
-- For file titles, use Title Case.
+- Optimize for human readability.
+- For titles, use Title Case.
 - For non-title section headings, use Sentence case.
-- Use terminologies that best suit our intended audience.
+- Use plain hyphens (-) instead of em dashes.
 - Use terminologies consistently.
 
-## Coding
+## Code style
 
-- Follow [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html),
-    with the following deliberate deviations:
-    - **Type traits follow STL convention**: `is_symbolic`, `is_concrete`,
-        `is_symbolic_v`, `is_concrete_v` (not `IsSymbolic`, etc.).
-- Follow Google Abseil [C++ Tips of the Week](https://abseil.io/tips/).
-- Follow [BUILD Style Guide](https://bazel.build/build/style-guide).
-- Tests live next to the code they test: `foo.h` → `foo_test.cc` in the same
-    directory. Compile-fail tests go in `compile_fail_tests/`.
+- [C++] Follow [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html).
+- [C++] Follow Google Abseil [C++ Tips of the Week](https://abseil.io/tips/).
+- [Python] Follow [Google Python Style Guide](https://google.github.io/styleguide/pyguide.html).
+- [Bazel] Follow [BUILD Style Guide](https://bazel.build/build/style-guide).
 
-## Documentation
+## Quality checks
 
-- Docs use mkdocs Material theme. Run `./dev.sh ./tools/docs.sh build` to
-    verify docs build before committing doc changes.
-- New features should have a design doc in `docs/design/`.
-- Update `docs/usage/cheatsheet.md` when adding new API surface.
-- Don't place non-doc files (plans, specs) inside `docs/` — mkdocs strict mode
-    will reject broken links in any file under that directory.
+- Run `./dev.sh ./tools/format.sh` before commit.
+- Run `./dev.sh ./tools/lint.sh` before commit and fix all issues.
+- Run `./dev bazel test //...` before commit and fix all issues.
+- Run `./dev.sh ./tools/docs.sh` before commit and fix all issues.
 
 ## Commit style
 
@@ -49,19 +44,7 @@
 - Prefer one commit per logical change. Don't split into many tiny commits when they form a single unit of work.
 - Credit yourself (e.g. using the `Co-authored-by:` field) for commits you made.
 
-## Status tracking
-
-- When any workaround is made in your implementation:
-    - If it influences user experience, note it down in [limitations](docs/usage/limitations.md).
-    - If it's worth improving, note it down in [roadmap](docs/dev/roadmap.md).
-- When there is any work we agreed to work on later, note it down in [roadmap](docs/dev/roadmap.md).
-- When any planned work is completed, cross it off from [roadmap](docs/dev/roadmap.md).
-
 ## Rules
 
-- Run `./dev.sh ./tools/format.sh` before every commit.
-- Run `./dev.sh ./tools/docs.sh build` before committing doc changes.
-- Run `./dev.sh ./tools/lint.sh` to catch clang-tidy and shellcheck issues
-    (not required before every commit, but fix any issues before pushing).
 - All tests MUST pass before commit.
 - Try your best to make sure CI will pass before commit.
