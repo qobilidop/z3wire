@@ -50,11 +50,11 @@ auto d = z3w::SymSInt<8>::Literal<128>(ctx);  // Compile error: value doesn't fi
 
 ### Z3 interop
 
-Use `.raw()` to get the underlying `z3::expr` for interop with Z3 APIs:
+Use `.expr()` to get the underlying `z3::expr` for interop with Z3 APIs:
 
 ```cpp
 z3w::SymUInt<8> x(ctx, "x");
-solver.add(x.raw() > 0);  // Pass to Z3 solver directly
+solver.add(x.expr() > 0);  // Pass to Z3 solver directly
 ```
 
 !!! note
@@ -118,7 +118,7 @@ z3w::SymUInt<16> val(ctx, "val");
 auto [result, value_preserved] = z3w::checked_cast<z3w::SymUInt<8>>(val);
 
 // Assert in the solver: this cast must never lose data.
-solver.add(value_preserved.raw());
+solver.add(value_preserved.expr());
 ```
 
 The value-preservation flag works by round-tripping: cast to the target type,

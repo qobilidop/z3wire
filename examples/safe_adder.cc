@@ -23,15 +23,15 @@ int main() {
   // Ask Z3: is there any case where carry == value_preserved?
   // (carry=true means overflow, value_preserved=false means overflow, so they
   // should always be opposite.)
-  solver.add((carry == value_preserved).raw());
+  solver.add((carry == value_preserved).expr());
 
   if (solver.check() == z3::unsat) {
     std::cout << "Verified: carry flag matches overflow detection.\n";
   } else {
     std::cout << "Bug found! Counter-example:\n";
     auto model = solver.get_model();
-    std::cout << "  a = " << model.eval(a.raw()) << "\n";
-    std::cout << "  b = " << model.eval(b.raw()) << "\n";
+    std::cout << "  a = " << model.eval(a.expr()) << "\n";
+    std::cout << "  b = " << model.eval(b.expr()) << "\n";
   }
 
   return 0;

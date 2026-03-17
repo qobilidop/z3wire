@@ -31,7 +31,7 @@ void demo_symbolic_types() {
   // auto d = z3w::SymSInt<8>::Literal<128>(ctx);
 
   z3w::SymUInt<8> x(ctx, "x");
-  solver.add(x.raw() > 0);  // Pass to Z3 solver directly
+  solver.add(x.expr() > 0);  // Pass to Z3 solver directly
 }
 
 int main() {

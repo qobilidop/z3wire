@@ -123,7 +123,7 @@ in mixed expressions.
 ## Interop
 
 ```cpp
-val.raw()     // Access underlying z3::expr (symbolic)
+val.expr()     // Access underlying z3::expr (symbolic)
 ```
 
 Concrete types use `.bits()` (raw unsigned) and `.value()` (interpreted).

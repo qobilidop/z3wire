@@ -31,7 +31,7 @@ class SymBool {
   }
 
   // Access the underlying z3::expr.
-  [[nodiscard]] const z3::expr& raw() const { return *expr_; }
+  [[nodiscard]] const z3::expr& expr() const { return *expr_; }
 
   // Logical operators.
   friend SymBool operator&&(const SymBool& lhs, const SymBool& rhs) {

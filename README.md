@@ -66,7 +66,7 @@ auto [truncated, value_preserved] = z3w::checked_cast<z3w::SymUInt<8>>(sum);
 // Ask Z3: is there any case where carry == value_preserved?
 // (carry=true means overflow, value_preserved=false means overflow, so they
 // should always be opposite.)
-solver.add((carry == value_preserved).raw());
+solver.add((carry == value_preserved).expr());
 assert(solver.check() == z3::unsat);  // No — carry is always correct.
 ```
 

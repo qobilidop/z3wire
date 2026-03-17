@@ -184,7 +184,7 @@ can assert the boolean into the solver to verify safety.
 
 ```cpp
 auto [result, value_preserved] = z3w::checked_cast<z3w::SymUInt<8>>(my_32bit_val);
-solver.add(value_preserved.raw());  // Assert: this cast never loses data
+solver.add(value_preserved.expr());  // Assert: this cast never loses data
 ```
 
 ### SymBool / SymUInt\<1> conversion
@@ -416,7 +416,7 @@ values auto-promote to symbolic in mixed expressions, so users can write
 
 ## Boundary layer
 
-- **`val.raw()`**: Returns the underlying `z3::expr` for interop with raw Z3
+- **`val.expr()`**: Returns the underlying `z3::expr` for interop with raw Z3
     APIs (e.g., passing to `z3::solver`).
 - Users interact with `z3::context` and `z3::solver` directly; Z3Wire does not
     wrap these.

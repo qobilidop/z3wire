@@ -43,7 +43,7 @@ class SymBitVec {
     return SymBitVec(ctx.bv_val(Value, Width));
   }
 
-  [[nodiscard]] const z3::expr& raw() const { return *expr_; }
+  [[nodiscard]] const z3::expr& expr() const { return *expr_; }
 
   // --- Bitwise operators (strict: same width and signedness) ---
 
@@ -100,9 +100,9 @@ namespace internal {
 template <typename L, typename R>
 z3::context& get_ctx(const L& lhs, const R& rhs) {
   if constexpr (is_symbolic_v<L>) {
-    return lhs.raw().ctx();
+    return lhs.expr().ctx();
   } else {
-    return rhs.raw().ctx();
+    return rhs.expr().ctx();
   }
 }
 
@@ -134,11 +134,11 @@ z3::expr extend(const SymBitVec<SrcWidth, SrcSigned>& val) {
   static_assert(TargetWidth >= SrcWidth,
                 "extend: target width must be >= source width.");
   if constexpr (TargetWidth == SrcWidth) {
-    return val.raw();
+    return val.expr();
   } else if constexpr (SrcSigned) {
-    return z3::sext(val.raw(), TargetWidth - SrcWidth);
+    return z3::sext(val.expr(), TargetWidth - SrcWidth);
   } else {
-    return z3::zext(val.raw(), TargetWidth - SrcWidth);
+    return z3::zext(val.expr(), TargetWidth - SrcWidth);
   }
 }
 
@@ -178,7 +178,7 @@ SymBitVec<W + 1, true> operator-(const SymBitVec<W, S>& val) {
 
 template <size_t W, bool S>
 SymBool exact_eq(const SymBitVec<W, S>& lhs, const SymBitVec<W, S>& rhs) {
-  return SymBool(lhs.raw() == rhs.raw());
+  return SymBool(lhs.expr() == rhs.expr());
 }
 
 // --- Equality (relaxed: any width/signedness combination) ---
@@ -318,7 +318,7 @@ auto operator>=(const L& lhs, const R& rhs) {
 template <size_t W, bool S>
 SymBitVec<W, S> ite(const SymBool& cond, const BitVec<W, S>& true_val,
                     const BitVec<W, S>& false_val) {
-  auto& ctx = cond.raw().ctx();
+  auto& ctx = cond.expr().ctx();
   return ite(cond, to_symbolic(true_val, ctx), to_symbolic(false_val, ctx));
 }
 
@@ -326,14 +326,14 @@ SymBitVec<W, S> ite(const SymBool& cond, const BitVec<W, S>& true_val,
 template <size_t W, bool S>
 SymBitVec<W, S> ite(const SymBool& cond, const SymBitVec<W, S>& true_val,
                     const BitVec<W, S>& false_val) {
-  auto& ctx = cond.raw().ctx();
+  auto& ctx = cond.expr().ctx();
   return ite(cond, true_val, to_symbolic(false_val, ctx));
 }
 
 template <size_t W, bool S>
 SymBitVec<W, S> ite(const SymBool& cond, const BitVec<W, S>& true_val,
                     const SymBitVec<W, S>& false_val) {
-  auto& ctx = cond.raw().ctx();
+  auto& ctx = cond.expr().ctx();
   return ite(cond, to_symbolic(true_val, ctx), false_val);
 }
 
@@ -352,16 +352,16 @@ Target unsafe_cast(const SymBitVec<SrcW, SrcS>& val) {
   constexpr size_t kTgtW = Target::kWidth;
   if constexpr (kTgtW == SrcW) {
     // Same width: zero-overhead type reinterpretation.
-    return Target(val.raw());
+    return Target(val.expr());
   } else if constexpr (kTgtW < SrcW) {
     // Truncation.
-    return Target(val.raw().extract(kTgtW - 1, 0));
+    return Target(val.expr().extract(kTgtW - 1, 0));
   } else {
     // Extension: sign-extend if source is signed, zero-extend otherwise.
     if constexpr (SrcS) {
-      return Target(z3::sext(val.raw(), kTgtW - SrcW));
+      return Target(z3::sext(val.expr(), kTgtW - SrcW));
     } else {
-      return Target(z3::zext(val.raw(), kTgtW - SrcW));
+      return Target(z3::zext(val.expr(), kTgtW - SrcW));
     }
   }
 }
@@ -422,12 +422,12 @@ SymSInt<W> as_signed(const SymBitVec<W, S>& val) {
 // --- SymBool / SymUInt<1> conversion ---
 
 inline SymUInt<1> to_ubv1(const SymBool& b) {
-  return SymUInt<1>(
-      z3::ite(b.raw(), b.raw().ctx().bv_val(1, 1), b.raw().ctx().bv_val(0, 1)));
+  return SymUInt<1>(z3::ite(b.expr(), b.expr().ctx().bv_val(1, 1),
+                            b.expr().ctx().bv_val(0, 1)));
 }
 
 inline SymBool to_bool(const SymUInt<1>& v) {
-  return SymBool(v.raw() == v.raw().ctx().bv_val(1, 1));
+  return SymBool(v.expr() == v.expr().ctx().bv_val(1, 1));
 }
 
 // --- Bit slicing (extract) ---
@@ -437,7 +437,7 @@ template <size_t High, size_t Low, size_t W, bool S>
 SymUInt<High - Low + 1> extract(const SymBitVec<W, S>& val) {
   static_assert(High >= Low, "extract: High must be >= Low.");
   static_assert(High < W, "extract: High must be < input width.");
-  return SymUInt<High - Low + 1>(val.raw().extract(High, Low));
+  return SymUInt<High - Low + 1>(val.expr().extract(High, Low));
 }
 
 // Symbolic-offset extract: shift right by offset, then static extract.
@@ -448,8 +448,8 @@ SymUInt<TargetWidth> extract(const SymBitVec<W, S>& val,
   static_assert(TargetWidth <= W,
                 "extract: TargetWidth must be <= input width.");
   // Extend index to match input width for the shift.
-  auto idx_ext = z3::zext(start_idx.raw(), W - IdxW);
-  auto shifted = z3::lshr(val.raw(), idx_ext);
+  auto idx_ext = z3::zext(start_idx.expr(), W - IdxW);
+  auto shifted = z3::lshr(val.expr(), idx_ext);
   return SymUInt<TargetWidth>(shifted.extract(TargetWidth - 1, 0));
 }
 
@@ -465,7 +465,7 @@ SymUInt<1> bit(const SymBitVec<W, S>& val) {
 template <size_t W1, bool S1, size_t W2, bool S2>
 SymUInt<W1 + W2> concat(const SymBitVec<W1, S1>& high,
                         const SymBitVec<W2, S2>& low) {
-  return SymUInt<W1 + W2>(z3::concat(high.raw(), low.raw()));
+  return SymUInt<W1 + W2>(z3::concat(high.expr(), low.expr()));
 }
 
 // Variadic concat.
@@ -481,8 +481,8 @@ auto concat(const SymBitVec<W1, S1>& high, const SymBitVec<W2, S2>& next,
 template <size_t N, size_t W, bool S>
 SymUInt<W + N> shl(const SymBitVec<W, S>& val) {
   auto widened = unsafe_cast<SymUInt<W + N>>(val);
-  auto amount = SymUInt<W + N>::template Literal<N>(val.raw().ctx());
-  return SymUInt<W + N>(z3::shl(widened.raw(), amount.raw()));
+  auto amount = SymUInt<W + N>::template Literal<N>(val.expr().ctx());
+  return SymUInt<W + N>(z3::shl(widened.expr(), amount.expr()));
 }
 
 // Symbolic shift: result width = W + 2^K - 1.
@@ -492,7 +492,7 @@ auto shl(const SymBitVec<W, S>& val, const SymUInt<K>& amount) {
   constexpr size_t kResultWidth = W + kMaxShift;
   auto widened = unsafe_cast<SymUInt<kResultWidth>>(val);
   auto amt_ext = unsafe_cast<SymUInt<kResultWidth>>(amount);
-  return SymUInt<kResultWidth>(z3::shl(widened.raw(), amt_ext.raw()));
+  return SymUInt<kResultWidth>(z3::shl(widened.expr(), amt_ext.expr()));
 }
 
 // --- Right shift (arithmetic) ---
@@ -501,9 +501,9 @@ auto shl(const SymBitVec<W, S>& val, const SymUInt<K>& amount) {
 template <size_t W, bool S>
 SymBitVec<W, S> shr(const SymBitVec<W, S>& val, const SymBitVec<W, S>& amount) {
   if constexpr (S) {
-    return SymBitVec<W, S>(z3::ashr(val.raw(), amount.raw()));
+    return SymBitVec<W, S>(z3::ashr(val.expr(), amount.expr()));
   } else {
-    return SymBitVec<W, S>(z3::lshr(val.raw(), amount.raw()));
+    return SymBitVec<W, S>(z3::lshr(val.expr(), amount.expr()));
   }
 }
 
@@ -512,7 +512,8 @@ SymBitVec<W, S> shr(const SymBitVec<W, S>& val, const SymBitVec<W, S>& amount) {
 template <size_t W, bool S>
 SymBitVec<W, S> ite(const SymBool& cond, const SymBitVec<W, S>& true_val,
                     const SymBitVec<W, S>& false_val) {
-  return SymBitVec<W, S>(z3::ite(cond.raw(), true_val.raw(), false_val.raw()));
+  return SymBitVec<W, S>(
+      z3::ite(cond.expr(), true_val.expr(), false_val.expr()));
 }
 
 }  // namespace z3w

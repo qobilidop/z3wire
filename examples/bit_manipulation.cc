@@ -25,7 +25,7 @@ int main() {
   auto repacked = z3w::concat(opcode, dest, immediate);  // SymUInt<16>
 
   // Verify round-trip: repacked == original.
-  solver.add((repacked != instruction).raw());
+  solver.add((repacked != instruction).expr());
 
   if (solver.check() == z3::unsat) {
     std::cout << "Verified: extract/concat round-trip is lossless.\n";
@@ -42,7 +42,7 @@ int main() {
   auto recovered = z3w::extract<10, 3>(shifted);
 
   z3::solver s2(ctx);
-  s2.add((recovered != value).raw());
+  s2.add((recovered != value).expr());
 
   if (s2.check() == z3::unsat) {
     std::cout << "Verified: shl preserves all bits.\n";

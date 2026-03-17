@@ -102,7 +102,7 @@ int main() {
     // Verify: the 9-bit sum is always >= both operands.
     // (This is trivially true because no overflow can occur.)
     auto a_wide = z3w::safe_cast<z3w::SymUInt<9>>(a);
-    solver.add((sum < a_wide).raw());
+    solver.add((sum < a_wide).expr());
 
     if (solver.check() == z3::unsat) {
         std::cout << "Verified: 9-bit sum is always >= both inputs.\n";

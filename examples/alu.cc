@@ -36,8 +36,8 @@ int main() {
 
   // Property: for AND operation, result is always <= both inputs.
   solver.push();
-  solver.add(opcode.raw() == op2.raw());
-  solver.add((result > a).raw() || (result > b).raw());
+  solver.add(opcode.expr() == op2.expr());
+  solver.add((result > a).expr() || (result > b).expr());
 
   if (solver.check() == z3::unsat) {
     std::cout << "Verified: AND result is always <= both inputs.\n";
@@ -51,12 +51,12 @@ int main() {
   auto [_, value_preserved] = z3w::checked_cast<z3w::SymUInt<8>>(sum9);
 
   solver.push();
-  solver.add(!value_preserved.raw());
+  solver.add(!value_preserved.expr());
 
   if (solver.check() == z3::sat) {
     auto model = solver.get_model();
-    std::cout << "ADD overflow example: a=" << model.eval(a.raw())
-              << ", b=" << model.eval(b.raw()) << "\n";
+    std::cout << "ADD overflow example: a=" << model.eval(a.expr())
+              << ", b=" << model.eval(b.expr()) << "\n";
   }
   solver.pop();
 

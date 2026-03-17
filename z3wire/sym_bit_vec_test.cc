@@ -17,20 +17,20 @@ class SymBitVecTest : public ::testing::Test {
 
 TEST_F(SymBitVecTest, SymbolicVariable) {
   SymUInt<8> a(ctx_, "a");
-  EXPECT_EQ(a.raw().get_sort().bv_size(), 8);
+  EXPECT_EQ(a.expr().get_sort().bv_size(), 8);
 }
 
 TEST_F(SymBitVecTest, Literal) {
   auto val = SymUInt<8>::Literal<255>(ctx_);
   z3::solver s(ctx_);
-  s.add(val.raw() == ctx_.bv_val(255, 8));
+  s.add(val.expr() == ctx_.bv_val(255, 8));
   EXPECT_EQ(s.check(), z3::sat);
 }
 
 TEST_F(SymBitVecTest, LiteralZero) {
   auto val = SymUInt<8>::Literal<0>(ctx_);
   z3::solver s(ctx_);
-  s.add(val.raw() == ctx_.bv_val(0, 8));
+  s.add(val.expr() == ctx_.bv_val(0, 8));
   EXPECT_EQ(s.check(), z3::sat);
 }
 
@@ -42,9 +42,9 @@ TEST_F(SymBitVecTest, BitwiseAnd) {
   SymUInt<8> c = a & b;
 
   z3::solver s(ctx_);
-  s.add(a.raw() == ctx_.bv_val(0xF0, 8));
-  s.add(b.raw() == ctx_.bv_val(0x3C, 8));
-  s.add(c.raw() != ctx_.bv_val(0x30, 8));
+  s.add(a.expr() == ctx_.bv_val(0xF0, 8));
+  s.add(b.expr() == ctx_.bv_val(0x3C, 8));
+  s.add(c.expr() != ctx_.bv_val(0x30, 8));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -54,9 +54,9 @@ TEST_F(SymBitVecTest, BitwiseOr) {
   SymUInt<8> c = a | b;
 
   z3::solver s(ctx_);
-  s.add(a.raw() == ctx_.bv_val(0xF0, 8));
-  s.add(b.raw() == ctx_.bv_val(0x0F, 8));
-  s.add(c.raw() != ctx_.bv_val(0xFF, 8));
+  s.add(a.expr() == ctx_.bv_val(0xF0, 8));
+  s.add(b.expr() == ctx_.bv_val(0x0F, 8));
+  s.add(c.expr() != ctx_.bv_val(0xFF, 8));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -66,9 +66,9 @@ TEST_F(SymBitVecTest, BitwiseXor) {
   SymUInt<8> c = a ^ b;
 
   z3::solver s(ctx_);
-  s.add(a.raw() == ctx_.bv_val(0xFF, 8));
-  s.add(b.raw() == ctx_.bv_val(0x0F, 8));
-  s.add(c.raw() != ctx_.bv_val(0xF0, 8));
+  s.add(a.expr() == ctx_.bv_val(0xFF, 8));
+  s.add(b.expr() == ctx_.bv_val(0x0F, 8));
+  s.add(c.expr() != ctx_.bv_val(0xF0, 8));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -77,8 +77,8 @@ TEST_F(SymBitVecTest, BitwiseNot) {
   SymUInt<8> b = ~a;
 
   z3::solver s(ctx_);
-  s.add(a.raw() == ctx_.bv_val(0xF0, 8));
-  s.add(b.raw() != ctx_.bv_val(0x0F, 8));
+  s.add(a.expr() == ctx_.bv_val(0xF0, 8));
+  s.add(b.expr() != ctx_.bv_val(0x0F, 8));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -90,9 +90,9 @@ TEST_F(SymBitVecTest, ExactEq) {
   SymBool eq = exact_eq(a, b);
 
   z3::solver s(ctx_);
-  s.add(eq.raw());
-  s.add(a.raw() == ctx_.bv_val(42, 8));
-  s.add(b.raw() != ctx_.bv_val(42, 8));
+  s.add(eq.expr());
+  s.add(a.expr() == ctx_.bv_val(42, 8));
+  s.add(b.expr() != ctx_.bv_val(42, 8));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -104,9 +104,9 @@ TEST_F(SymBitVecTest, Equality) {
   SymBool eq = (a == b);
 
   z3::solver s(ctx_);
-  s.add(eq.raw());
-  s.add(a.raw() == ctx_.bv_val(42, 8));
-  s.add(b.raw() != ctx_.bv_val(42, 8));
+  s.add(eq.expr());
+  s.add(a.expr() == ctx_.bv_val(42, 8));
+  s.add(b.expr() != ctx_.bv_val(42, 8));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -116,9 +116,9 @@ TEST_F(SymBitVecTest, Inequality) {
   SymBool neq = (a != b);
 
   z3::solver s(ctx_);
-  s.add(neq.raw());
-  s.add(a.raw() == ctx_.bv_val(42, 8));
-  s.add(b.raw() == ctx_.bv_val(42, 8));
+  s.add(neq.expr());
+  s.add(a.expr() == ctx_.bv_val(42, 8));
+  s.add(b.expr() == ctx_.bv_val(42, 8));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -131,9 +131,9 @@ TEST_F(SymBitVecTest, UnsignedLessThan) {
 
   // 200 < 100 should be unsat (unsigned).
   z3::solver s(ctx_);
-  s.add(lt.raw());
-  s.add(a.raw() == ctx_.bv_val(200, 8));
-  s.add(b.raw() == ctx_.bv_val(100, 8));
+  s.add(lt.expr());
+  s.add(a.expr() == ctx_.bv_val(200, 8));
+  s.add(b.expr() == ctx_.bv_val(100, 8));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -143,9 +143,9 @@ TEST_F(SymBitVecTest, UnsignedGreaterThan) {
   SymBool gt = (a > b);
 
   z3::solver s(ctx_);
-  s.add(gt.raw());
-  s.add(a.raw() == ctx_.bv_val(100, 8));
-  s.add(b.raw() == ctx_.bv_val(200, 8));
+  s.add(gt.expr());
+  s.add(a.expr() == ctx_.bv_val(100, 8));
+  s.add(b.expr() == ctx_.bv_val(200, 8));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -158,9 +158,9 @@ TEST_F(SymBitVecTest, SignedLessThan) {
 
   // In signed 8-bit: 200 is -56, 100 is 100. So -56 < 100 is true.
   z3::solver s(ctx_);
-  s.add(lt.raw());
-  s.add(a.raw() == ctx_.bv_val(200, 8));  // -56 signed
-  s.add(b.raw() == ctx_.bv_val(100, 8));
+  s.add(lt.expr());
+  s.add(a.expr() == ctx_.bv_val(200, 8));  // -56 signed
+  s.add(b.expr() == ctx_.bv_val(100, 8));
   EXPECT_EQ(s.check(), z3::sat);
 }
 
@@ -174,7 +174,7 @@ TEST_F(SymBitVecTest, AdditionWidens) {
   // Result should be 9 bits wide.
   static_assert(decltype(sum)::kWidth == 9);
   static_assert(!decltype(sum)::kIsSigned);
-  EXPECT_EQ(sum.raw().get_sort().bv_size(), 9);
+  EXPECT_EQ(sum.expr().get_sort().bv_size(), 9);
 }
 
 TEST_F(SymBitVecTest, AdditionNoOverflow) {
@@ -184,9 +184,9 @@ TEST_F(SymBitVecTest, AdditionNoOverflow) {
 
   // 255 + 255 = 510, which fits in 9 bits.
   z3::solver s(ctx_);
-  s.add(a.raw() == ctx_.bv_val(255, 8));
-  s.add(b.raw() == ctx_.bv_val(255, 8));
-  s.add(sum.raw() != ctx_.bv_val(510, 9));
+  s.add(a.expr() == ctx_.bv_val(255, 8));
+  s.add(b.expr() == ctx_.bv_val(255, 8));
+  s.add(sum.expr() != ctx_.bv_val(510, 9));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -225,10 +225,10 @@ TEST_F(SymBitVecTest, SubtractionCorrectValue) {
 
   // 100 - 200 = -100 in 9-bit signed.
   z3::solver s(ctx_);
-  s.add(a.raw() == ctx_.bv_val(100, 8));
-  s.add(b.raw() == ctx_.bv_val(200, 8));
+  s.add(a.expr() == ctx_.bv_val(100, 8));
+  s.add(b.expr() == ctx_.bv_val(200, 8));
   // -100 in 9-bit two's complement = 512 - 100 = 412.
-  s.add(diff.raw() != ctx_.bv_val(412, 9));
+  s.add(diff.expr() != ctx_.bv_val(412, 9));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -255,9 +255,9 @@ TEST_F(SymBitVecTest, Ite) {
   static_assert(decltype(result)::kWidth == 8);
 
   z3::solver s(ctx_);
-  s.add(sel.raw());
-  s.add(a.raw() == ctx_.bv_val(42, 8));
-  s.add(result.raw() != ctx_.bv_val(42, 8));
+  s.add(sel.expr());
+  s.add(a.expr() == ctx_.bv_val(42, 8));
+  s.add(result.expr() != ctx_.bv_val(42, 8));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -270,8 +270,8 @@ TEST_F(SymBitVecTest, CastTruncation) {
   static_assert(decltype(b)::kWidth == 8);
 
   z3::solver s(ctx_);
-  s.add(a.raw() == ctx_.bv_val(0x1234, 16));
-  s.add(b.raw() != ctx_.bv_val(0x34, 8));
+  s.add(a.expr() == ctx_.bv_val(0x1234, 16));
+  s.add(b.expr() != ctx_.bv_val(0x34, 8));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -282,8 +282,8 @@ TEST_F(SymBitVecTest, CastZeroExtension) {
   static_assert(decltype(b)::kWidth == 16);
 
   z3::solver s(ctx_);
-  s.add(a.raw() == ctx_.bv_val(0xFF, 8));
-  s.add(b.raw() != ctx_.bv_val(0x00FF, 16));
+  s.add(a.expr() == ctx_.bv_val(0xFF, 8));
+  s.add(b.expr() != ctx_.bv_val(0x00FF, 16));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -292,8 +292,8 @@ TEST_F(SymBitVecTest, CastSignExtension) {
   auto b = unsafe_cast<SymSInt<16>>(a);
 
   z3::solver s(ctx_);
-  s.add(a.raw() == ctx_.bv_val(0x80, 8));     // -128
-  s.add(b.raw() != ctx_.bv_val(0xFF80, 16));  // -128 sign-extended
+  s.add(a.expr() == ctx_.bv_val(0x80, 8));     // -128
+  s.add(b.expr() != ctx_.bv_val(0xFF80, 16));  // -128 sign-extended
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -304,8 +304,8 @@ TEST_F(SymBitVecTest, CastBitcast) {
   static_assert(decltype(b)::kIsSigned);
 
   z3::solver s(ctx_);
-  s.add(a.raw() == ctx_.bv_val(42, 8));
-  s.add(b.raw() != ctx_.bv_val(42, 8));
+  s.add(a.expr() == ctx_.bv_val(42, 8));
+  s.add(b.expr() != ctx_.bv_val(42, 8));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -335,8 +335,8 @@ TEST_F(SymBitVecTest, CheckedCastValuePreserved) {
 
   // When value fits in 8 bits, value_preserved should be true.
   z3::solver s(ctx_);
-  s.add(a.raw() == ctx_.bv_val(42, 16));
-  s.add(!value_preserved.raw());
+  s.add(a.expr() == ctx_.bv_val(42, 16));
+  s.add(!value_preserved.expr());
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -346,8 +346,8 @@ TEST_F(SymBitVecTest, CheckedCastValueNotPreserved) {
 
   // When value doesn't fit, value_preserved should be false.
   z3::solver s(ctx_);
-  s.add(a.raw() == ctx_.bv_val(256, 16));
-  s.add(value_preserved.raw());
+  s.add(a.expr() == ctx_.bv_val(256, 16));
+  s.add(value_preserved.expr());
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -363,8 +363,8 @@ TEST_F(SymBitVecTest, AsUnsigned) {
 
   // Same bits: -1 signed = 0xFF = 255 unsigned.
   z3::solver s(ctx_);
-  s.add(a.raw() == ctx_.bv_val(0xFF, 8));
-  s.add(result.raw() != ctx_.bv_val(0xFF, 8));
+  s.add(a.expr() == ctx_.bv_val(0xFF, 8));
+  s.add(result.expr() != ctx_.bv_val(0xFF, 8));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -378,8 +378,8 @@ TEST_F(SymBitVecTest, AsSigned) {
 
   // Same bits: 0xFF unsigned = -1 signed.
   z3::solver s(ctx_);
-  s.add(a.raw() == ctx_.bv_val(0xFF, 8));
-  s.add(result.raw() != ctx_.bv_val(0xFF, 8));
+  s.add(a.expr() == ctx_.bv_val(0xFF, 8));
+  s.add(result.expr() != ctx_.bv_val(0xFF, 8));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -390,7 +390,7 @@ TEST_F(SymBitVecTest, ToUbv1) {
   SymUInt<1> v = to_ubv1(b);
 
   z3::solver s(ctx_);
-  s.add(v.raw() != ctx_.bv_val(1, 1));
+  s.add(v.expr() != ctx_.bv_val(1, 1));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -399,7 +399,7 @@ TEST_F(SymBitVecTest, ToBool) {
   SymBool b = to_bool(v);
 
   z3::solver s(ctx_);
-  s.add(!b.raw());
+  s.add(!b.expr());
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -409,7 +409,7 @@ TEST_F(SymBitVecTest, ToBoolRoundtrip) {
 
   // orig <=> roundtrip should always hold.
   z3::solver s(ctx_);
-  s.add(orig.raw() != roundtrip.raw());
+  s.add(orig.expr() != roundtrip.expr());
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -424,8 +424,8 @@ TEST_F(SymBitVecTest, StaticExtract) {
   static_assert(decltype(low)::kWidth == 8);
 
   z3::solver s(ctx_);
-  s.add(a.raw() == ctx_.bv_val(0x1234, 16));
-  s.add(high.raw() != ctx_.bv_val(0x12, 8));
+  s.add(a.expr() == ctx_.bv_val(0x1234, 16));
+  s.add(high.expr() != ctx_.bv_val(0x12, 8));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -437,10 +437,10 @@ TEST_F(SymBitVecTest, SymbolicExtract) {
   static_assert(decltype(nibble)::kWidth == 4);
 
   z3::solver s(ctx_);
-  s.add(a.raw() == ctx_.bv_val(0xABCD, 16));
-  s.add(idx.raw() == ctx_.bv_val(4, 4));
+  s.add(a.expr() == ctx_.bv_val(0xABCD, 16));
+  s.add(idx.expr() == ctx_.bv_val(4, 4));
   // Shift right by 4: 0xABCD >> 4 = 0x0ABC, take low 4 bits = 0xC.
-  s.add(nibble.raw() != ctx_.bv_val(0xC, 4));
+  s.add(nibble.expr() != ctx_.bv_val(0xC, 4));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -454,9 +454,9 @@ TEST_F(SymBitVecTest, Concat) {
   static_assert(decltype(full)::kWidth == 16);
 
   z3::solver s(ctx_);
-  s.add(high.raw() == ctx_.bv_val(0xAB, 8));
-  s.add(low.raw() == ctx_.bv_val(0xCD, 8));
-  s.add(full.raw() != ctx_.bv_val(0xABCD, 16));
+  s.add(high.expr() == ctx_.bv_val(0xAB, 8));
+  s.add(low.expr() == ctx_.bv_val(0xCD, 8));
+  s.add(full.expr() != ctx_.bv_val(0xABCD, 16));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -478,9 +478,9 @@ TEST_F(SymBitVecTest, ShlConstant) {
   static_assert(decltype(result)::kWidth == 11);
 
   z3::solver s(ctx_);
-  s.add(a.raw() == ctx_.bv_val(0xFF, 8));
+  s.add(a.expr() == ctx_.bv_val(0xFF, 8));
   // 0xFF << 3 = 0x7F8.
-  s.add(result.raw() != ctx_.bv_val(0x7F8, 11));
+  s.add(result.expr() != ctx_.bv_val(0x7F8, 11));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -501,9 +501,9 @@ TEST_F(SymBitVecTest, ShlWithTruncation) {
   auto result = unsafe_cast<SymUInt<8>>(wide);
 
   z3::solver s(ctx_);
-  s.add(a.raw() == ctx_.bv_val(1, 8));
-  s.add(n.raw() == ctx_.bv_val(4, 8));
-  s.add(result.raw() != ctx_.bv_val(16, 8));
+  s.add(a.expr() == ctx_.bv_val(1, 8));
+  s.add(n.expr() == ctx_.bv_val(4, 8));
+  s.add(result.expr() != ctx_.bv_val(16, 8));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -515,10 +515,10 @@ TEST_F(SymBitVecTest, ShrUnsigned) {
   auto result = shr(a, n);
 
   z3::solver s(ctx_);
-  s.add(a.raw() == ctx_.bv_val(0x80, 8));
-  s.add(n.raw() == ctx_.bv_val(4, 8));
+  s.add(a.expr() == ctx_.bv_val(0x80, 8));
+  s.add(n.expr() == ctx_.bv_val(4, 8));
   // Logical shift: 0x80 >> 4 = 0x08.
-  s.add(result.raw() != ctx_.bv_val(0x08, 8));
+  s.add(result.expr() != ctx_.bv_val(0x08, 8));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -528,10 +528,10 @@ TEST_F(SymBitVecTest, ShrSigned) {
   auto result = shr(a, n);
 
   z3::solver s(ctx_);
-  s.add(a.raw() == ctx_.bv_val(0x80, 8));  // -128 signed
-  s.add(n.raw() == ctx_.bv_val(4, 8));
+  s.add(a.expr() == ctx_.bv_val(0x80, 8));  // -128 signed
+  s.add(n.expr() == ctx_.bv_val(4, 8));
   // Arithmetic shift: 0x80 >> 4 = 0xF8 (sign-extended).
-  s.add(result.raw() != ctx_.bv_val(0xF8, 8));
+  s.add(result.expr() != ctx_.bv_val(0xF8, 8));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -550,7 +550,7 @@ TEST_F(SymBitVecTest, ConcreteToSymbolic) {
   SymUInt<8> symbolic = to_symbolic(concrete, ctx_);
 
   z3::solver s(ctx_);
-  s.add(symbolic.raw() != ctx_.bv_val(42, 8));
+  s.add(symbolic.expr() != ctx_.bv_val(42, 8));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -559,7 +559,7 @@ TEST_F(SymBitVecTest, SignedConcreteToSymbolic) {
   SymSInt<8> symbolic = to_symbolic(concrete, ctx_);
 
   z3::solver s(ctx_);
-  s.add(symbolic.raw() != ctx_.bv_val(0x80, 8));
+  s.add(symbolic.expr() != ctx_.bv_val(0x80, 8));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -574,8 +574,8 @@ TEST_F(SymBitVecTest, MixedAddSymbolicPlusConcrete) {
   static_assert(is_symbolic_v<decltype(result)>);
 
   z3::solver s(ctx_);
-  s.add(sym.raw() == ctx_.bv_val(10, 8));
-  s.add(result.raw() != ctx_.bv_val(52, 9));
+  s.add(sym.expr() == ctx_.bv_val(10, 8));
+  s.add(result.expr() != ctx_.bv_val(52, 9));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -614,8 +614,8 @@ TEST_F(SymBitVecTest, MixedBitwiseAnd) {
   SymUInt<8> result = sym & conc;
 
   z3::solver s(ctx_);
-  s.add(sym.raw() == ctx_.bv_val(0xAB, 8));
-  s.add(result.raw() != ctx_.bv_val(0x0B, 8));
+  s.add(sym.expr() == ctx_.bv_val(0xAB, 8));
+  s.add(result.expr() != ctx_.bv_val(0x0B, 8));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -627,8 +627,8 @@ TEST_F(SymBitVecTest, MixedEquality) {
   SymBool eq = (sym == conc);
 
   z3::solver s(ctx_);
-  s.add(eq.raw());
-  s.add(sym.raw() != ctx_.bv_val(42, 8));
+  s.add(eq.expr());
+  s.add(sym.expr() != ctx_.bv_val(42, 8));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -638,8 +638,8 @@ TEST_F(SymBitVecTest, MixedLessThan) {
   SymBool lt = (sym < conc);
 
   z3::solver s(ctx_);
-  s.add(lt.raw());
-  s.add(sym.raw() == ctx_.bv_val(200, 8));
+  s.add(lt.expr());
+  s.add(sym.expr() == ctx_.bv_val(200, 8));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -654,8 +654,8 @@ TEST_F(SymBitVecTest, MixedIteSymbolicCondConcreteValues) {
   static_assert(is_symbolic_v<decltype(result)>);
 
   z3::solver s(ctx_);
-  s.add(cond.raw());
-  s.add(result.raw() != ctx_.bv_val(42, 8));
+  s.add(cond.expr());
+  s.add(result.expr() != ctx_.bv_val(42, 8));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -681,9 +681,9 @@ TEST_F(SymBitVecTest, CrossTypeEqualityDifferentWidths) {
 
   // If a=42 and b=42, they should be equal.
   z3::solver s(ctx_);
-  s.add(a.raw() == ctx_.bv_val(42, 8));
-  s.add(b.raw() == ctx_.bv_val(42, 16));
-  s.add(!eq.raw());
+  s.add(a.expr() == ctx_.bv_val(42, 8));
+  s.add(b.expr() == ctx_.bv_val(42, 16));
+  s.add(!eq.expr());
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -694,9 +694,9 @@ TEST_F(SymBitVecTest, CrossTypeInequalityDifferentWidths) {
 
   // If a=42 and b=42, they should not be unequal.
   z3::solver s(ctx_);
-  s.add(a.raw() == ctx_.bv_val(42, 8));
-  s.add(b.raw() == ctx_.bv_val(42, 16));
-  s.add(neq.raw());
+  s.add(a.expr() == ctx_.bv_val(42, 8));
+  s.add(b.expr() == ctx_.bv_val(42, 16));
+  s.add(neq.expr());
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -707,9 +707,9 @@ TEST_F(SymBitVecTest, CrossTypeLessThanDifferentWidths) {
 
   // 100 < 200 should be sat (unsigned).
   z3::solver s(ctx_);
-  s.add(lt.raw());
-  s.add(a.raw() == ctx_.bv_val(100, 8));
-  s.add(b.raw() == ctx_.bv_val(200, 16));
+  s.add(lt.expr());
+  s.add(a.expr() == ctx_.bv_val(100, 8));
+  s.add(b.expr() == ctx_.bv_val(200, 16));
   EXPECT_EQ(s.check(), z3::sat);
 }
 
@@ -723,9 +723,9 @@ TEST_F(SymBitVecTest, CrossTypeLessThanDifferentSignedness) {
   SymBool lt = (a < b);
 
   z3::solver s(ctx_);
-  s.add(lt.raw());
-  s.add(a.raw() == ctx_.bv_val(0xFF, 8));  // -1 signed
-  s.add(b.raw() == ctx_.bv_val(200, 8));
+  s.add(lt.expr());
+  s.add(a.expr() == ctx_.bv_val(0xFF, 8));  // -1 signed
+  s.add(b.expr() == ctx_.bv_val(200, 8));
   EXPECT_EQ(s.check(), z3::sat);
 }
 
@@ -736,9 +736,9 @@ TEST_F(SymBitVecTest, CrossTypeGreaterEqualDifferentSignedness) {
   SymBool ge = (a >= b);
 
   z3::solver s(ctx_);
-  s.add(a.raw() == ctx_.bv_val(200, 8));
-  s.add(b.raw() == ctx_.bv_val(0xFF, 8));  // -1 signed
-  s.add(!ge.raw());
+  s.add(a.expr() == ctx_.bv_val(200, 8));
+  s.add(b.expr() == ctx_.bv_val(0xFF, 8));  // -1 signed
+  s.add(!ge.expr());
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -750,8 +750,8 @@ TEST_F(SymBitVecTest, MixedCrossTypeEquality) {
   SymBool eq = (sym == conc);
 
   z3::solver s(ctx_);
-  s.add(eq.raw());
-  s.add(sym.raw() != ctx_.bv_val(42, 8));
+  s.add(eq.expr());
+  s.add(sym.expr() != ctx_.bv_val(42, 8));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -762,7 +762,7 @@ TEST_F(SymBitVecTest, MixedCrossTypeLessThan) {
 
   // Any 8-bit unsigned value (0-255) is always < 300.
   z3::solver s(ctx_);
-  s.add(!lt.raw());
+  s.add(!lt.expr());
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -778,8 +778,8 @@ TEST_F(SymBitVecTest, NegateUnsigned) {
 
   // -100 in 9-bit two's complement = 412.
   z3::solver s(ctx_);
-  s.add(a.raw() == ctx_.bv_val(100, 8));
-  s.add(neg.raw() != ctx_.bv_val(412, 9));
+  s.add(a.expr() == ctx_.bv_val(100, 8));
+  s.add(neg.expr() != ctx_.bv_val(412, 9));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -792,8 +792,8 @@ TEST_F(SymBitVecTest, NegateSigned) {
 
   // Negate -128 -> 128, which fits in SymSInt<9>.
   z3::solver s(ctx_);
-  s.add(a.raw() == ctx_.bv_val(0x80, 8));  // -128 signed
-  s.add(neg.raw() != ctx_.bv_val(128, 9));
+  s.add(a.expr() == ctx_.bv_val(0x80, 8));  // -128 signed
+  s.add(neg.expr() != ctx_.bv_val(128, 9));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -802,8 +802,8 @@ TEST_F(SymBitVecTest, NegateZero) {
   auto neg = -a;
 
   z3::solver s(ctx_);
-  s.add(a.raw() == ctx_.bv_val(0, 8));
-  s.add(neg.raw() != ctx_.bv_val(0, 9));
+  s.add(a.expr() == ctx_.bv_val(0, 8));
+  s.add(neg.expr() != ctx_.bv_val(0, 9));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -816,7 +816,7 @@ TEST_F(SymBitVecTest, NegateConsistentWithBinarySub) {
 
   // -a should equal 0 - a for all values.
   z3::solver s(ctx_);
-  s.add(neg.raw() != zero_minus_a.raw());
+  s.add(neg.expr() != zero_minus_a.expr());
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -830,8 +830,8 @@ TEST_F(SymBitVecTest, BitExtract) {
 
   // 0xA5 = 10100101, bit 5 = 1.
   z3::solver s(ctx_);
-  s.add(a.raw() == ctx_.bv_val(0xA5, 8));
-  s.add(b5.raw() != ctx_.bv_val(1, 1));
+  s.add(a.expr() == ctx_.bv_val(0xA5, 8));
+  s.add(b5.expr() != ctx_.bv_val(1, 1));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 

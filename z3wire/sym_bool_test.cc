@@ -15,14 +15,14 @@ class SymBoolTest : public ::testing::Test {
 
 TEST_F(SymBoolTest, SymbolicVariable) {
   SymBool a(ctx_, "a");
-  EXPECT_TRUE(a.raw().is_bool());
+  EXPECT_TRUE(a.expr().is_bool());
 }
 
 TEST_F(SymBoolTest, Literals) {
   SymBool t = SymBool::True(ctx_);
   SymBool f = SymBool::False(ctx_);
-  EXPECT_TRUE(t.raw().is_true());
-  EXPECT_TRUE(f.raw().is_false());
+  EXPECT_TRUE(t.expr().is_true());
+  EXPECT_TRUE(f.expr().is_false());
 }
 
 TEST_F(SymBoolTest, LogicalAnd) {
@@ -31,9 +31,9 @@ TEST_F(SymBoolTest, LogicalAnd) {
   SymBool c = a && b;
 
   z3::solver s(ctx_);
-  s.add(a.raw());
-  s.add(!b.raw());
-  s.add(c.raw());
+  s.add(a.expr());
+  s.add(!b.expr());
+  s.add(c.expr());
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -43,9 +43,9 @@ TEST_F(SymBoolTest, LogicalOr) {
   SymBool c = a || b;
 
   z3::solver s(ctx_);
-  s.add(!a.raw());
-  s.add(!b.raw());
-  s.add(c.raw());
+  s.add(!a.expr());
+  s.add(!b.expr());
+  s.add(c.expr());
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -54,8 +54,8 @@ TEST_F(SymBoolTest, LogicalNot) {
   SymBool b = !a;
 
   z3::solver s(ctx_);
-  s.add(a.raw());
-  s.add(b.raw());
+  s.add(a.expr());
+  s.add(b.expr());
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -66,9 +66,9 @@ TEST_F(SymBoolTest, Xor) {
 
   // XOR: if both are true, result is false.
   z3::solver s(ctx_);
-  s.add(a.raw());
-  s.add(b.raw());
-  s.add(c.raw());
+  s.add(a.expr());
+  s.add(b.expr());
+  s.add(c.expr());
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -79,9 +79,9 @@ TEST_F(SymBoolTest, Equality) {
 
   // If a == b is true, and a is true, then b must be true.
   z3::solver s(ctx_);
-  s.add(eq.raw());
-  s.add(a.raw());
-  s.add(!b.raw());
+  s.add(eq.expr());
+  s.add(a.expr());
+  s.add(!b.expr());
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -92,9 +92,9 @@ TEST_F(SymBoolTest, Inequality) {
 
   // If a != b is true, and both are true, that's unsat.
   z3::solver s(ctx_);
-  s.add(neq.raw());
-  s.add(a.raw());
-  s.add(b.raw());
+  s.add(neq.expr());
+  s.add(a.expr());
+  s.add(b.expr());
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
@@ -103,8 +103,8 @@ TEST_F(SymBoolTest, ToSymbolicFromConcrete) {
   z3w::Bool concrete_false(false);
   auto sym_t = z3w::to_symbolic(concrete_true, ctx_);
   auto sym_f = z3w::to_symbolic(concrete_false, ctx_);
-  EXPECT_TRUE(sym_t.raw().is_true());
-  EXPECT_TRUE(sym_f.raw().is_false());
+  EXPECT_TRUE(sym_t.expr().is_true());
+  EXPECT_TRUE(sym_f.expr().is_false());
 }
 
 }  // namespace

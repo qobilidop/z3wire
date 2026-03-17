@@ -25,7 +25,7 @@ using namespace example;
 
 // Helper: assert an implication (p → q).
 void imply(z3::solver& solver, const z3w::SymBool& p, const z3w::SymBool& q) {
-  solver.add((!p || q).raw());
+  solver.add((!p || q).expr());
 }
 
 int main() {
@@ -43,14 +43,15 @@ int main() {
 
   // Rule 1: SLEEP → all counters zero.
   for (int i = 0; i < 4; ++i) {
-    auto counter_zero = z3w::SymBool(reg.counters[i].raw() == ctx.bv_val(0, 4));
+    auto counter_zero =
+        z3w::SymBool(reg.counters[i].expr() == ctx.bv_val(0, 4));
     imply(solver, mode_is_sleep, counter_zero);
   }
 
   // Rule 2: counter nonzero → ready.
   for (int i = 0; i < 4; ++i) {
     auto counter_nonzero =
-        z3w::SymBool(reg.counters[i].raw() != ctx.bv_val(0, 4));
+        z3w::SymBool(reg.counters[i].expr() != ctx.bv_val(0, 4));
     imply(solver, counter_nonzero, reg.ready);
   }
 
@@ -63,8 +64,8 @@ int main() {
     solver.push();
     auto mode_is_active =
         z3w::exact_eq(reg.mode, z3w::to_symbolic(OpMode::kActive, ctx));
-    solver.add(mode_is_active.raw());
-    solver.add(reg.error.fatal.raw());
+    solver.add(mode_is_active.expr());
+    solver.add(reg.error.fatal.expr());
 
     if (solver.check() == z3::sat) {
       std::cout << "  Bug: design rules allow this state!\n";
@@ -83,13 +84,13 @@ int main() {
   std::cout << "\nQuery 2: Can a counter be nonzero with ready=false?\n";
   {
     solver.push();
-    solver.add((!reg.ready).raw());
+    solver.add((!reg.ready).expr());
     auto any_counter_active =
-        z3w::SymBool(reg.counters[0].raw() != ctx.bv_val(0, 4) ||
-                     reg.counters[1].raw() != ctx.bv_val(0, 4) ||
-                     reg.counters[2].raw() != ctx.bv_val(0, 4) ||
-                     reg.counters[3].raw() != ctx.bv_val(0, 4));
-    solver.add(any_counter_active.raw());
+        z3w::SymBool(reg.counters[0].expr() != ctx.bv_val(0, 4) ||
+                     reg.counters[1].expr() != ctx.bv_val(0, 4) ||
+                     reg.counters[2].expr() != ctx.bv_val(0, 4) ||
+                     reg.counters[3].expr() != ctx.bv_val(0, 4));
+    solver.add(any_counter_active.expr());
 
     if (solver.check() == z3::sat) {
       std::cout << "  Bug: active counters with ready=false!\n";
@@ -109,7 +110,7 @@ int main() {
     // Rule 4: fatal → SLEEP.
     imply(solver, reg.error.fatal, mode_is_sleep2);
     // Can fatal ever be true?
-    solver.add(reg.error.fatal.raw());
+    solver.add(reg.error.fatal.expr());
 
     if (solver.check() == z3::sat) {
       std::cout << "  Possible. Fatal with SLEEP is allowed.\n";

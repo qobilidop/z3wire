@@ -46,8 +46,8 @@ Future directions for Z3Wire, roughly in priority order.
 
 ## Ergonomics
 
-- **Reduce `.raw()` noise at solver boundaries** — Every `solver.add()` and
-    `model.eval()` call requires `.raw()` to unwrap Z3Wire types. A thin
+- **Reduce `.expr()` noise at solver boundaries** — Every `solver.add()` and
+    `model.eval()` call requires `.expr()` to unwrap Z3Wire types. A thin
     `z3w::Solver` wrapper (or free-function helpers like `z3w::eval()`) could
     accept Z3Wire types directly, delegating to `z3::solver` under the hood.
 - **Shorter literal construction** — `SymUInt<2>::Literal<0>(ctx)` is verbose for

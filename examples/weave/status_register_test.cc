@@ -16,11 +16,11 @@ TEST(StatusRegisterTest, CreateSymbolicVariables) {
   auto sr = StatusRegisterSymbolic::Create(ctx, "sr");
 
   // Verify variables were created (non-null expressions)
-  EXPECT_NE(sr.ready.raw().to_string(), "");
-  EXPECT_NE(sr.mode.raw().to_string(), "");
-  EXPECT_NE(sr.error.code.raw().to_string(), "");
-  EXPECT_NE(sr.counters[0].raw().to_string(), "");
-  EXPECT_NE(sr.counters[3].raw().to_string(), "");
+  EXPECT_NE(sr.ready.expr().to_string(), "");
+  EXPECT_NE(sr.mode.expr().to_string(), "");
+  EXPECT_NE(sr.error.code.expr().to_string(), "");
+  EXPECT_NE(sr.counters[0].expr().to_string(), "");
+  EXPECT_NE(sr.counters[3].expr().to_string(), "");
 }
 
 TEST(StatusRegisterTest, PackWidth) {
@@ -29,7 +29,7 @@ TEST(StatusRegisterTest, PackWidth) {
   auto packed = sr.Pack();
 
   // Pack should produce a 32-bit vector
-  EXPECT_EQ(packed.raw().get_sort().bv_size(), 32u);
+  EXPECT_EQ(packed.expr().get_sort().bv_size(), 32u);
 }
 
 TEST(StatusRegisterTest, NestedPackWidth) {
@@ -38,7 +38,7 @@ TEST(StatusRegisterTest, NestedPackWidth) {
   auto packed = ei.Pack();
 
   // ErrorInfo is 8 bits
-  EXPECT_EQ(packed.raw().get_sort().bv_size(), 8u);
+  EXPECT_EQ(packed.expr().get_sort().bv_size(), 8u);
 }
 
 TEST(StatusRegisterTest, RoundtripConcreteSymbolicConcrete) {
@@ -56,11 +56,11 @@ TEST(StatusRegisterTest, RoundtripConcreteSymbolicConcrete) {
 
   // Evaluate back to concrete (using a solver to get a model)
   z3::solver solver(ctx);
-  solver.add(ei_sym.code.raw() == ctx.bv_val(5, 4));
-  solver.add(ei_sym.severity.raw() ==
+  solver.add(ei_sym.code.expr() == ctx.bv_val(5, 4));
+  solver.add(ei_sym.severity.expr() ==
              ctx.bv_val(static_cast<uint64_t>(-1LL) & 0x3, 2));
-  solver.add(ei_sym.fatal.raw() == ctx.bool_val(true));
-  solver.add(ei_sym.reserved.raw() == ctx.bv_val(0, 1));
+  solver.add(ei_sym.fatal.expr() == ctx.bool_val(true));
+  solver.add(ei_sym.reserved.expr() == ctx.bv_val(0, 1));
   ASSERT_EQ(solver.check(), z3::sat);
   auto model = solver.get_model();
 
@@ -81,7 +81,7 @@ TEST(StatusRegisterTest, PackConstraint) {
   // ready=1 (bit 0), mode=2 (bits 2:1), rest=0
   // Binary: ...000 | 10 | 1 = 0x00000005
   auto packed = sr.Pack();
-  solver.add(packed.raw() == ctx.bv_val(5, 32));
+  solver.add(packed.expr() == ctx.bv_val(5, 32));
 
   ASSERT_EQ(solver.check(), z3::sat);
   auto model = solver.get_model();
