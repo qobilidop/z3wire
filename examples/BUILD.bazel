@@ -1,12 +1,6 @@
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 
 cc_binary(
-    name = "safe_adder",
-    srcs = ["safe_adder.cc"],
-    deps = ["//z3wire:sym_bit_vec"],
-)
-
-cc_binary(
     name = "alu",
     srcs = ["alu.cc"],
     deps = ["//z3wire:sym_bit_vec"],
@@ -16,4 +10,19 @@ cc_binary(
     name = "bit_manipulation",
     srcs = ["bit_manipulation.cc"],
     deps = ["//z3wire:sym_bit_vec"],
+)
+
+cc_binary(
+    name = "safe_adder",
+    srcs = ["safe_adder.cc"],
+    deps = ["//z3wire:sym_bit_vec"],
+)
+
+cc_binary(
+    name = "types",
+    srcs = ["types.cc"],
+    deps = [
+        "//z3wire:sym_bit_vec",
+        "//z3wire:sym_bool",
+    ],
 )

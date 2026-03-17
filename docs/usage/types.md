@@ -5,58 +5,50 @@ store plain values, and a three-tier casting API for converting between them.
 
 ## Symbolic types
 
-Zero-overhead wrappers around `z3::expr`.
+Z3Wire symbolic types are simple wrappers around `z3::expr`.
 
-| Type              | Description                      |
-| :---------------- | :------------------------------- |
-| `z3w::SymBool`    | Symbolic boolean                 |
-| `z3w::SymUInt<W>` | Unsigned bit-vector of width `W` |
-| `z3w::SymSInt<W>` | Signed bit-vector of width `W`   |
+| Type              | Description                               |
+| :---------------- | :---------------------------------------- |
+| `z3w::SymBool`    | Symbolic boolean                          |
+| `z3w::SymUInt<W>` | Symbolic unsigned bit-vector of width `W` |
+| `z3w::SymSInt<W>` | Symbolic signed bit-vector of width `W`   |
 
-`SymUInt<W>` and `SymSInt<W>` are aliases for the underlying template:
+!!! note
 
-```cpp
-template <size_t Width, bool IsSigned>
-class SymBitVec;
+    `SymUInt<0>` and `SymSInt<0>` are forbidden at compile time. A zero-width bit-vector has no meaning in SMT and is not supported in Z3.
 
-template <size_t W> using SymUInt = SymBitVec<W, false>;
-template <size_t W> using SymSInt = SymBitVec<W, true>;
-```
+### Constructors
 
-!!! info
-
-    `SymBitVec<0, S>` is forbidden via `static_assert`. A zero-width bit-vector has
-    no meaning in hardware or SMT.
-
-### Creating symbolic variables
-
-All types are constructed with a Z3 context and a name:
+Symbolic variables of any type can be constructed with a Z3 context and a
+symbol name:
 
 ```cpp
 z3::context ctx;
 
 z3w::SymBool flag(ctx, "flag");
-z3w::SymUInt<32> address(ctx, "address");
-z3w::SymSInt<16> offset(ctx, "offset");
+z3w::SymUInt<10> address(ctx, "address");
+z3w::SymSInt<11> offset(ctx, "offset");
 ```
 
 ### Literals
 
-SymBool literals:
+`SymBool` literals:
 
 ```cpp
-z3w::SymBool t = z3w::SymBool::True(ctx);
-z3w::SymBool f = z3w::SymBool::False(ctx);
+auto t = z3w::SymBool::True(ctx);
+auto f = z3w::SymBool::False(ctx);
 ```
 
-Bit-vector literals are range-checked at compile time:
+`SymUInt`/`SymSInt` literals are range-checked at compile time:
 
 ```cpp
-auto x = z3w::SymUInt<8>::Literal<255>(ctx);  // OK
-auto y = z3w::SymUInt<8>::Literal<256>(ctx);  // Compile error: value doesn't fit
+auto a = z3w::SymUInt<8>::Literal<255>(ctx);  // OK
+auto b = z3w::SymUInt<8>::Literal<256>(ctx);  // Compile error: value doesn't fit
+auto c = z3w::SymSInt<8>::Literal<127>(ctx);  // OK
+auto d = z3w::SymSInt<8>::Literal<128>(ctx);  // Compile error: value doesn't fit
 ```
 
-### Accessing the underlying Z3 expression
+### Z3 interop
 
 Use `.raw()` to get the underlying `z3::expr` for interop with Z3 APIs:
 
@@ -67,7 +59,7 @@ solver.add(x.raw() > 0);  // Pass to Z3 solver directly
 
 !!! note
 
-    Z3Wire does not wrap `z3::context` or `z3::solver`. You interact with these
+    Z3Wire does not wrap `z3::context` or `z3::solver`. You interact with them
     directly.
 
 ## Concrete types
