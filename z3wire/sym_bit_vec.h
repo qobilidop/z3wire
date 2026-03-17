@@ -548,6 +548,18 @@ auto shl(const SymBitVec<W, S>& val, const SymUInt<K>& amount) {
   return SymUInt<kResultWidth>(z3::shl(widened.raw(), amt_ext.raw()));
 }
 
+// --- Right shift (arithmetic) ---
+
+// shr: arithmetic right shift. For unsigned types, equivalent to logical shift.
+template <size_t W, bool S>
+SymBitVec<W, S> shr(const SymBitVec<W, S>& val, const SymBitVec<W, S>& amount) {
+  if constexpr (S) {
+    return SymBitVec<W, S>(z3::ashr(val.raw(), amount.raw()));
+  } else {
+    return SymBitVec<W, S>(z3::lshr(val.raw(), amount.raw()));
+  }
+}
+
 // --- Conditional selection (ite) ---
 
 template <size_t W, bool S>

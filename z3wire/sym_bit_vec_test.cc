@@ -576,6 +576,48 @@ TEST_F(SymBitVecTest, ShlSymbolic) {
   static_assert(decltype(result)::kWidth == 15);
 }
 
+TEST_F(SymBitVecTest, ShlWithTruncation) {
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<8> n(ctx_, "n");
+  // Same-width left shift via shl + unsafe_cast.
+  auto wide = shl(a, n);
+  auto result = unsafe_cast<SymUInt<8>>(wide);
+
+  z3::solver s(ctx_);
+  s.add(a.raw() == ctx_.bv_val(1, 8));
+  s.add(n.raw() == ctx_.bv_val(4, 8));
+  s.add(result.raw() != ctx_.bv_val(16, 8));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+// --- shr ---
+
+TEST_F(SymBitVecTest, ShrUnsigned) {
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<8> n(ctx_, "n");
+  auto result = shr(a, n);
+
+  z3::solver s(ctx_);
+  s.add(a.raw() == ctx_.bv_val(0x80, 8));
+  s.add(n.raw() == ctx_.bv_val(4, 8));
+  // Logical shift: 0x80 >> 4 = 0x08.
+  s.add(result.raw() != ctx_.bv_val(0x08, 8));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(SymBitVecTest, ShrSigned) {
+  SymSInt<8> a(ctx_, "a");
+  SymSInt<8> n(ctx_, "n");
+  auto result = shr(a, n);
+
+  z3::solver s(ctx_);
+  s.add(a.raw() == ctx_.bv_val(0x80, 8));  // -128 signed
+  s.add(n.raw() == ctx_.bv_val(4, 8));
+  // Arithmetic shift: 0x80 >> 4 = 0xF8 (sign-extended).
+  s.add(result.raw() != ctx_.bv_val(0xF8, 8));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
 // --- Type traits ---
 
 TEST_F(SymBitVecTest, IsSymbolicV) {
