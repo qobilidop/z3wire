@@ -22,13 +22,12 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: actions/setup-python@v6
+      - name: Build docs
+        uses: devcontainers/ci@v0.3
         with:
-          python-version: '3.x'
-
-      - run: pip install mkdocs-material mkdocs-include-markdown-plugin
-
-      - run: mkdocs build --strict
+          cacheFrom: ghcr.io/qobilidop/z3wire-dev
+          push: never
+          runCmd: mkdocs build --strict
 
       - uses: actions/upload-pages-artifact@v4
         with:

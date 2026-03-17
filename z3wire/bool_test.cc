@@ -68,9 +68,9 @@ TEST(BoolTest, StreamOutput) {
 
 TEST(BoolTest, Constexpr) {
   constexpr Bool b(true);
-  static_assert(b.value() == true);
+  static_assert(b.value());
   constexpr Bool d;
-  static_assert(d.value() == false);
+  static_assert(!d.value());
 }
 
 }  // namespace

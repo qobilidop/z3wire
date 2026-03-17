@@ -16,7 +16,7 @@ class Bool {
   Bool(T) = delete;
 
   explicit constexpr operator bool() const { return value_; }
-  constexpr bool value() const { return value_; }
+  [[nodiscard]] constexpr bool value() const { return value_; }
 
   friend constexpr bool operator==(Bool lhs, Bool rhs) {
     return lhs.value_ == rhs.value_;

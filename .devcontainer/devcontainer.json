@@ -2,5 +2,8 @@
   "name": "z3wire",
   "build": {
     "dockerfile": "Dockerfile"
-  }
+  },
+  "remoteUser": "dev",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+  "workspaceFolder": "/workspace"
 }

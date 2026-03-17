@@ -12,8 +12,24 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Restore Bazel disk cache
+        uses: actions/cache@v4
+        with:
+          path: .bazel-disk-cache
+          key: bazel-disk-${{ runner.os }}-${{ hashFiles('MODULE.bazel', '.bazelrc') }}
+          restore-keys: |
+            bazel-disk-${{ runner.os }}-
+
       - name: Format Check
-        run: ./dev.sh ./tools/format.sh --check
+        uses: devcontainers/ci@v0.3
+        with:
+          cacheFrom: ghcr.io/qobilidop/z3wire-dev
+          push: never
+          runCmd: ./tools/format.sh --check
 
       - name: Lint Check
-        run: ./dev.sh ./tools/lint.sh
+        uses: devcontainers/ci@v0.3
+        with:
+          cacheFrom: ghcr.io/qobilidop/z3wire-dev
+          push: never
+          runCmd: ./tools/lint.sh

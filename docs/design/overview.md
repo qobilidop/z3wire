@@ -96,15 +96,15 @@ sequential semantics (clocks, state, memory), it is out of scope.
 The library centers around a zero-overhead wrapper class that holds a single
 `z3::expr` by value, adding no runtime overhead.
 
-All symbolic types use a `Sym` prefix to distinguish them from concrete types.
-See the [type naming design](type-naming.md) for the rationale behind this
-convention.
+All symbolic types use a `Sym` prefix to clearly distinguish them from concrete
+types. Concrete types use natural C++ names.
 
-| Type Alias        | Mapping                             | Description                      |
-| :---------------- | :---------------------------------- | :------------------------------- |
-| `z3w::SymUInt<W>` | `SymBitVec<W, false>`               | Unsigned fixed-width bit-vector. |
-| `z3w::SymSInt<W>` | `SymBitVec<W, true>`                | Signed fixed-width bit-vector.   |
-| `z3w::SymBool`    | wrapper over `z3::expr` (Bool sort) | Symbolic boolean.                |
+| Symbolic              | Concrete           | Description                      |
+| :-------------------- | :----------------- | :------------------------------- |
+| `z3w::SymUInt<W>`     | `z3w::UInt<W>`     | Unsigned fixed-width bit-vector. |
+| `z3w::SymSInt<W>`     | `z3w::SInt<W>`     | Signed fixed-width bit-vector.   |
+| `z3w::SymBool`        | `z3w::Bool`        | Boolean.                         |
+| `z3w::SymBitVec<W,S>` | `z3w::BitVec<W,S>` | Underlying template.             |
 
 The core template is:
 
@@ -377,10 +377,13 @@ Concrete types (`UInt<W>`, `SInt<W>`) serve as type-safe value holders:
 1. **Type-safe storage.** `UInt<5>` or `SInt<12>` enforce bit-width at the
     type level, even without Z3.
 
-A concrete `Bool` type wraps native `bool` with type-safe construction (deleted
-integral constructor prevents implicit conversion from integers). This
-supersedes the earlier statement that "Bool does not need a concrete
-counterpart." See the [type naming design](type-naming.md) for the rationale.
+A concrete `Bool` type wraps native `bool` with type-safe construction. Its
+integral constructor is deleted, so `Bool b = 42;` is a compile error while
+`Bool b = true;` works naturally. `explicit operator bool()` prevents
+accidental use in arithmetic but allows contextual conversion (`if (b)`).
+Mixed `Bool`/`SymBool` operands are not auto-promoted — concrete `Bool`
+carries no Z3 context, so promotion requires an explicit
+`to_symbolic(Bool, z3::context&)` call.
 
 ### Storage
 

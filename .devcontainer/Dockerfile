@@ -5,7 +5,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     clang \
     clang-format \
     clang-tidy \
+    cmake \
     libclang-rt-dev \
+    make \
+    pkg-config \
+    libz3-dev \
     llvm \
     curl \
     git \

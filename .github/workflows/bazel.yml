@@ -12,16 +12,36 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Restore Bazel disk cache
+        uses: actions/cache@v4
+        with:
+          path: .bazel-disk-cache
+          key: bazel-disk-${{ runner.os }}-${{ hashFiles('MODULE.bazel', '.bazelrc') }}
+          restore-keys: |
+            bazel-disk-${{ runner.os }}-
+
       - name: Build
-        run: ./dev.sh bazel build //...
+        uses: devcontainers/ci@v0.3
+        with:
+          cacheFrom: ghcr.io/qobilidop/z3wire-dev
+          push: never
+          runCmd: bazel build //...
 
       - name: Test
-        run: ./dev.sh bazel test //...
+        uses: devcontainers/ci@v0.3
+        with:
+          cacheFrom: ghcr.io/qobilidop/z3wire-dev
+          push: never
+          runCmd: bazel test //...
 
       - name: Coverage
-        run: |
-          ./dev.sh ./tools/coverage.sh
-          ./dev.sh bash -c 'cp "$(bazel info output_path)/_coverage/_coverage_report.dat" /workspace/coverage.lcov'
+        uses: devcontainers/ci@v0.3
+        with:
+          cacheFrom: ghcr.io/qobilidop/z3wire-dev
+          push: never
+          runCmd: |
+            ./tools/coverage.sh
+            cp "$(bazel info output_path)/_coverage/_coverage_report.dat" coverage.lcov
 
       - name: Upload Coverage
         uses: codecov/codecov-action@v5
