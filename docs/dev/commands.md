@@ -38,6 +38,12 @@ To check without modifying (used in CI):
 
 ## CMake
 
+### Configure
+
+```sh
+./dev.sh cmake -B build
+```
+
 ### Build
 
 ```sh

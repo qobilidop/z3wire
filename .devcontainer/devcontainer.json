@@ -5,5 +5,9 @@
   },
   "remoteUser": "dev",
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
-  "workspaceFolder": "/workspace"
+  "workspaceFolder": "/workspace",
+  "mounts": [
+    "source=bazel-cache,target=/home/dev/.cache/bazel,type=volume"
+  ],
+  "forwardPorts": [8000]
 }

@@ -7,9 +7,9 @@ cd "$(git rev-parse --show-toplevel)"
 cpp_files=$(find z3wire examples -name '*.h' -o -name '*.cc' |
   grep -v '\.expected\.')
 bzl_files=$(find . -name '*.bazel' -o -name '*.bzl' -o -name 'BUILD' |
-  grep -v '.git/')
-sh_files=$(find . -name '*.sh' -not -path './.git/*')
-md_files=$(find . -name '*.md' -not -path './.git/*')
+  grep -v -e '.git/' -e './build/' -e './site/')
+sh_files=$(find . -name '*.sh' -not -path './.git/*' -not -path './build/*' -not -path './site/*')
+md_files=$(find . -name '*.md' -not -path './.git/*' -not -path './build/*' -not -path './site/*')
 py_files=$(find z3wire examples -name '*.py' 2>/dev/null || true)
 
 if [[ "${1:-}" == "--check" ]]; then

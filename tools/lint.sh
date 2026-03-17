@@ -5,13 +5,13 @@ set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 
 # --- Shell ---
-sh_files=$(find . -name '*.sh' -not -path './.git/*')
+sh_files=$(find . -name '*.sh' -not -path './.git/*' -not -path './build/*' -not -path './site/*')
 echo "$sh_files" | xargs shellcheck
 echo "shellcheck: all checks passed."
 
 # --- Bazel ---
 bzl_files=$(find . -name '*.bazel' -o -name '*.bzl' -o -name 'BUILD' |
-  grep -v '.git/')
+  grep -v -e '.git/' -e './build/' -e './site/')
 echo "$bzl_files" | xargs buildifier -lint=warn
 echo "buildifier: all checks passed."
 

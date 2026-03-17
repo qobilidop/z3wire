@@ -52,7 +52,9 @@ RUN pip install --break-system-packages mdformat-mkdocs
 RUN pip install --break-system-packages protobuf pytest black
 
 # Non-root user (required by rules_python for bazel coverage).
-RUN useradd -m -s /bin/bash dev
+RUN useradd -m -s /bin/bash dev && \
+    mkdir -p /home/dev/.cache && chown dev:dev /home/dev/.cache && \
+    git config --system --add safe.directory /workspace
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 ENTRYPOINT ["entrypoint.sh"]
 
