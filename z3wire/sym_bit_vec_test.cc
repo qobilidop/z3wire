@@ -391,6 +391,38 @@ TEST_F(SymBitVecTest, CheckedCastValueNotPreserved) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
+// --- as_signed / as_unsigned ---
+
+TEST_F(SymBitVecTest, AsUnsigned) {
+  SymSInt<8> a(ctx_, "a");
+  auto result = as_unsigned(a);
+
+  static_assert(std::is_same_v<decltype(result), SymUInt<8>>);
+  static_assert(decltype(result)::kWidth == 8);
+  static_assert(!decltype(result)::kIsSigned);
+
+  // Same bits: -1 signed = 0xFF = 255 unsigned.
+  z3::solver s(ctx_);
+  s.add(a.raw() == ctx_.bv_val(0xFF, 8));
+  s.add(result.raw() != ctx_.bv_val(0xFF, 8));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(SymBitVecTest, AsSigned) {
+  SymUInt<8> a(ctx_, "a");
+  auto result = as_signed(a);
+
+  static_assert(std::is_same_v<decltype(result), SymSInt<8>>);
+  static_assert(decltype(result)::kWidth == 8);
+  static_assert(decltype(result)::kIsSigned);
+
+  // Same bits: 0xFF unsigned = -1 signed.
+  z3::solver s(ctx_);
+  s.add(a.raw() == ctx_.bv_val(0xFF, 8));
+  s.add(result.raw() != ctx_.bv_val(0xFF, 8));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
 // --- SymBool / SymUInt<1> conversion ---
 
 TEST_F(SymBitVecTest, ToUbv1) {

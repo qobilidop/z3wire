@@ -433,6 +433,20 @@ template <typename Target, size_t SrcW, bool SrcS>
   return {result, value_preserved};
 }
 
+// --- Same-width reinterpretation ---
+
+// as_unsigned: reinterpret as unsigned, same width.
+template <size_t W, bool S>
+SymUInt<W> as_unsigned(const SymBitVec<W, S>& val) {
+  return unsafe_cast<SymUInt<W>>(val);
+}
+
+// as_signed: reinterpret as signed, same width.
+template <size_t W, bool S>
+SymSInt<W> as_signed(const SymBitVec<W, S>& val) {
+  return unsafe_cast<SymSInt<W>>(val);
+}
+
 // --- SymBool / SymUInt<1> conversion ---
 
 inline SymUInt<1> to_ubv1(const SymBool& b) {
