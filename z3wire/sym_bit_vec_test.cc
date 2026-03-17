@@ -244,46 +244,6 @@ TEST_F(SymBitVecTest, AdditionMixedSignedness) {
   static_assert(decltype(sum)::kIsSigned);
 }
 
-// --- Hardware shifts ---
-
-TEST_F(SymBitVecTest, LeftShift) {
-  SymUInt<8> a(ctx_, "a");
-  SymUInt<8> n(ctx_, "n");
-  SymUInt<8> result = a << n;
-
-  z3::solver s(ctx_);
-  s.add(a.raw() == ctx_.bv_val(1, 8));
-  s.add(n.raw() == ctx_.bv_val(4, 8));
-  s.add(result.raw() != ctx_.bv_val(16, 8));
-  EXPECT_EQ(s.check(), z3::unsat);
-}
-
-TEST_F(SymBitVecTest, UnsignedRightShift) {
-  SymUInt<8> a(ctx_, "a");
-  SymUInt<8> n(ctx_, "n");
-  SymUInt<8> result = a >> n;
-
-  z3::solver s(ctx_);
-  s.add(a.raw() == ctx_.bv_val(0x80, 8));
-  s.add(n.raw() == ctx_.bv_val(4, 8));
-  // Logical shift: 0x80 >> 4 = 0x08.
-  s.add(result.raw() != ctx_.bv_val(0x08, 8));
-  EXPECT_EQ(s.check(), z3::unsat);
-}
-
-TEST_F(SymBitVecTest, SignedRightShift) {
-  SymSInt<8> a(ctx_, "a");
-  SymSInt<8> n(ctx_, "n");
-  SymSInt<8> result = a >> n;
-
-  z3::solver s(ctx_);
-  s.add(a.raw() == ctx_.bv_val(0x80, 8));  // -128 signed
-  s.add(n.raw() == ctx_.bv_val(4, 8));
-  // Arithmetic shift: 0x80 >> 4 = 0xF8 (sign-extended).
-  s.add(result.raw() != ctx_.bv_val(0xF8, 8));
-  EXPECT_EQ(s.check(), z3::unsat);
-}
-
 // --- ite ---
 
 TEST_F(SymBitVecTest, Ite) {
@@ -509,49 +469,6 @@ TEST_F(SymBitVecTest, ConcatVariadic) {
   static_assert(decltype(result)::kWidth == 12);
 }
 
-// --- checked_shl ---
-
-TEST_F(SymBitVecTest, CheckedShlNoLoss) {
-  SymUInt<8> a(ctx_, "a");
-  SymUInt<8> n(ctx_, "n");
-  auto [shifted, lost] = checked_shl(a, n);
-
-  // Shifting 1 left by 4 should not lose bits.
-  z3::solver s(ctx_);
-  s.add(a.raw() == ctx_.bv_val(1, 8));
-  s.add(n.raw() == ctx_.bv_val(4, 8));
-  s.add(lost.raw());
-  EXPECT_EQ(s.check(), z3::unsat);
-}
-
-TEST_F(SymBitVecTest, CheckedShlWithLoss) {
-  SymUInt<8> a(ctx_, "a");
-  SymUInt<8> n(ctx_, "n");
-  auto [shifted, lost] = checked_shl(a, n);
-
-  // Shifting 0x80 left by 1 loses the high bit.
-  z3::solver s(ctx_);
-  s.add(a.raw() == ctx_.bv_val(0x80, 8));
-  s.add(n.raw() == ctx_.bv_val(1, 8));
-  s.add(!lost.raw());
-  EXPECT_EQ(s.check(), z3::unsat);
-}
-
-// --- checked_shr ---
-
-TEST_F(SymBitVecTest, CheckedShrWithLoss) {
-  SymUInt<8> a(ctx_, "a");
-  SymUInt<8> n(ctx_, "n");
-  auto [shifted, lost] = checked_shr(a, n);
-
-  // Shifting 0x01 right by 1 loses the low bit.
-  z3::solver s(ctx_);
-  s.add(a.raw() == ctx_.bv_val(1, 8));
-  s.add(n.raw() == ctx_.bv_val(1, 8));
-  s.add(!lost.raw());
-  EXPECT_EQ(s.check(), z3::unsat);
-}
-
 // --- shl ---
 
 TEST_F(SymBitVecTest, ShlConstant) {
@@ -749,30 +666,6 @@ TEST_F(SymBitVecTest, MixedIteSymbolicCondMixedValues) {
   auto result = ite(cond, sym, conc);
 
   static_assert(is_symbolic_v<decltype(result)>);
-}
-
-// --- Mixed shifts ---
-
-TEST_F(SymBitVecTest, MixedLeftShift) {
-  SymUInt<8> sym(ctx_, "x");
-  auto conc = UInt<8>::Literal<4>();
-  auto result = sym << conc;
-
-  z3::solver s(ctx_);
-  s.add(sym.raw() == ctx_.bv_val(1, 8));
-  s.add(result.raw() != ctx_.bv_val(16, 8));
-  EXPECT_EQ(s.check(), z3::unsat);
-}
-
-TEST_F(SymBitVecTest, MixedRightShift) {
-  SymUInt<8> sym(ctx_, "x");
-  auto conc = UInt<8>::Literal<4>();
-  auto result = sym >> conc;
-
-  z3::solver s(ctx_);
-  s.add(sym.raw() == ctx_.bv_val(0x80, 8));
-  s.add(result.raw() != ctx_.bv_val(0x08, 8));
-  EXPECT_EQ(s.check(), z3::unsat);
 }
 
 // --- is_symbolic_v<SymBool> ---

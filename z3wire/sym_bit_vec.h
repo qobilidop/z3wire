@@ -61,20 +61,6 @@ class SymBitVec {
 
   SymBitVec operator~() const { return SymBitVec(~*expr_); }
 
-  // --- Hardware shifts (strict: same width and signedness) ---
-
-  friend SymBitVec operator<<(const SymBitVec& lhs, const SymBitVec& rhs) {
-    return SymBitVec(z3::shl(*lhs.expr_, *rhs.expr_));
-  }
-
-  friend SymBitVec operator>>(const SymBitVec& lhs, const SymBitVec& rhs) {
-    if constexpr (IsSigned) {
-      return SymBitVec(z3::ashr(*lhs.expr_, *rhs.expr_));
-    } else {
-      return SymBitVec(z3::lshr(*lhs.expr_, *rhs.expr_));
-    }
-  }
-
  private:
   std::optional<z3::expr> expr_;
 };
@@ -286,20 +272,6 @@ auto operator^(const L& lhs, const R& rhs) {
 
 template <typename L, typename R>
   requires mixed_operands<L, R>
-auto operator<<(const L& lhs, const R& rhs) {
-  auto& ctx = internal::get_ctx(lhs, rhs);
-  return internal::promote(lhs, ctx) << internal::promote(rhs, ctx);
-}
-
-template <typename L, typename R>
-  requires mixed_operands<L, R>
-auto operator>>(const L& lhs, const R& rhs) {
-  auto& ctx = internal::get_ctx(lhs, rhs);
-  return internal::promote(lhs, ctx) >> internal::promote(rhs, ctx);
-}
-
-template <typename L, typename R>
-  requires mixed_operands<L, R>
 auto operator==(const L& lhs, const R& rhs) {
   auto& ctx = internal::get_ctx(lhs, rhs);
   return internal::promote(lhs, ctx) == internal::promote(rhs, ctx);
@@ -501,31 +473,6 @@ template <size_t W1, bool S1, size_t W2, bool S2, typename... Rest>
 auto concat(const SymBitVec<W1, S1>& high, const SymBitVec<W2, S2>& next,
             const Rest&... rest) {
   return concat(concat(high, next), rest...);
-}
-
-// --- Checked shifts ---
-
-// checked_shl: returns {shifted, lost} where lost is true if any bits were
-// shifted out.
-template <size_t W, bool S>
-[[nodiscard]] std::tuple<SymBitVec<W, S>, SymBool> checked_shl(
-    const SymBitVec<W, S>& val, const SymBitVec<W, S>& amount) {
-  auto shifted = val << amount;
-  // Check by shifting back and comparing.
-  auto restored = shifted >> amount;
-  SymBool lost = (restored != val);
-  return {shifted, lost};
-}
-
-// checked_shr: returns {shifted, lost} where lost is true if any bits were
-// shifted out.
-template <size_t W, bool S>
-[[nodiscard]] std::tuple<SymBitVec<W, S>, SymBool> checked_shr(
-    const SymBitVec<W, S>& val, const SymBitVec<W, S>& amount) {
-  auto shifted = val >> amount;
-  auto restored = shifted << amount;
-  SymBool lost = (restored != val);
-  return {shifted, lost};
 }
 
 // --- Left shift (lossless, auto-widening) ---
