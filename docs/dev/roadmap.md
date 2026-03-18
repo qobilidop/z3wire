@@ -33,6 +33,19 @@ Future directions for Z3Wire, roughly in priority order.
     `SymUInt<1>` and `SymBool` (e.g., direct comparison), while respecting the
     "explicit over implicit" principle. Defer until real usage patterns emerge.
 
+## Arithmetic
+
+- **Multiply** (`*`) — Fundamental operation supported by all SMT bit-vector
+    libraries. Design question: bit-growth semantics (result width =
+    `W1 + W2`?) vs same-width with overflow detection.
+- **Division and remainder** (`/`, `%`) — `udiv`, `sdiv`, `urem`, `srem`.
+    Signedness-aware type system makes the API design interesting: signed vs
+    unsigned division can be selected by operand types rather than separate
+    function names.
+- **Rotate** (`rotate_left`, `rotate_right`) — Useful in crypto and hardware
+    modeling. Constant and dynamic amount variants.
+- **Repeat** — Replicate a bit pattern N times. Useful for mask generation.
+
 ## Release and distribution
 
 - **First release (v0.1.0)** — Tag a stable version so users can depend on a
