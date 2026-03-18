@@ -164,6 +164,15 @@ auto r = z3w::shl(a, n);        // SymUInt<15> (8 + 2^3 - 1)
 Arithmetic right shift. Preserves sign for signed types (`ashr`), zero-fills
 for unsigned types (`lshr`). Result width stays the same.
 
+**Constant shift**:
+
+```cpp
+z3w::SymUInt<8> a(ctx, "a");
+auto r = z3w::shr<3>(a);  // SymUInt<8>, zero-filled from the left
+```
+
+**Symbolic shift** - shift amount width may differ from value width:
+
 ```cpp
 z3w::SymUInt<8> a(ctx, "a");
 z3w::SymUInt<3> n(ctx, "n");
@@ -179,11 +188,11 @@ auto r2 = z3w::shr(s, m);  // SymSInt<8>, sign bit preserved
 The `shl`/`shr` primitives compose with casting and signedness reinterpretation
 to cover all common shift patterns:
 
-| Goal                          | Expression                                |
-| :---------------------------- | :---------------------------------------- |
-| Raw left shift (fixed width)  | `unsafe_cast<SymUInt<W>>(shl<N>(val))`    |
-| Checked left shift (verify)   | `checked_cast<SymUInt<W>>(shl<N>(val))`   |
-| Logical right shift on signed | `shr(as_unsigned(val), as_unsigned(amt))` |
+| Goal                          | Expression                              |
+| :---------------------------- | :-------------------------------------- |
+| Raw left shift (fixed width)  | `unsafe_cast<SymUInt<W>>(shl<N>(val))`  |
+| Checked left shift (verify)   | `checked_cast<SymUInt<W>>(shl<N>(val))` |
+| Logical right shift on signed | `shr(as_unsigned(val), amt)`            |
 
 ## Bit manipulation
 

@@ -49,6 +49,13 @@ the complete set of [combinational logic primitives](https://qobilidop.github.io
 
 ## Quick example
 
+The classic binary search midpoint formula `(a + b) >> 1` has an overflow bug
+that lurked in Java's `Arrays.binarySearch` for 9 years before
+[Joshua Bloch discovered it in 2006](https://research.google/blog/extra-extra-read-all-about-it-nearly-all-binary-searches-and-mergesorts-are-broken/).
+Can we prove the well-known bit-hack fix
+[`(a & b) + ((a ^ b) >> 1)`](https://devblogs.microsoft.com/oldnewthing/20220207-00/?p=106223)
+is correct?
+
 ```cpp
 #include <z3++.h>
 #include "z3wire/sym_bit_vec.h"
@@ -56,34 +63,44 @@ the complete set of [combinational logic primitives](https://qobilidop.github.io
 z3::context ctx;
 z3::solver solver(ctx);
 
-// Verify that a carry flag correctly detects 8-bit addition overflow.
-z3w::SymUInt<8> a(ctx, "a");
-z3w::SymUInt<8> b(ctx, "b");
-auto sum = a + b;  // z3w::SymUInt<9>
-auto carry = z3w::as_bool(z3w::extract<8, 8>(sum));  // bit 8 = carry
-auto [truncated, value_preserved] = z3w::checked_cast<z3w::SymUInt<8>>(sum);
+z3w::SymUInt<32> a(ctx, "a");
+z3w::SymUInt<32> b(ctx, "b");
 
-// Ask Z3: is there any case where carry == value_preserved?
-// (carry=true means overflow, value_preserved=false means overflow, so they
-// should always be opposite.)
-solver.add((carry == value_preserved).expr());
-assert(solver.check() == z3::unsat);  // No — carry is always correct.
+// Result types are derived at compile time. Written out explicitly for clarity.
+
+// Buggy: ((uint32_t) (a + b)) >> 1
+// Truncating sum wraps, then shift gives wrong answer.
+z3w::SymUInt<32> buggy =
+    z3w::shr<1>(z3w::unsafe_cast<z3w::SymUInt<32>>(a + b));
+
+// Bit-hack fix: (uint32_t) ((a & b) + ((a ^ b) >> 1))
+// Magical! We shall prove it's correct.
+z3w::SymUInt<32> hack =
+    z3w::unsafe_cast<z3w::SymUInt<32>>((a & b) + z3w::shr<1>(a ^ b));
+
+// Z3Wire: (a + b) >> 1
+// Expresses the intended correct semantics naturally.
+z3w::SymUInt<33> correct = z3w::shr<1>(a + b);
+
+// Prove the buggy version can produce wrong results.
+solver.push();
+solver.add((buggy != correct).expr());
+assert(solver.check() == z3::sat);  // Yes — overflow exists.
+solver.pop();
+
+// Prove the bit-hack always matches the correct result.
+solver.push();
+solver.add((hack != correct).expr());
+assert(solver.check() == z3::unsat);  // Proven correct for all inputs.
+solver.pop();
 ```
 
-See the [safe adder example](https://qobilidop.github.io/z3wire/examples/safe-adder/) for a full walkthrough.
+Check out [`examples/midpoint_overflow.cc`](https://github.com/qobilidop/z3wire/blob/main/examples/midpoint_overflow.cc) for the full example.
 
 ## Getting started
 
-Requires [Docker](https://www.docker.com/). Clone the repo and run:
-
-```sh
-./dev.sh bazel run //examples:safe_adder
-```
-
-## Documentation
-
 Visit [qobilidop.github.io/z3wire](https://qobilidop.github.io/z3wire/) for the
-full documentation, including getting started guide, user guide, and examples.
+full documentation.
 
 ## License
 

@@ -72,11 +72,13 @@ See [Operations](operations.md).
 | :-------------- | :------------ |
 | `shl<N>(val)`   | `W + N`       |
 | `shl(val, amt)` | `W + 2^K - 1` |
+| `shr<N>(val)`   | `W`           |
 | `shr(val, amt)` | `W`           |
 
 - `shl` always returns `SymUInt` regardless of input signedness.
 - `shr` is arithmetic (sign-preserving for signed types).
-- For logical right shift on signed values: `shr(as_unsigned(val), as_unsigned(amt))`.
+- `shr` amount is always `SymUInt<K>` (width may differ from value).
+- For logical right shift on signed values: `shr(as_unsigned(val), amt)`.
 
 See [Operations](operations.md#shifting).
 
