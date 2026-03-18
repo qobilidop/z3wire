@@ -57,4 +57,5 @@ nav:
       - Compile-Fail Tests: design/compile-fail-tests.md
       - Weave: design/weave.md
   - Development:
+      - Guide: dev/guide.md
       - Roadmap: dev/roadmap.md
