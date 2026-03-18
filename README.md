@@ -61,6 +61,7 @@ is correct?
 
 ```cpp
 #include <z3++.h>
+#include "z3wire/bit_vec.h"
 #include "z3wire/sym_bit_vec.h"
 
 z3::context ctx;
@@ -68,22 +69,23 @@ z3::solver solver(ctx);
 
 z3w::SymUInt<32> a(ctx, "a");
 z3w::SymUInt<32> b(ctx, "b");
+auto one = z3w::UInt<32>::Literal<1>();
 
 // Result types are derived at compile time. Written out explicitly for clarity.
 
 // Buggy: ((uint32_t) (a + b)) >> 1
 // Truncating sum wraps, then shift gives wrong answer.
 z3w::SymUInt<32> buggy =
-    z3w::shr<1>(z3w::unsafe_cast<z3w::SymUInt<32>>(a + b));
+    z3w::shr(z3w::unsafe_cast<z3w::SymUInt<32>>(a + b), one);
 
 // Bit-hack fix: (uint32_t) ((a & b) + ((a ^ b) >> 1))
 // Magical! We shall prove it's correct.
 z3w::SymUInt<32> hack =
-    z3w::unsafe_cast<z3w::SymUInt<32>>((a & b) + z3w::shr<1>(a ^ b));
+    z3w::unsafe_cast<z3w::SymUInt<32>>((a & b) + z3w::shr(a ^ b, one));
 
 // Z3Wire: (a + b) >> 1
 // Expresses the intended correct semantics naturally.
-z3w::SymUInt<33> correct = z3w::shr<1>(a + b);
+z3w::SymUInt<33> correct = z3w::shr(a + b, one);
 
 // Prove the buggy version can produce wrong results.
 solver.push();

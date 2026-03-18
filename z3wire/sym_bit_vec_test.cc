@@ -573,6 +573,35 @@ TEST_F(SymBitVecTest, ShrDifferentWidths) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
+TEST_F(SymBitVecTest, ShlConcreteAmount) {
+  SymUInt<8> a(ctx_, "a");
+  auto one = UInt<3>::Literal<1>();
+  auto result = shl(a, one);
+
+  // Result width = 8 + 2^3 - 1 = 15, same as symbolic SymUInt<3> amount.
+  static_assert(decltype(result)::kWidth == 15);
+
+  z3::solver s(ctx_);
+  s.add(a.expr() == ctx_.bv_val(0xFF, 8));
+  // 0xFF << 1 = 0x1FE.
+  s.add(result.expr() != ctx_.bv_val(0x1FE, 15));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(SymBitVecTest, ShrConcreteAmount) {
+  SymUInt<8> a(ctx_, "a");
+  auto one = UInt<8>::Literal<4>();
+  auto result = shr(a, one);
+
+  static_assert((std::is_same_v<decltype(result), SymUInt<8>>));
+
+  z3::solver s(ctx_);
+  s.add(a.expr() == ctx_.bv_val(0x80, 8));
+  // Logical shift: 0x80 >> 4 = 0x08.
+  s.add(result.expr() != ctx_.bv_val(0x08, 8));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
 TEST_F(SymBitVecTest, ShrSignedWithUnsignedAmount) {
   SymSInt<8> a(ctx_, "a");
   SymUInt<3> n(ctx_, "n");

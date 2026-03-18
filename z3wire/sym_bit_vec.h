@@ -487,6 +487,11 @@ SymUInt<W + N> shl(const SymBitVec<W, S>& val) {
 
 // Symbolic shift: result width = W + 2^K - 1.
 template <size_t W, bool S, size_t K>
+auto shl(const SymBitVec<W, S>& val, const BitVec<K, false>& amount) {
+  return shl(val, to_symbolic(amount, val.expr().ctx()));
+}
+
+template <size_t W, bool S, size_t K>
 auto shl(const SymBitVec<W, S>& val, const SymUInt<K>& amount) {
   constexpr size_t kMaxShift = (size_t{1} << K) - 1;
   constexpr size_t kResultWidth = W + kMaxShift;
@@ -509,6 +514,12 @@ SymBitVec<W, S> shr(const SymBitVec<W, S>& val) {
 }
 
 // Symbolic shift: amount width may differ from value width.
+template <size_t W, bool S, size_t K>
+SymBitVec<W, S> shr(const SymBitVec<W, S>& val,
+                    const BitVec<K, false>& amount) {
+  return shr(val, to_symbolic(amount, val.expr().ctx()));
+}
+
 template <size_t W, bool S, size_t K>
 SymBitVec<W, S> shr(const SymBitVec<W, S>& val, const SymUInt<K>& amount) {
   auto amt_ext = unsafe_cast<SymUInt<W>>(amount);
