@@ -2,9 +2,9 @@
 
 This example models a simple 4-operation ALU and verifies its properties.
 
-The ALU takes two 8-bit inputs and a 2-bit opcode, producing an 8-bit result.
-We verify that the AND operation never exceeds its inputs, and find an example
-of ADD overflow.
+The ALU takes two 8-bit inputs and a 2-bit opcode, producing an 8-bit result. We
+verify that the AND operation never exceeds its inputs, and find an example of
+ADD overflow.
 
 ```cpp title="examples/alu.cc"
 #include <iostream>
@@ -73,8 +73,8 @@ int main() {
 - **`Literal`:** Compile-time range-checked constants for opcodes.
 - **`checked_cast`:** Detecting overflow symbolically.
 - **`push`/`pop`:** Using Z3's solver stack to check multiple properties.
-- **Verification vs. finding examples:** `unsat` proves a property;
-    `sat` finds a concrete witness.
+- **Verification vs. finding examples:** `unsat` proves a property; `sat` finds
+    a concrete witness.
 
 ## Running
 

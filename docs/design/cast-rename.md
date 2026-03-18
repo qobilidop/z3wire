@@ -5,11 +5,10 @@ semantics explicitly opt-in.
 
 ## Motivation
 
-Z3Wire's selling point is preventing bad things from happening implicitly.
-The current naming puts the raw hardware cast behind the shortest, most
-natural name (`cast`), which contradicts this philosophy. The safe tier
-should be the easiest to reach for, and the unsafe tier should be called
-out explicitly.
+Z3Wire's selling point is preventing bad things from happening implicitly. The
+current naming puts the raw hardware cast behind the shortest, most natural name
+(`cast`), which contradicts this philosophy. The safe tier should be the easiest
+to reach for, and the unsafe tier should be called out explicitly.
 
 ## Current API
 
@@ -32,17 +31,16 @@ strength, each name self-documenting its contract.
 
 ## Naming rationale
 
-- **`safe_cast`** - Explicit about what it guarantees. Consistent with
-    Z3Wire's "explicit over implicit" principle. Self-documenting when read
-    in isolation (local reasoning). No surprise for C++ developers, who
-    associate bare `cast` with "just do it."
+- **`safe_cast`** - Explicit about what it guarantees. Consistent with Z3Wire's
+    "explicit over implicit" principle. Self-documenting when read in isolation
+    (local reasoning). No surprise for C++ developers, who associate bare `cast`
+    with "just do it."
 - **`checked_cast`** - Unchanged. Matches the Rust/C++ convention where
     `checked_*` means "do it and report success/failure." Accurate for the
     return-a-flag semantics.
-- **`unsafe_cast`** - Parallels Rust's `unsafe`: not "this is wrong" but
-    "the compiler can't verify this for you." Appropriate for Z3Wire's
-    formal verification audience, who understand the verified/unverified
-    distinction.
+- **`unsafe_cast`** - Parallels Rust's `unsafe`: not "this is wrong" but "the
+    compiler can't verify this for you." Appropriate for Z3Wire's formal
+    verification audience, who understand the verified/unverified distinction.
 
 ## Scope
 

@@ -83,8 +83,8 @@ auto neg = -a;  // z3w::SymSInt<9>
 
 !!! tip
 
-    To model hardware-style fixed-width arithmetic, use `unsafe_cast` to
-    explicitly truncate the result:
+    To model hardware-style fixed-width arithmetic, use `unsafe_cast` to explicitly
+    truncate the result:
 
     ```cpp
     auto reg = z3w::unsafe_cast<z3w::SymUInt<8>>(a + b);  // Truncate to 8 bits
@@ -150,8 +150,8 @@ z3w::SymUInt<8> a(ctx, "a");
 auto r = z3w::shl<3>(a);  // SymUInt<11>
 ```
 
-**Symbolic shift** - result width = `W + 2^K - 1`, where `K` is the shift
-amount width:
+**Symbolic shift** - result width = `W + 2^K - 1`, where `K` is the shift amount
+width:
 
 ```cpp
 z3w::SymUInt<8> a(ctx, "a");
@@ -161,8 +161,8 @@ auto r = z3w::shl(a, n);        // SymUInt<15> (8 + 2^3 - 1)
 
 ### `shr` - Right shift
 
-Arithmetic right shift. Preserves sign for signed types (`ashr`), zero-fills
-for unsigned types (`lshr`). Result width stays the same.
+Arithmetic right shift. Preserves sign for signed types (`ashr`), zero-fills for
+unsigned types (`lshr`). Result width stays the same.
 
 **Constant shift**:
 
@@ -260,8 +260,8 @@ auto packed = z3w::concat(a, b, c);  // SymUInt<16>
 
 !!! tip
 
-    `concat` and `extract` are complementary. A common hardware pattern is
-    unpacking a word into fields, modifying a field, and repacking:
+    `concat` and `extract` are complementary. A common hardware pattern is unpacking
+    a word into fields, modifying a field, and repacking:
 
     ```cpp
     z3w::SymUInt<16> word(ctx, "word");

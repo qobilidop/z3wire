@@ -11,8 +11,8 @@ namespace. Links point to detailed documentation.
 | `SymUInt<W>` | `UInt<W>` | Unsigned bit-vector of width W |
 | `SymSInt<W>` | `SInt<W>` | Signed bit-vector of width W   |
 
-Concrete values auto-promote to symbolic in mixed expressions.
-See [Types](types.md).
+Concrete values auto-promote to symbolic in mixed expressions. See
+[Types](types.md).
 
 ## Construction
 
@@ -51,8 +51,8 @@ See [Operations](operations.md).
 | Sub | `a - b`    | `max(W1, W2) + 1` | Always signed              |
 | Neg | `-a`       | `W + 1`           | Always signed              |
 
-Operands are auto-extended. Mixed widths and signedness allowed.
-See [Operations](operations.md).
+Operands are auto-extended. Mixed widths and signedness allowed. See
+[Operations](operations.md).
 
 ## Comparison
 
@@ -62,8 +62,8 @@ See [Operations](operations.md).
 | `<` `<=` `>` `>=` | `a < b`         | Relaxed (any width/signedness) |
 | Exact             | `exact_eq(a,b)` | Strict (same width/signedness) |
 
-Returns `z3w::SymBool`. Signedness-aware: uses signed comparison if either operand
-is signed. Concrete types support `==` and `!=` only (returning `bool`).
+Returns `z3w::SymBool`. Signedness-aware: uses signed comparison if either
+operand is signed. Concrete types support `==` and `!=` only (returning `bool`).
 See [Operations](operations.md).
 
 ## Shifting
@@ -119,8 +119,8 @@ as_ubv1(SymBool)        // -> SymUInt<1>
 ite(cond, true_val, false_val)    // Both branches must be the same type
 ```
 
-Works with `z3w::SymBool` condition. Concrete values auto-promote to symbolic
-in mixed expressions.
+Works with `z3w::SymBool` condition. Concrete values auto-promote to symbolic in
+mixed expressions.
 
 ## Interop
 
@@ -128,5 +128,5 @@ in mixed expressions.
 val.expr()     // Access underlying z3::expr (symbolic)
 ```
 
-Concrete types use `.bits()` (raw unsigned) and `.value()` (interpreted).
-Users interact with `z3::context` and `z3::solver` directly.
+Concrete types use `.bits()` (raw unsigned) and `.value()` (interpreted). Users
+interact with `z3::context` and `z3::solver` directly.

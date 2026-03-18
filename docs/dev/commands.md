@@ -1,6 +1,7 @@
 # Development Commands
 
-The `./dev.sh` script runs commands inside the devcontainer. Omit it if you're already inside.
+The `./dev.sh` script runs commands inside the devcontainer. Omit it if you're
+already inside.
 
 ## General checks
 

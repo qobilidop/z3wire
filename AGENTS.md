@@ -10,7 +10,8 @@
 
 ## Development environment
 
-- Assume devcontainer as our only development environment and use it consistently.
+- Assume devcontainer as our only development environment and use it
+    consistently.
 - Install ALL dependencies in devcontainer.
 - Run ALL [development commands](docs/dev/commands.md) through `./dev.sh`.
 
@@ -24,9 +25,11 @@
 
 ## Code style
 
-- [C++] Follow [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html).
+- [C++] Follow
+    [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html).
 - [C++] Follow Google Abseil [C++ Tips of the Week](https://abseil.io/tips/).
-- [Python] Follow [Google Python Style Guide](https://google.github.io/styleguide/pyguide.html).
+- [Python] Follow
+    [Google Python Style Guide](https://google.github.io/styleguide/pyguide.html).
 - [Bazel] Follow [BUILD Style Guide](https://bazel.build/build/style-guide).
 
 ## Quality checks
@@ -40,8 +43,10 @@
 
 - Keep the subject line under 72 characters.
 - Explain why the change is being made.
-- Describe what has changed at a high level. Don't repeat what's obvious in the change itself.
-- Prefer one commit per logical change. Don't split into many tiny commits when they form a single unit of work.
+- Describe what has changed at a high level. Don't repeat what's obvious in the
+    change itself.
+- Prefer one commit per logical change. Don't split into many tiny commits when
+    they form a single unit of work.
 - Credit yourself (e.g. using the `Co-authored-by:` field) for commits you made.
 
 ## Rules

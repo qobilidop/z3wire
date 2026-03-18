@@ -4,7 +4,8 @@
 
 Z3Wire requires:
 
-- A C++20-compatible compiler (clang is the only supported compiler; GCC may work but is untested)
+- A C++20-compatible compiler (clang is the only supported compiler; GCC may
+    work but is untested)
 - [Z3](https://github.com/Z3Prover/z3)
 - Either [Bazel](https://bazel.build/) (via
     [Bazelisk](https://github.com/bazelbuild/bazelisk)) or
@@ -114,6 +115,7 @@ int main() {
 
 ## Next steps
 
-- [Types](usage/types.md) — learn about `SymBool`, `SymUInt<W>`, and `SymSInt<W>`
+- [Types](usage/types.md) — learn about `SymBool`, `SymUInt<W>`, and
+    `SymSInt<W>`
 - [Operations](usage/operations.md) — arithmetic, bitwise, and comparison
 - [Examples](examples/safe-adder.md) — runnable verification examples

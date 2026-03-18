@@ -1,7 +1,7 @@
 # Bit Manipulation
 
-This example demonstrates extract, concat, and shifts by modeling the
-unpacking and repacking of a 16-bit instruction word.
+This example demonstrates extract, concat, and shifts by modeling the unpacking
+and repacking of a 16-bit instruction word.
 
 ```cpp title="examples/bit_manipulation.cc"
 #include <iostream>

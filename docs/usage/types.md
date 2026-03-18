@@ -15,12 +15,13 @@ Z3Wire symbolic types are simple wrappers around `z3::expr`.
 
 !!! note
 
-    `SymUInt<0>` and `SymSInt<0>` are forbidden at compile time. A zero-width bit-vector has no meaning in SMT and is not supported in Z3.
+    `SymUInt<0>` and `SymSInt<0>` are forbidden at compile time. A zero-width
+    bit-vector has no meaning in SMT and is not supported in Z3.
 
 ### Constructors
 
-Symbolic variables of any type can be constructed with a Z3 context and a
-symbol name:
+Symbolic variables of any type can be constructed with a Z3 context and a symbol
+name:
 
 ```cpp
 z3::context ctx;
@@ -110,8 +111,8 @@ auto bad = z3w::safe_cast<z3w::SymUInt<4>>(small);      // Compile error!
 
 ### `checked_cast<T>(val)` — Verification cast
 
-Performs the cast and returns a symbolic boolean indicating whether the value was
-preserved. Use when you want to verify safety as part of a Z3 proof.
+Performs the cast and returns a symbolic boolean indicating whether the value
+was preserved. Use when you want to verify safety as part of a Z3 proof.
 
 ```cpp
 z3w::SymUInt<16> val(ctx, "val");
@@ -170,8 +171,8 @@ template <size_t W> using SInt = BitVec<W, true>;
 
 !!! info
 
-    Unlike symbolic types, concrete types do not require a `z3::context`.
-    They store plain native values, not Z3 expressions.
+    Unlike symbolic types, concrete types do not require a `z3::context`. They store
+    plain native values, not Z3 expressions.
 
 ### Concrete `Bool`
 
@@ -230,8 +231,8 @@ auto [val3, truncated3] = z3w::SInt<8>::checked(-128);
 // val3.value() == -128, truncated3 == false
 ```
 
-`checked()` accepts any integer type and reports whether the value was
-truncated to fit. Negative values on unsigned types are flagged as truncated.
+`checked()` accepts any integer type and reports whether the value was truncated
+to fit. Negative values on unsigned types are flagged as truncated.
 
 ### Accessing the value
 
@@ -252,8 +253,8 @@ y.value();  // -1   (int8_t)  — interpreted signed value
 
 ### Mixing with symbolic types
 
-Concrete values automatically promote to symbolic when used in expressions
-with symbolic operands:
+Concrete values automatically promote to symbolic when used in expressions with
+symbolic operands:
 
 ```cpp
 z3::context ctx;
@@ -264,14 +265,14 @@ auto result = sym + conc;  // SymUInt<9> — concrete promoted automatically
 z3w::SymBool eq = (sym == conc);  // Symbolic equality check
 ```
 
-The promotion grabs the `z3::context` from the symbolic operand, so no
-context needs to be passed explicitly.
+The promotion grabs the `z3::context` from the symbolic operand, so no context
+needs to be passed explicitly.
 
 !!! note
 
     This is the one exception to the "explicit over implicit" rule: concrete-
-    to-symbolic promotion is always lossless and unambiguous (same width,
-    same signedness), so it is allowed implicitly.
+    to-symbolic promotion is always lossless and unambiguous (same width, same
+    signedness), so it is allowed implicitly.
 
 To convert a concrete value to symbolic manually:
 
@@ -282,16 +283,16 @@ z3w::SymUInt<8> sym = z3w::to_symbolic(conc, ctx);
 
 ### Storage
 
-Both `UInt` and `SInt` use unsigned storage internally. For `SInt`, values
-are stored in two's complement representation.
+Both `UInt` and `SInt` use unsigned storage internally. For `SInt`, values are
+stored in two's complement representation.
 
 !!! info "Why unsigned storage?"
 
-    Signed integer overflow is undefined behavior in C++, while unsigned
-    overflow is well-defined (wraps mod 2^N). A bit-vector library performs
-    intermediate arithmetic with masking, and unsigned storage avoids UB.
-    The bits are the same either way; signed interpretation happens only at
-    comparison and sign-extension boundaries.
+    Signed integer overflow is undefined behavior in C++, while unsigned overflow is
+    well-defined (wraps mod 2^N). A bit-vector library performs intermediate
+    arithmetic with masking, and unsigned storage avoids UB. The bits are the same
+    either way; signed interpretation happens only at comparison and sign-extension
+    boundaries.
 
 ## Design principle: explicit over implicit
 

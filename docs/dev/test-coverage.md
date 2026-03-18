@@ -1,9 +1,10 @@
 # Test Coverage
 
 Line coverage is not a useful metric for a template-heavy library like Z3Wire.
-Different template instantiations (e.g., `SymUInt<8> + SymUInt<8>` vs `SymSInt<8> + SymUInt<4>`)
-exercise different `if constexpr` branches from the same source lines. This
-checklist tracks which template instantiations are tested.
+Different template instantiations (e.g., `SymUInt<8> + SymUInt<8>` vs
+`SymSInt<8> + SymUInt<4>`) exercise different `if constexpr` branches from the
+same source lines. This checklist tracks which template instantiations are
+tested.
 
 ## Dimensions
 
@@ -302,8 +303,9 @@ Arithmetic uses bit-growth: result width = `max(W1, W2) + 1`.
 ## Compile-time guards
 
 Compile-fail tests verify that `static_assert` guards and SFINAE constraints
-correctly reject invalid code. See [compile-fail tests](../design/compile-fail-tests.md)
-for the test infrastructure.
+correctly reject invalid code. See
+[compile-fail tests](../design/compile-fail-tests.md) for the test
+infrastructure.
 
 ### bit_vec.h guards (13 tests)
 

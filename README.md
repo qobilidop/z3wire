@@ -18,16 +18,17 @@ Using Z3 bit-vectors directly for hardware verification is error-prone:
 - **Width mismatches are silent.** Adding a 32-bit vector to an 8-bit vector
     compiles fine but crashes at runtime with `Z3_SORT_ERROR`.
 - **Signedness is unchecked.** Comparing bit-vectors requires choosing the right
-    function (`z3::ult` vs `z3::slt`), but nothing prevents calling the wrong one.
+    function (`z3::ult` vs `z3::slt`), but nothing prevents calling the wrong
+    one.
 - **Overflow requires vigilance.** Arithmetic silently wraps by default. Z3
-    provides overflow predicates (`bvadd_no_overflow`, etc.), but they are opt-in
-    and easy to forget — a missed check means a proof may pass because the formula
-    lost information, not because the design is correct.
+    provides overflow predicates (`bvadd_no_overflow`, etc.), but they are
+    opt-in and easy to forget — a missed check means a proof may pass because
+    the formula lost information, not because the design is correct.
 
 Z3Wire solves these by bringing hardware semantics into the type system:
 
-- **Compile-time type safety** — width and signedness mismatches become compile-time
-    errors, not runtime surprises.
+- **Compile-time type safety** — width and signedness mismatches become
+    compile-time errors, not runtime surprises.
 - **Bit-growth arithmetic** — results widen automatically, making every
     truncation an explicit, reviewable decision.
 
@@ -36,12 +37,14 @@ Z3Wire solves these by bringing hardware semantics into the type system:
 The name reflects the scope: hardware is built from *wires*. Every signal in a
 digital circuit is either a single bit or a bundle of bits with a known width.
 Z3Wire wraps Z3 with type-safe Booleans and fixed-width bit-vectors, covering
-the complete set of [combinational logic primitives](https://qobilidop.github.io/z3wire/design/overview/#combinational-logic-primitives) that operate on these wires.
+the complete set of
+[combinational logic primitives](https://qobilidop.github.io/z3wire/design/overview/#combinational-logic-primitives)
+that operate on these wires.
 
 ## Features
 
-- **Three-tier casting** — `safe_cast` (compile-time lossless),
-    `checked_cast` (symbolic verification), `unsafe_cast` (raw hardware).
+- **Three-tier casting** — `safe_cast` (compile-time lossless), `checked_cast`
+    (symbolic verification), `unsafe_cast` (raw hardware).
     `as_signed`/`as_unsigned` for same-width reinterpretation.
 - **Shifting** — `shl` (auto-widening left shift), `shr` (arithmetic right
     shift).
@@ -95,7 +98,9 @@ assert(solver.check() == z3::unsat);  // Proven correct for all inputs.
 solver.pop();
 ```
 
-Check out [`examples/midpoint_overflow.cc`](https://github.com/qobilidop/z3wire/blob/main/examples/midpoint_overflow.cc) for the full example.
+Check out
+[`examples/midpoint_overflow.cc`](https://github.com/qobilidop/z3wire/blob/main/examples/midpoint_overflow.cc)
+for the full example.
 
 ## Getting started
 

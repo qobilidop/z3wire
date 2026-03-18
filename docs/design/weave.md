@@ -4,15 +4,16 @@
 
 Weave is a codegen tool that generates C++ structs and protobuf messages from a
 single source-of-truth (SoT) description of hierarchical bit field data
-structures. It eliminates the manual effort of keeping symbolic structs, concrete
-structs, and serialization formats in sync.
+structures. It eliminates the manual effort of keeping symbolic structs,
+concrete structs, and serialization formats in sync.
 
 ## Motivation
 
-When modeling hardware registers, wire protocols, or arbitrary bit-packed layouts
-with Z3Wire, users currently write boilerplate by hand:
+When modeling hardware registers, wire protocols, or arbitrary bit-packed
+layouts with Z3Wire, users currently write boilerplate by hand:
 
-- A symbolic struct with `z3w::SymBool`, `z3w::SymUInt<W>`, `z3w::SymSInt<W>` fields.
+- A symbolic struct with `z3w::SymBool`, `z3w::SymUInt<W>`, `z3w::SymSInt<W>`
+    fields.
 - A concrete struct with `z3w::Bool`, `z3w::UInt<W>`, `z3w::SInt<W>` fields.
 - Conversion methods between them.
 - `extract` / `concat` logic to pack and unpack flat bit-vectors.
@@ -120,10 +121,10 @@ message BitVecType {
 ### Key schema concepts
 
 - **Module**: Top-level container. Sets the `file_prefix` (output filename
-    prefix), C++ `namespace`, and a default `field_pack_order` inherited by
-    all structs.
-- **Struct**: A named collection of fields occupying a contiguous bit range.
-    Can override the module-level `field_pack_order`. If `width` is set, the tool
+    prefix), C++ `namespace`, and a default `field_pack_order` inherited by all
+    structs.
+- **Struct**: A named collection of fields occupying a contiguous bit range. Can
+    override the module-level `field_pack_order`. If `width` is set, the tool
     validates that fields sum to exactly that width.
 - **Field**: A named bit range within a struct. Types include `bool` (1 bit),
     `bitvec` (unsigned or signed, arbitrary width), `enum_ref` (reference to an
@@ -137,9 +138,8 @@ message BitVecType {
 - **FieldPackOrder**: Controls the direction fields are packed into the bit
     range. `FIELD_PACK_ORDER_LSB_FIRST` packs starting from bit 0 (hardware
     registers). `FIELD_PACK_ORDER_MSB_FIRST` packs starting from the most
-    significant bit (network protocols).
-    Resolved by inheritance: struct overrides module; if both are unspecified,
-    codegen errors.
+    significant bit (network protocols). Resolved by inheritance: struct
+    overrides module; if both are unspecified, codegen errors.
 
 ### Example input
 
@@ -306,8 +306,8 @@ as weave-generated code is a separate codebase with its own conventions.
 #### Enum constants
 
 Enums are generated as structs with `static constexpr` members using Z3Wire
-concrete types. Names are emitted as-is from the RDL — no transformation.
-Users write target-language names directly (e.g., `kIdle` not `IDLE`).
+concrete types. Names are emitted as-is from the RDL — no transformation. Users
+write target-language names directly (e.g., `kIdle` not `IDLE`).
 
 #### Concrete structs
 
@@ -324,8 +324,8 @@ Mirror the concrete layout using Z3Wire symbolic types (`SymBool`, `SymUInt<W>`,
 - **`Create(ctx, prefix)`**: Creates fresh Z3 symbolic variables. Each variable
     is named `prefix.field_name`. Nested structs chain the prefix automatically
     (e.g., `"sr.error.code"`).
-- **`Pack()`**: Packs all fields into a flat bit-vector using `concat`, following
-    the declared `field_pack_order`. For the structural constraint
+- **`Pack()`**: Packs all fields into a flat bit-vector using `concat`,
+    following the declared `field_pack_order`. For the structural constraint
     `exact_eq(bv, reg.Pack())`, users call `Pack()` directly.
 - **`ToConcrete(model)`**: Evaluates symbolic fields against a Z3 model to
     produce a concrete struct.
@@ -354,11 +354,11 @@ message StatusRegisterProto {
 }
 ```
 
-Fields marked `reserved: true` are omitted from the proto — there is no value
-in serializing padding bits. Nested structs become nested proto messages. Arrays become
-`repeated` fields. Signed bitvec fields use proto `sint32`/`sint64`. Proto
-integer type selection: `uint32`/`sint32` for widths 1–32, `uint64`/`sint64`
-for widths 33–64.
+Fields marked `reserved: true` are omitted from the proto — there is no value in
+serializing padding bits. Nested structs become nested proto messages. Arrays
+become `repeated` fields. Signed bitvec fields use proto `sint32`/`sint64`.
+Proto integer type selection: `uint32`/`sint32` for widths 1–32,
+`uint64`/`sint64` for widths 33–64.
 
 ## Conversion chain
 

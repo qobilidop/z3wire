@@ -16,10 +16,10 @@ signedness information. This means:
 
 Furthermore, Z3's arithmetic operates at fixed widths — adding two 8-bit vectors
 produces an 8-bit result, silently discarding the carry bit. In hardware
-modeling, this silent overflow is a major source of subtle verification bugs:
-a proof may pass not because the design is correct, but because the formula
-itself lost information. Catching overflow requires manually widening operands
-before every arithmetic operation, which is tedious and error-prone.
+modeling, this silent overflow is a major source of subtle verification bugs: a
+proof may pass not because the design is correct, but because the formula itself
+lost information. Catching overflow requires manually widening operands before
+every arithmetic operation, which is tedious and error-prone.
 
 Z3Wire addresses both problems: compile-time type safety eliminates sort errors,
 and bit-growth arithmetic makes overflow explicit.
@@ -40,10 +40,10 @@ floating-point, uninterpreted functions — but Z3Wire intentionally covers only
 **Booleans** and **fixed-width bit-vectors**.
 
 The reason is in the name: hardware is built from *wires*. Every signal in a
-digital circuit is either a single bit (boolean) or a bundle of bits with a known
-width (bit-vector). Unbounded integers, reals, and other abstract mathematical
-types do not correspond to physical hardware and are irrelevant to RTL modeling
-and verification.
+digital circuit is either a single bit (boolean) or a bundle of bits with a
+known width (bit-vector). Unbounded integers, reals, and other abstract
+mathematical types do not correspond to physical hardware and are irrelevant to
+RTL modeling and verification.
 
 By targeting only the QF_BV logic (Quantifier-Free Bit-Vectors), Z3Wire can:
 
@@ -88,8 +88,8 @@ sequential semantics (clocks, state, memory), it is out of scope.
 - **Explicit over implicit:** No implicit conversions between signed/unsigned or
     different widths. Users must use the casting API to express intent.
 - **Header-based template library.** The core types and operators are templates
-    and must live in headers. Any non-template utilities should go in `.cc` files
-    per Google C++ style guide conventions.
+    and must live in headers. Any non-template utilities should go in `.cc`
+    files per Google C++ style guide conventions.
 
 ## Type system
 
@@ -120,8 +120,8 @@ template <size_t W> using SymUInt = SymBitVec<W, false>;
 template <size_t W> using SymSInt = SymBitVec<W, true>;
 ```
 
-Note: `SymBitVec<0, S>` is forbidden via `static_assert`. A zero-width bit-vector
-has no meaning in hardware or SMT.
+Note: `SymBitVec<0, S>` is forbidden via `static_assert`. A zero-width
+bit-vector has no meaning in hardware or SMT.
 
 ## Construction and literals
 
@@ -178,9 +178,9 @@ Only compiles if the cast is mathematically guaranteed to be lossless.
 
 #### `z3w::checked_cast<T>(val)` —The verification cast
 
-Returns `std::tuple<T, z3w::SymBool>`. Performs the cast and also returns a symbolic
-boolean formula representing whether the mathematical value was preserved. The user
-can assert the boolean into the solver to verify safety.
+Returns `std::tuple<T, z3w::SymBool>`. Performs the cast and also returns a
+symbolic boolean formula representing whether the mathematical value was
+preserved. The user can assert the boolean into the solver to verify safety.
 
 ```cpp
 auto [result, value_preserved] = z3w::checked_cast<z3w::SymUInt<8>>(my_32bit_val);
@@ -195,8 +195,8 @@ logical condition). Z3Wire provides explicit conversion functions:
 
 - **`z3w::as_bool(SymUInt<1>)`** — converts a 1-bit vector to SymBool (true if
     bit is 1).
-- **`z3w::as_ubv1(SymBool)`** — converts a SymBool to `SymUInt<1>` (1 if true,
-    0 if false).
+- **`z3w::as_ubv1(SymBool)`** — converts a SymBool to `SymUInt<1>` (1 if true, 0
+    if false).
 
 ```cpp
 z3w::SymUInt<32> status(ctx, "status");
@@ -259,8 +259,8 @@ Arithmetic and comparison operations allow mixed widths and signedness,
 automatically extending operands to a common type.
 
 - **Addition / Subtraction (`+`, `-`):** Result width is `max(W1, W2) + 1`.
-    Operands are automatically sign-extended or zero-extended to match before the
-    operation. (Bit growth.)
+    Operands are automatically sign-extended or zero-extended to match before
+    the operation. (Bit growth.)
 - **Bitwise logic (`&`, `|`, `^`):** Widths and signedness must match exactly.
     (Strict.)
 - **Equality (`==`, `!=`):** Allows different widths and signedness. Operands
@@ -301,14 +301,14 @@ z3w::SymBool t = z3w::SymBool::True(ctx);
 ### Shifting
 
 Z3Wire provides two shift primitives: `shl` (left shift) and `shr` (right
-shift). Left shifts always widen the result to guarantee no bits are lost.
-Other shift patterns are achieved through composability with casting and
-signedness reinterpretation.
+shift). Left shifts always widen the result to guarantee no bits are lost. Other
+shift patterns are achieved through composability with casting and signedness
+reinterpretation.
 
 #### `shl` - Left shift
 
-`shl` always returns `SymUInt` regardless of input signedness. The result
-widens to prevent bit loss.
+`shl` always returns `SymUInt` regardless of input signedness. The result widens
+to prevent bit loss.
 
 - **Constant shift `N`:** result width = `W + N`.
 - **Symbolic shift `SymUInt<K>`:** result width = `W + 2^K - 1` (assumes the
@@ -327,8 +327,8 @@ auto r2 = z3w::shl(a, n);    // -> z3w::SymUInt<15>
 
 #### `shr` - Right shift
 
-Arithmetic right shift. Preserves sign for signed types (`ashr`), zero-fills
-for unsigned types (`lshr`). Result width stays the same.
+Arithmetic right shift. Preserves sign for signed types (`ashr`), zero-fills for
+unsigned types (`lshr`). Result width stays the same.
 
 ```cpp
 z3w::SymUInt<8> a(ctx, "a");
@@ -349,8 +349,8 @@ existing casting and signedness APIs:
 
 ### Conditional selection (`ite`)
 
-Symbolic If-Then-Else. Works for any Z3Wire symbolic type (`SymBool`, `SymUInt<W>`, `SymSInt<W>`).
-Both branches must be the exact same type.
+Symbolic If-Then-Else. Works for any Z3Wire symbolic type (`SymBool`,
+`SymUInt<W>`, `SymSInt<W>`). Both branches must be the exact same type.
 
 ```cpp
 template <typename T>
@@ -374,37 +374,34 @@ Concrete types (`UInt<W>`, `SInt<W>`) serve as type-safe value holders:
 
 1. **Mixed expressions.** Users can write `symbolic_x + concrete_y` without
     manually creating Z3 constants. The concrete value auto-promotes.
-1. **Type-safe storage.** `UInt<5>` or `SInt<12>` enforce bit-width at the
-    type level, even without Z3.
+1. **Type-safe storage.** `UInt<5>` or `SInt<12>` enforce bit-width at the type
+    level, even without Z3.
 
 A concrete `Bool` type wraps native `bool` with type-safe construction. Its
 integral constructor is deleted, so `Bool b = 42;` is a compile error while
-`Bool b = true;` works naturally. `explicit operator bool()` prevents
-accidental use in arithmetic but allows contextual conversion (`if (b)`).
-Mixed `Bool`/`SymBool` operands are not auto-promoted — concrete `Bool`
-carries no Z3 context, so promotion requires an explicit
-`to_symbolic(Bool, z3::context&)` call.
+`Bool b = true;` works naturally. `explicit operator bool()` prevents accidental
+use in arithmetic but allows contextual conversion (`if (b)`). Mixed
+`Bool`/`SymBool` operands are not auto-promoted — concrete `Bool` carries no Z3
+context, so promotion requires an explicit `to_symbolic(Bool, z3::context&)`
+call.
 
 ### Storage
 
-Both `UInt` and `SInt` use unsigned storage (`uint8_t` / `uint16_t` /
-`uint32_t` / `uint64_t`, whichever is smallest). Width is constrained to
-1--64.
+Both `UInt` and `SInt` use unsigned storage (`uint8_t` / `uint16_t` / `uint32_t`
+/ `uint64_t`, whichever is smallest). Width is constrained to 1--64.
 
 **Why unsigned storage for `SInt`?** Signed integer overflow is undefined
-behavior in C++, while unsigned overflow is well-defined (wraps mod 2^N).
-A bit-vector library performs intermediate arithmetic with masking, and
-unsigned storage avoids UB. The bits are identical (two's complement);
-signed interpretation happens only at comparison and sign-extension
-boundaries.
+behavior in C++, while unsigned overflow is well-defined (wraps mod 2^N). A
+bit-vector library performs intermediate arithmetic with masking, and unsigned
+storage avoids UB. The bits are identical (two's complement); signed
+interpretation happens only at comparison and sign-extension boundaries.
 
 ### Promotion to symbolic
 
-Concrete values implicitly promote to symbolic when mixed in expressions.
-This is the one exception to "explicit over implicit": the promotion is
-always lossless and unambiguous (same width, same signedness), so it is safe
-to allow implicitly. The Z3 context is grabbed from the symbolic operand's
-`z3::expr`.
+Concrete values implicitly promote to symbolic when mixed in expressions. This
+is the one exception to "explicit over implicit": the promotion is always
+lossless and unambiguous (same width, same signedness), so it is safe to allow
+implicitly. The Z3 context is grabbed from the symbolic operand's `z3::expr`.
 
 ### Operations
 

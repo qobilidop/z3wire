@@ -1,23 +1,23 @@
 # Shift API Redesign
 
-Simplify the shift API by removing redundant functions and using named
-functions consistently.
+Simplify the shift API by removing redundant functions and using named functions
+consistently.
 
 ## Motivation
 
-The current shift API has three tiers (raw, checked, lossless) mirroring
-the cast API. But unlike casts, checked and raw shifts are trivially
-composable from the lossless shift and the cast API:
+The current shift API has three tiers (raw, checked, lossless) mirroring the
+cast API. But unlike casts, checked and raw shifts are trivially composable from
+the lossless shift and the cast API:
 
 - `checked_shl(val, amt)` = `checked_cast(shl(val, amt))`
 - `val << amt` = `unsafe_cast(shl(val, amt))`
 - `checked_shr(val, amt)` has no compelling use case
 
-Operator overloading (`<<`, `>>`) is also inconsistent with the rest of
-the API, which uses named functions for casts and other operations.
+Operator overloading (`<<`, `>>`) is also inconsistent with the rest of the API,
+which uses named functions for casts and other operations.
 
-This spec is the companion to [cast-rename.md](cast-rename.md), which
-deferred shift operations to a separate spec.
+This spec is the companion to [cast-rename.md](cast-rename.md), which deferred
+shift operations to a separate spec.
 
 ## Current API
 
@@ -44,32 +44,29 @@ deferred shift operations to a separate spec.
 
 ### Named functions over operators
 
-Shift operators (`<<`, `>>`) are dropped in favor of `shl`/`shr`. This
-is consistent with the cast API (which uses named functions) and avoids
-any ambiguity about result width.
+Shift operators (`<<`, `>>`) are dropped in favor of `shl`/`shr`. This is
+consistent with the cast API (which uses named functions) and avoids any
+ambiguity about result width.
 
 ### `shl` is always lossless
 
-There is only one left shift primitive, and it always widens the result
-to guarantee no bit loss. The `lossless_` prefix is dropped since there
-is no other left shift to distinguish from. `shl` always returns
-`SymUInt` regardless of input signedness, consistent with other raw bit
-operations like `concat` and `extract`. Users who want same-width left
-shift compose with `unsafe_cast` or `checked_cast`.
+There is only one left shift primitive, and it always widens the result to
+guarantee no bit loss. The `lossless_` prefix is dropped since there is no other
+left shift to distinguish from. `shl` always returns `SymUInt` regardless of
+input signedness, consistent with other raw bit operations like `concat` and
+`extract`. Users who want same-width left shift compose with `unsafe_cast` or
+`checked_cast`.
 
 ### `shr` is arithmetic
 
-`shr` dispatches based on signedness: `z3::ashr` for signed types,
-`z3::lshr` for unsigned types. The results are equivalent for unsigned
-(sign bit is 0), but dispatching preserves the expected SMT operation
-in generated formulas.
+`shr` dispatches based on signedness: `z3::ashr` for signed types, `z3::lshr`
+for unsigned types. The results are equivalent for unsigned (sign bit is 0), but
+dispatching preserves the expected SMT operation in generated formulas.
 
-Signature: `shr(SymBitVec<W, S> val, SymBitVec<W, S> amt)` - both
-operands must match in width and signedness (same as the current
-`operator>>`).
+Signature: `shr(SymBitVec<W, S> val, SymBitVec<W, S> amt)` - both operands must
+match in width and signedness (same as the current `operator>>`).
 
-Users who need logical right shift on signed values compose with
-`as_unsigned`:
+Users who need logical right shift on signed values compose with `as_unsigned`:
 
 ```cpp
 shr(as_unsigned(signed_val), as_unsigned(amt))
@@ -77,8 +74,8 @@ shr(as_unsigned(signed_val), as_unsigned(amt))
 
 ### No `shr<N>` overload
 
-Unlike `shl<N>`, a constant shift amount for right shift provides no
-type-level benefit - the result is always width `W`. YAGNI.
+Unlike `shl<N>`, a constant shift amount for right shift provides no type-level
+benefit - the result is always width `W`. YAGNI.
 
 ### No checked shifts
 
@@ -87,9 +84,9 @@ type-level benefit - the result is always width `W`. YAGNI.
 
 ### `as_signed` / `as_unsigned`
 
-Same-width reinterpretation helpers that wrap `unsafe_cast` with automatic
-type deduction. They belong to the cast API conceptually but are motivated
-by the shift redesign, where they enable ergonomic composition patterns.
+Same-width reinterpretation helpers that wrap `unsafe_cast` with automatic type
+deduction. They belong to the cast API conceptually but are motivated by the
+shift redesign, where they enable ergonomic composition patterns.
 
 ## Composability
 
