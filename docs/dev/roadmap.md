@@ -57,6 +57,11 @@ Future directions for Z3Wire, roughly in priority order.
 
 - **`Unpack()`** — Construct a symbolic struct from a flat bit-vector using
     `extract`.
+- **Use `map` for repeated fields in proto** — Register arrays generate
+    `repeated` proto fields today, which serialize every element including
+    zeros. Switch to `map<uint32, RegType>` so only non-default entries are
+    serialized. The C++ struct side stays as `std::array` (dense); the map is
+    purely a serialization optimization.
 
 ## Ergonomics
 
