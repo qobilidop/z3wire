@@ -64,7 +64,6 @@ Future directions for Z3Wire, roughly in priority order.
 
 ## Quality
 
-- **Improve test coverage** — The [test coverage](test-coverage.md) tracks which
-    template instantiations are tested. Key gaps: signed (`SymSInt`/`SInt`)
-    operations are under-tested across the board, W=1 and W=64 boundary cases
-    are sparse, and mixed concrete+symbolic bitwise only tests AND.
+- **Improve test coverage** — Key gaps: signed (`SymSInt`/`SInt`) operations are
+    under-tested across the board, W=1 and W=64 boundary cases are sparse, and
+    mixed concrete+symbolic bitwise only tests AND.
