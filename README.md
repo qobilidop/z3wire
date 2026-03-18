@@ -41,15 +41,6 @@ the complete set of
 [combinational logic primitives](https://qobilidop.github.io/z3wire/design/overview/#combinational-logic-primitives)
 that operate on these wires.
 
-## Features
-
-- **Three-tier casting** — `safe_cast` (compile-time lossless), `checked_cast`
-    (symbolic verification), `unsafe_cast` (raw hardware).
-    `as_signed`/`as_unsigned` for same-width reinterpretation.
-- **Shifting** — `shl` (auto-widening left shift), `shr` (arithmetic right
-    shift).
-- **Zero overhead** — each wrapper holds only a `z3::expr`.
-
 ## Quick example
 
 The classic binary search midpoint formula `(a + b) >> 1` has an overflow bug
@@ -111,6 +102,7 @@ full documentation.
 
 ## License
 
-See [LICENSE](https://github.com/qobilidop/z3wire/blob/main/LICENSE).
+[Z3 uses MIT License](https://github.com/Z3Prover/z3/blob/master/LICENSE.txt)
+and [we followed](https://github.com/qobilidop/z3wire/blob/main/LICENSE).
 
 <!-- docs-end -->
