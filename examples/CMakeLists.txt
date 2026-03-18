@@ -7,5 +7,8 @@ target_link_libraries(alu PRIVATE z3wire_sym_bit_vec)
 add_executable(bit_manipulation bit_manipulation.cc)
 target_link_libraries(bit_manipulation PRIVATE z3wire_sym_bit_vec)
 
+add_executable(packet_gen packet_gen.cc)
+target_link_libraries(packet_gen PRIVATE z3wire_sym_bit_vec)
+
 add_executable(midpoint_overflow midpoint_overflow.cc)
 target_link_libraries(midpoint_overflow PRIVATE z3wire_sym_bit_vec)
