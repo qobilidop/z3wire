@@ -2,13 +2,13 @@
 #define Z3WIRE_SYM_BIT_VEC_H_
 
 #include <algorithm>
-#include <concepts>
 #include <cstddef>
 #include <cstdint>
 #include <optional>
 #include <string>
 #include <tuple>
 #include <type_traits>
+#include <utility>
 
 #include <z3++.h>
 

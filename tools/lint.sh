@@ -62,10 +62,29 @@ echo "[$entries
 echo "$files" | xargs clang-tidy -p .
 status=$?
 
-rm -f compile_commands.json
-
 if [[ $status -ne 0 ]]; then
+  rm -f compile_commands.json
   exit $status
 fi
 
 echo "clang-tidy: all checks passed."
+
+ic_fail=0
+for f in $files; do
+  output=$(clang-include-cleaner-18 --print=changes -p . "$f" 2>&1)
+  if [[ -n "$output" ]]; then
+    echo "$f:"
+    echo "$output"
+    ic_fail=1
+  fi
+done
+
+rm -f compile_commands.json
+
+if [[ $ic_fail -ne 0 ]]; then
+  echo ""
+  echo "include-cleaner: issues found."
+  exit 1
+fi
+
+echo "include-cleaner: all checks passed."

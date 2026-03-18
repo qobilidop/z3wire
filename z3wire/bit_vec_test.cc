@@ -1,6 +1,7 @@
 #include "z3wire/bit_vec.h"
 
 #include <cstdint>
+#include <type_traits>
 
 #include <gtest/gtest.h>
 
