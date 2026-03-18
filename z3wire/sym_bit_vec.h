@@ -188,14 +188,7 @@ SymBitVec<W + 1, true> operator-(const SymBitVec<W, S>& val) {
   return SymBitVec<W + 1, true>(-ext);
 }
 
-// --- Exact equality (strict: same width and signedness) ---
-
-template <size_t W, bool S>
-SymBool exact_eq(const SymBitVec<W, S>& lhs, const SymBitVec<W, S>& rhs) {
-  return SymBool(lhs.expr() == rhs.expr());
-}
-
-// --- Equality (relaxed: any width/signedness combination) ---
+// --- Equality (any width/signedness combination) ---
 
 template <size_t W1, bool S1, size_t W2, bool S2>
 SymBool operator==(const SymBitVec<W1, S1>& lhs, const SymBitVec<W2, S2>& rhs) {

@@ -86,20 +86,6 @@ TEST_F(SymBitVecTest, BitwiseNot) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-// --- Exact equality ---
-
-TEST_F(SymBitVecTest, ExactEq) {
-  SymUInt<8> a(ctx_, "a");
-  SymUInt<8> b(ctx_, "b");
-  SymBool eq = exact_eq(a, b);
-
-  z3::solver s(ctx_);
-  s.add(eq.expr());
-  s.add(a.expr() == ctx_.bv_val(42, 8));
-  s.add(b.expr() != ctx_.bv_val(42, 8));
-  EXPECT_EQ(s.check(), z3::unsat);
-}
-
 // --- Equality ---
 
 TEST_F(SymBitVecTest, Equality) {

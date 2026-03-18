@@ -56,11 +56,10 @@ Operands are auto-extended. Mixed widths and signedness allowed. See
 
 ## Comparison
 
-| Op                | Expression      | Width rule                     |
-| :---------------- | :-------------- | :----------------------------- |
-| `==` `!=`         | `a == b`        | Relaxed (any width/signedness) |
-| `<` `<=` `>` `>=` | `a < b`         | Relaxed (any width/signedness) |
-| Exact             | `exact_eq(a,b)` | Strict (same width/signedness) |
+| Op                | Expression | Width rule             |
+| :---------------- | :--------- | :--------------------- |
+| `==` `!=`         | `a == b`   | Any width / signedness |
+| `<` `<=` `>` `>=` | `a < b`    | Any width / signedness |
 
 Returns `z3w::SymBool`. Signedness-aware: uses signed comparison if either
 operand is signed. Concrete types support `==` and `!=` only (returning `bool`).

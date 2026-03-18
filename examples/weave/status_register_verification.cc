@@ -36,10 +36,8 @@ int main() {
 
   // --- Design rules ---
 
-  auto mode_is_sleep =
-      z3w::exact_eq(reg.mode, z3w::to_symbolic(OpMode::kSleep, ctx));
-  auto mode_is_idle =
-      z3w::exact_eq(reg.mode, z3w::to_symbolic(OpMode::kIdle, ctx));
+  auto mode_is_sleep = (reg.mode == z3w::to_symbolic(OpMode::kSleep, ctx));
+  auto mode_is_idle = (reg.mode == z3w::to_symbolic(OpMode::kIdle, ctx));
 
   // Rule 1: SLEEP → all counters zero.
   for (int i = 0; i < 4; ++i) {
@@ -62,8 +60,7 @@ int main() {
   std::cout << "Query 1: Can mode=ACTIVE with fatal=true?\n";
   {
     solver.push();
-    auto mode_is_active =
-        z3w::exact_eq(reg.mode, z3w::to_symbolic(OpMode::kActive, ctx));
+    auto mode_is_active = (reg.mode == z3w::to_symbolic(OpMode::kActive, ctx));
     solver.add(mode_is_active.expr());
     solver.add(reg.error.fatal.expr());
 
@@ -105,8 +102,7 @@ int main() {
   std::cout << "\nQuery 3: Adding rule 'fatal → SLEEP'. Contradiction?\n";
   {
     solver.push();
-    auto mode_is_sleep2 =
-        z3w::exact_eq(reg.mode, z3w::to_symbolic(OpMode::kSleep, ctx));
+    auto mode_is_sleep2 = (reg.mode == z3w::to_symbolic(OpMode::kSleep, ctx));
     // Rule 4: fatal → SLEEP.
     imply(solver, reg.error.fatal, mode_is_sleep2);
     // Can fatal ever be true?

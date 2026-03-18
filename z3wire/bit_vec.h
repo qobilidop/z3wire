@@ -182,14 +182,7 @@ uint64_t extend(const BitVec<SrcW, SrcS>& val) {
 
 }  // namespace internal
 
-// --- Exact equality (strict: same width and signedness) ---
-
-template <size_t W, bool S>
-bool exact_eq(const BitVec<W, S>& lhs, const BitVec<W, S>& rhs) {
-  return lhs.bits() == rhs.bits();
-}
-
-// --- Equality (relaxed: any width/signedness combination) ---
+// --- Equality (any width/signedness combination) ---
 
 template <size_t W1, bool S1, size_t W2, bool S2>
 bool operator==(const BitVec<W1, S1>& lhs, const BitVec<W2, S2>& rhs) {

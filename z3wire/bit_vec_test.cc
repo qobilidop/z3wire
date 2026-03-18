@@ -153,14 +153,6 @@ TEST(BitVecTest, SignedNonPowerOfTwoBitsVsValue) {
 
 // --- Exact equality ---
 
-TEST(BitVecTest, ExactEq) {
-  auto a = UInt<8>::Literal<42>();
-  auto b = UInt<8>::Literal<42>();
-  auto c = UInt<8>::Literal<99>();
-  EXPECT_TRUE(exact_eq(a, b));
-  EXPECT_FALSE(exact_eq(a, c));
-}
-
 // --- Equality ---
 
 TEST(BitVecTest, Equality) {

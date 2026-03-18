@@ -326,7 +326,7 @@ Mirror the concrete layout using Z3Wire symbolic types (`SymBool`, `SymUInt<W>`,
     (e.g., `"sr.error.code"`).
 - **`Pack()`**: Packs all fields into a flat bit-vector using `concat`,
     following the declared `field_pack_order`. For the structural constraint
-    `exact_eq(bv, reg.Pack())`, users call `Pack()` directly.
+    `bv == reg.Pack()`, users call `Pack()` directly.
 - **`ToConcrete(model)`**: Evaluates symbolic fields against a Z3 model to
     produce a concrete struct.
 - **`FromConcrete(ctx, concrete)`**: Constructs a symbolic struct from concrete
