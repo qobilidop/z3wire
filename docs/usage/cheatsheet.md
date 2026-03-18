@@ -110,7 +110,7 @@ See [Types](types.md#symbolic-casting).
 
 ```cpp
 as_bool(SymUInt<1>)     // -> SymBool
-as_ubv1(SymBool)        // -> SymUInt<1>
+as_uint1(SymBool)        // -> SymUInt<1>
 ```
 
 ## Conditional selection

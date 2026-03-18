@@ -92,14 +92,15 @@ SymBitVec<W, S> to_symbolic(const BitVec<W, S>& val, z3::context& ctx) {
 
 // Convert a symbolic SymBitVec to a concrete BitVec using a solved model.
 template <size_t W, bool S>
-BitVec<W, S> to_concrete(const SymBitVec<W, S>& val, const z3::model& model) {
+BitVec<W, S> to_concrete(const SymBitVec<W, S>& symbolic,
+                         const z3::model& model) {
   static_assert(W <= 64, "to_concrete requires width <= 64.");
   if constexpr (S) {
     return std::get<0>(BitVec<W, S>::checked(
-        model.eval(val.expr(), true).get_numeral_int64()));
+        model.eval(symbolic.expr(), true).get_numeral_int64()));
   } else {
     return std::get<0>(BitVec<W, S>::checked(
-        model.eval(val.expr(), true).get_numeral_uint64()));
+        model.eval(symbolic.expr(), true).get_numeral_uint64()));
   }
 }
 
@@ -434,7 +435,7 @@ SymSInt<W> as_signed(const SymBitVec<W, S>& val) {
 
 // --- SymBool / SymUInt<1> conversion ---
 
-inline SymUInt<1> as_ubv1(const SymBool& b) {
+inline SymUInt<1> as_uint1(const SymBool& b) {
   return SymUInt<1>(z3::ite(b.expr(), b.expr().ctx().bv_val(1, 1),
                             b.expr().ctx().bv_val(0, 1)));
 }

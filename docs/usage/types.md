@@ -145,7 +145,7 @@ z3w::SymBool ready = z3w::as_bool(z3w::extract<0, 0>(status));
 
 // SymBool to bit-vector
 z3w::SymBool cond(ctx, "cond");
-z3w::SymUInt<1> flag = z3w::as_ubv1(cond);
+z3w::SymUInt<1> flag = z3w::as_uint1(cond);
 ```
 
 ## Concrete types

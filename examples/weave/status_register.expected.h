@@ -118,7 +118,7 @@ inline ErrorInfoSymbolic ErrorInfoSymbolic::Create(z3::context& ctx,
 }
 
 inline z3w::SymUInt<8> ErrorInfoSymbolic::Pack() const {
-  return z3w::concat(reserved, z3w::as_ubv1(fatal), z3w::unsafe_cast<z3w::SymUInt<2>>(severity), code);
+  return z3w::concat(reserved, z3w::as_uint1(fatal), z3w::unsafe_cast<z3w::SymUInt<2>>(severity), code);
 }
 
 inline ErrorInfoConcrete ErrorInfoSymbolic::ToConcrete(const z3::model& model) const {
@@ -176,7 +176,7 @@ inline StatusRegisterSymbolic StatusRegisterSymbolic::Create(z3::context& ctx,
 }
 
 inline z3w::SymUInt<32> StatusRegisterSymbolic::Pack() const {
-  return z3w::concat(reserved, counters[3], counters[2], counters[1], counters[0], error.Pack(), mode, z3w::as_ubv1(ready));
+  return z3w::concat(reserved, counters[3], counters[2], counters[1], counters[0], error.Pack(), mode, z3w::as_uint1(ready));
 }
 
 inline StatusRegisterConcrete StatusRegisterSymbolic::ToConcrete(const z3::model& model) const {

@@ -68,8 +68,8 @@ inline SymBool to_symbolic(Bool val, z3::context& ctx) {
 }
 
 // Convert a symbolic SymBool to a concrete Bool using a solved model.
-inline Bool to_concrete(const SymBool& val, const z3::model& model) {
-  return Bool(model.eval(val.expr(), true).is_true());
+inline Bool to_concrete(const SymBool& symbolic, const z3::model& model) {
+  return Bool(model.eval(symbolic.expr(), true).is_true());
 }
 
 }  // namespace z3w

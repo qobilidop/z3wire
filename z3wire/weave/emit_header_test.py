@@ -204,8 +204,8 @@ class EmitHeaderTest(unittest.TestCase):
         output = emit_header(resolved, proto_header="test.pb.h")
 
         # LSB_FIRST: flag is bit 0, val is bits [7:1]
-        # concat(high, low) so: concat(val, as_ubv1(flag))
-        self.assertIn("return z3w::concat(val, z3w::as_ubv1(flag));", output)
+        # concat(high, low) so: concat(val, as_uint1(flag))
+        self.assertIn("return z3w::concat(val, z3w::as_uint1(flag));", output)
 
     def test_create_body(self):
         module = rdl_pb2.Module(
