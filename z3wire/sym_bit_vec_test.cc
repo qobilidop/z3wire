@@ -372,7 +372,7 @@ TEST_F(SymBitVecTest, AsSigned) {
   SymUInt<8> a(ctx_, "a");
   auto result = as_signed(a);
 
-  static_assert(std::is_same_v<decltype(result), SymSInt<8>>);
+  static_assert((std::is_same_v<decltype(result), SymSInt<8>>));
   static_assert(decltype(result)::kWidth == 8);
   static_assert(decltype(result)::kIsSigned);
 
@@ -524,12 +524,64 @@ TEST_F(SymBitVecTest, ShrUnsigned) {
 
 TEST_F(SymBitVecTest, ShrSigned) {
   SymSInt<8> a(ctx_, "a");
-  SymSInt<8> n(ctx_, "n");
+  SymUInt<8> n(ctx_, "n");
   auto result = shr(a, n);
 
   z3::solver s(ctx_);
   s.add(a.expr() == ctx_.bv_val(0x80, 8));  // -128 signed
   s.add(n.expr() == ctx_.bv_val(4, 8));
+  // Arithmetic shift: 0x80 >> 4 = 0xF8 (sign-extended).
+  s.add(result.expr() != ctx_.bv_val(0xF8, 8));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(SymBitVecTest, ShrConstantUnsigned) {
+  SymUInt<8> a(ctx_, "a");
+  auto result = shr<3>(a);
+  static_assert(std::is_same_v<decltype(result), SymUInt<8>>);
+
+  z3::solver s(ctx_);
+  s.add(a.expr() == ctx_.bv_val(0x80, 8));
+  // Logical shift: 0x80 >> 3 = 0x10.
+  s.add(result.expr() != ctx_.bv_val(0x10, 8));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(SymBitVecTest, ShrConstantSigned) {
+  SymSInt<8> a(ctx_, "a");
+  auto result = shr<3>(a);
+  static_assert((std::is_same_v<decltype(result), SymSInt<8>>));
+
+  z3::solver s(ctx_);
+  s.add(a.expr() == ctx_.bv_val(0x80, 8));  // -128 signed
+  // Arithmetic shift: 0x80 >> 3 = 0xF0 (sign-extended).
+  s.add(result.expr() != ctx_.bv_val(0xF0, 8));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(SymBitVecTest, ShrDifferentWidths) {
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<3> n(ctx_, "n");
+  auto result = shr(a, n);
+  static_assert(std::is_same_v<decltype(result), SymUInt<8>>);
+
+  z3::solver s(ctx_);
+  s.add(a.expr() == ctx_.bv_val(0x80, 8));
+  s.add(n.expr() == ctx_.bv_val(4, 3));
+  // Logical shift: 0x80 >> 4 = 0x08.
+  s.add(result.expr() != ctx_.bv_val(0x08, 8));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(SymBitVecTest, ShrSignedWithUnsignedAmount) {
+  SymSInt<8> a(ctx_, "a");
+  SymUInt<3> n(ctx_, "n");
+  auto result = shr(a, n);
+  static_assert((std::is_same_v<decltype(result), SymSInt<8>>));
+
+  z3::solver s(ctx_);
+  s.add(a.expr() == ctx_.bv_val(0x80, 8));  // -128 signed
+  s.add(n.expr() == ctx_.bv_val(4, 3));
   // Arithmetic shift: 0x80 >> 4 = 0xF8 (sign-extended).
   s.add(result.expr() != ctx_.bv_val(0xF8, 8));
   EXPECT_EQ(s.check(), z3::unsat);

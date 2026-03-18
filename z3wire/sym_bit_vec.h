@@ -497,13 +497,25 @@ auto shl(const SymBitVec<W, S>& val, const SymUInt<K>& amount) {
 
 // --- Right shift (arithmetic) ---
 
-// shr: arithmetic right shift. For unsigned types, equivalent to logical shift.
-template <size_t W, bool S>
-SymBitVec<W, S> shr(const SymBitVec<W, S>& val, const SymBitVec<W, S>& amount) {
+// Constant shift: result width = W (same as input).
+template <size_t N, size_t W, bool S>
+SymBitVec<W, S> shr(const SymBitVec<W, S>& val) {
+  auto amount = SymUInt<W>::template Literal<N>(val.expr().ctx());
   if constexpr (S) {
     return SymBitVec<W, S>(z3::ashr(val.expr(), amount.expr()));
   } else {
     return SymBitVec<W, S>(z3::lshr(val.expr(), amount.expr()));
+  }
+}
+
+// Symbolic shift: amount width may differ from value width.
+template <size_t W, bool S, size_t K>
+SymBitVec<W, S> shr(const SymBitVec<W, S>& val, const SymUInt<K>& amount) {
+  auto amt_ext = unsafe_cast<SymUInt<W>>(amount);
+  if constexpr (S) {
+    return SymBitVec<W, S>(z3::ashr(val.expr(), amt_ext.expr()));
+  } else {
+    return SymBitVec<W, S>(z3::lshr(val.expr(), amt_ext.expr()));
   }
 }
 
