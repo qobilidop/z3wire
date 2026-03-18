@@ -43,15 +43,12 @@ markdown_extensions:
 nav:
   - Home: index.md
   - Getting Started: getting-started.md
+  - Examples: https://github.com/qobilidop/z3wire/tree/main/examples
   - Usage:
       - Cheatsheet: usage/cheatsheet.md
       - Types: usage/types.md
       - Operations: usage/operations.md
       - Limitations: usage/limitations.md
-  - Examples:
-      - Safe Adder: examples/safe-adder.md
-      - ALU Verification: examples/alu.md
-      - Bit Manipulation: examples/bit-manipulation.md
   - Design:
       - Overview: design/overview.md
       - Compile-Fail Tests: design/compile-fail-tests.md

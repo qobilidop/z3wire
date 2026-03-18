@@ -123,5 +123,5 @@ shift redesign, where they enable ergonomic composition patterns.
 - `docs/usage/operations.md` - Rewrite shift section.
 - `docs/usage/cheatsheet.md` - Update shift table.
 - `docs/design/overview.md` - Update shift section.
-- `docs/examples/bit-manipulation.md` - Update code blocks.
+- `examples/bit_manipulation.cc` - Update code blocks.
 - `docs/dev/test-coverage.md` - Update shift test references.

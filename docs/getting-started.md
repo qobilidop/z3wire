@@ -118,4 +118,5 @@ int main() {
 - [Types](usage/types.md) — learn about `SymBool`, `SymUInt<W>`, and
     `SymSInt<W>`
 - [Operations](usage/operations.md) — arithmetic, bitwise, and comparison
-- [Examples](examples/safe-adder.md) — runnable verification examples
+- [Examples](https://github.com/qobilidop/z3wire/tree/main/examples) — runnable
+    verification examples

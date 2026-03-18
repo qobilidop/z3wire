@@ -1,8 +1,9 @@
-// Code snippets demonstrating Z3Wire types.
+// Snippets demonstrating Z3Wire's symbolic types: SymBool, SymUInt, SymSInt.
 //
-// Keep this in sync with:
-// - docs/usage/types.md
-// - https://qobilidop.github.io/z3wire/usage/types/
+// Shows variable creation, compile-time range-checked literals, and passing
+// symbolic expressions to a Z3 solver.
+//
+// Run: ./dev.sh bazel run //examples:types
 
 #include <z3++.h>
 

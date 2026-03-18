@@ -4,6 +4,8 @@
 // This bug lurked in Java's Arrays.binarySearch for 9 years before Joshua
 // Bloch discovered it in 2006. Z3Wire's bit-growth arithmetic makes the
 // intended correct semantics natural to express and verify.
+//
+// Run: ./dev.sh bazel run //examples:midpoint_overflow
 
 #include <iostream>
 

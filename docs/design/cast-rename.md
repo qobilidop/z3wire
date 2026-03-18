@@ -88,5 +88,5 @@ separately.
 - `docs/usage/cheatsheet.md` - Casting table.
 - `docs/usage/operations.md` - Tip referencing `cast`.
 - `docs/design/overview.md` - Type conversions section.
-- `docs/examples/alu.md` - Code blocks with `cast`.
+- `examples/alu.cc` - Code blocks with `cast`.
 - `docs/dev/test-coverage.md` - Section headers referencing `cast`.

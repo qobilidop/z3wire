@@ -1,7 +1,9 @@
 // Demonstrate bit manipulation: extract, concat, and shifts.
 //
-// Models unpacking a 16-bit instruction word into fields, modifying a field,
-// and repacking — then verifies the round-trip is correct.
+// Models unpacking a 16-bit instruction word into fields and repacking - then
+// verifies the round-trip is correct. Also demonstrates lossless left shift.
+//
+// Run: ./dev.sh bazel run //examples:bit_manipulation
 
 #include <iostream>
 

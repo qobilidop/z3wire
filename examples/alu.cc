@@ -1,8 +1,10 @@
 // Model a simple 4-operation ALU and verify its properties.
 //
 // The ALU takes two 8-bit inputs and a 2-bit opcode, producing an 8-bit result.
-// We verify that the ADD operation never silently overflows by checking the
-// carry bit.
+// We verify that AND never exceeds its inputs and find an example of ADD
+// overflow.
+//
+// Run: ./dev.sh bazel run //examples:alu
 
 #include <iostream>
 

@@ -3,6 +3,8 @@
 // A common hardware pattern: add two 8-bit values, produce an 8-bit result and
 // a carry flag. Z3Wire's bit-growth arithmetic lets us verify this without
 // manually managing widths.
+//
+// Run: ./dev.sh bazel run //examples:safe_adder
 
 #include <iostream>
 
