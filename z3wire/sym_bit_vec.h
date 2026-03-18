@@ -90,6 +90,19 @@ SymBitVec<W, S> to_symbolic(const BitVec<W, S>& val, z3::context& ctx) {
   return SymBitVec<W, S>(ctx.bv_val(static_cast<uint64_t>(val.bits()), W));
 }
 
+// Convert a symbolic SymBitVec to a concrete BitVec using a solved model.
+template <size_t W, bool S>
+BitVec<W, S> to_concrete(const SymBitVec<W, S>& val, const z3::model& model) {
+  static_assert(W <= 64, "to_concrete requires width <= 64.");
+  if constexpr (S) {
+    return std::get<0>(BitVec<W, S>::checked(
+        model.eval(val.expr(), true).get_numeral_int64()));
+  } else {
+    return std::get<0>(BitVec<W, S>::checked(
+        model.eval(val.expr(), true).get_numeral_uint64()));
+  }
+}
+
 // --- Mixed operand support ---
 // Promotes concrete operands to symbolic, delegating to the pure-symbolic
 // operators. Requires exactly one of the two operands to be concrete.

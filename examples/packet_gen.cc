@@ -92,8 +92,7 @@ int main() {
     solver.add((ipv4_id == z3w::SymUInt<16>::Literal<0>(ctx)).expr());
     solver.add((ipv4_flags_frag == z3w::SymUInt<16>::Literal<0>(ctx)).expr());
     // Protocol = 253 (experimental/testing, RFC 3692).
-    solver.add(
-        (ipv4_protocol == z3w::SymUInt<8>::Literal<253>(ctx)).expr());
+    solver.add((ipv4_protocol == z3w::SymUInt<8>::Literal<253>(ctx)).expr());
     solver.add((ipv4_checksum == z3w::SymUInt<16>::Literal<0>(ctx)).expr());
 
     // Interesting constraint: dst in 10.0.0.0/8, TTL > 0.

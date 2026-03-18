@@ -107,5 +107,27 @@ TEST_F(SymBoolTest, ToSymbolicFromConcrete) {
   EXPECT_TRUE(sym_f.expr().is_false());
 }
 
+TEST_F(SymBoolTest, ToConcreteFromSymbolic) {
+  z3w::SymBool sym(ctx_, "b");
+
+  z3::solver s(ctx_);
+  s.add(sym.expr());
+  ASSERT_EQ(s.check(), z3::sat);
+
+  auto concrete = z3w::to_concrete(sym, s.get_model());
+  EXPECT_TRUE(concrete.value());
+}
+
+TEST_F(SymBoolTest, ToConcreteFromSymbolicFalse) {
+  z3w::SymBool sym(ctx_, "b");
+
+  z3::solver s(ctx_);
+  s.add(!sym.expr());
+  ASSERT_EQ(s.check(), z3::sat);
+
+  auto concrete = z3w::to_concrete(sym, s.get_model());
+  EXPECT_FALSE(concrete.value());
+}
+
 }  // namespace
 }  // namespace z3w

@@ -1,5 +1,6 @@
 #include "z3wire/sym_bit_vec.h"
 
+#include <cstdint>
 #include <type_traits>
 
 #include <gtest/gtest.h>
@@ -645,6 +646,53 @@ TEST_F(SymBitVecTest, SignedConcreteToSymbolic) {
   z3::solver s(ctx_);
   s.add(symbolic.expr() != ctx_.bv_val(0x80, 8));
   EXPECT_EQ(s.check(), z3::unsat);
+}
+
+// --- Symbolic to concrete ---
+
+TEST_F(SymBitVecTest, SymbolicToConcrete) {
+  SymUInt<8> sym(ctx_, "x");
+
+  z3::solver s(ctx_);
+  s.add(sym.expr() == ctx_.bv_val(42, 8));
+  ASSERT_EQ(s.check(), z3::sat);
+
+  auto concrete = to_concrete(sym, s.get_model());
+  EXPECT_EQ(concrete.bits(), 42);
+}
+
+TEST_F(SymBitVecTest, SignedSymbolicToConcrete) {
+  SymSInt<8> sym(ctx_, "x");
+
+  z3::solver s(ctx_);
+  s.add(sym.expr() == ctx_.bv_val(0x80, 8));
+  ASSERT_EQ(s.check(), z3::sat);
+
+  auto concrete = to_concrete(sym, s.get_model());
+  EXPECT_EQ(concrete.value(), -128);
+}
+
+TEST_F(SymBitVecTest, SymbolicToConcreteRoundTrip) {
+  auto original = UInt<8>::Literal<255>();
+  SymUInt<8> sym = to_symbolic(original, ctx_);
+
+  z3::solver s(ctx_);
+  ASSERT_EQ(s.check(), z3::sat);
+
+  auto result = to_concrete(sym, s.get_model());
+  EXPECT_EQ(result.bits(), original.bits());
+}
+
+TEST_F(SymBitVecTest, SymbolicToConcreteMaxUInt64) {
+  SymUInt<64> sym(ctx_, "x");
+
+  z3::solver s(ctx_);
+  // UINT64_MAX = 0xFFFFFFFFFFFFFFFF
+  s.add(sym.expr() == ctx_.bv_val(UINT64_MAX, 64));
+  ASSERT_EQ(s.check(), z3::sat);
+
+  auto concrete = to_concrete(sym, s.get_model());
+  EXPECT_EQ(concrete.bits(), UINT64_MAX);
 }
 
 // --- Mixed concrete + symbolic arithmetic ---
