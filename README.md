@@ -48,7 +48,8 @@ that lurked in Java's `Arrays.binarySearch` for 9 years before
 [Joshua Bloch discovered it in 2006](https://research.google/blog/extra-extra-read-all-about-it-nearly-all-binary-searches-and-mergesorts-are-broken/).
 Can we prove the well-known bit-hack fix
 [`(a & b) + ((a ^ b) >> 1)`](https://devblogs.microsoft.com/oldnewthing/20220207-00/?p=106223)
-is correct?
+is correct? This is something we could do with Z3 directly - Z3Wire just makes
+the types explicit, and certain things easier to express.
 
 ```cpp
 #include <z3++.h>
@@ -102,7 +103,7 @@ full documentation.
 
 ## License
 
-[Z3 uses MIT License](https://github.com/Z3Prover/z3/blob/master/LICENSE.txt)
-and [we followed](https://github.com/qobilidop/z3wire/blob/main/LICENSE).
+[MIT License](https://github.com/qobilidop/z3wire/blob/main/LICENSE), same as
+[Z3](https://github.com/Z3Prover/z3/blob/master/LICENSE.txt).
 
 <!-- docs-end -->
