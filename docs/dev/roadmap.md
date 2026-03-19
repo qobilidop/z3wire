@@ -50,6 +50,10 @@ Future directions for Z3Wire.
 
 ## Ergonomics
 
+- **Solver interaction usage page** — Document where Z3Wire ends and raw Z3
+    begins: `to_symbolic`, `to_concrete`, `.expr()`, and common solver patterns
+    (assert, check, model extraction).
+
 - **Reduce `.expr()` noise at solver boundaries** — Every `solver.add()` and
     `model.eval()` call requires `.expr()` to unwrap Z3Wire types. A thin
     `z3w::Solver` wrapper (or free-function helpers like `z3w::eval()`) could
