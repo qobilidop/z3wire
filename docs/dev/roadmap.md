@@ -84,6 +84,12 @@ Future directions for Z3Wire.
     safety Z3Wire is built to provide. Consider making these private (with
     friend access for internal operators) or adding runtime sort checks.
 
+- **Audit `BitVec(uint64_t)` constructor** — `BitVec` has an explicit
+    constructor from `uint64_t` that silently truncates without any check. This
+    bypasses both `Literal` (compile-time) and `Checked` (runtime) safety.
+    Consider making it private or removing it in favor of the checked
+    construction APIs.
+
 ## Quality
 
 - **Improve test coverage** — Key gaps: signed (`SymSInt`/`SInt`) operations are

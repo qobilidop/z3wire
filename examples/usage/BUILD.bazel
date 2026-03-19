@@ -16,6 +16,20 @@ cc_binary(
 )
 
 cc_binary(
+    name = "operations",
+    srcs = ["operations.cc"],
+    copts = [
+        "-Wno-unused-variable",
+        "-Wno-unused-result",
+    ],
+    deps = [
+        "//z3wire:bit_vec",
+        "//z3wire:sym_bit_vec",
+        "//z3wire:sym_bool",
+    ],
+)
+
+cc_binary(
     name = "type_conversions",
     srcs = ["type_conversions.cc"],
     copts = [
