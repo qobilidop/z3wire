@@ -399,7 +399,7 @@ implicitly. The Z3 context is grabbed from the symbolic operand's `z3::expr`.
 
 ### Operations
 
-Concrete types support construction (raw, `Literal`, `checked`), value access
+Concrete types support construction (raw, `Literal`, `Checked`), value access
 (`.value()`), and equality (`==`, `!=`). All other operations (arithmetic,
 bitwise, shifts, casting, etc.) are available only on symbolic types. Concrete
 values auto-promote to symbolic in mixed expressions, so users can write

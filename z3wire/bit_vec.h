@@ -53,7 +53,7 @@ class BitVec {
   // Runtime checked construction. Returns {value, truncated}.
   // Accepts any integer type; no implicit conversions.
   template <std::integral T>
-  [[nodiscard]] static std::tuple<BitVec, bool> checked(T raw) {
+  [[nodiscard]] static std::tuple<BitVec, bool> Checked(T raw) {
     if constexpr (IsSigned) {
       auto val = static_cast<int64_t>(raw);
       BitVec result(static_cast<uint64_t>(val));

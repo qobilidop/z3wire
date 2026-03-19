@@ -221,17 +221,17 @@ auto w = z3w::SInt<8>::Literal<128>();   // Compile error: out of range
 **Runtime checked:**
 
 ```cpp
-auto [val, truncated] = z3w::UInt<8>::checked(300);
+auto [val, truncated] = z3w::UInt<8>::Checked(300);
 // val.value() == 44, truncated == true
 
-auto [val2, truncated2] = z3w::UInt<8>::checked(200);
+auto [val2, truncated2] = z3w::UInt<8>::Checked(200);
 // val2.value() == 200, truncated2 == false
 
-auto [val3, truncated3] = z3w::SInt<8>::checked(-128);
+auto [val3, truncated3] = z3w::SInt<8>::Checked(-128);
 // val3.value() == -128, truncated3 == false
 ```
 
-`checked()` accepts any integer type and reports whether the value was truncated
+`Checked()` accepts any integer type and reports whether the value was truncated
 to fit. Negative values on unsigned types are flagged as truncated.
 
 ### Accessing the value

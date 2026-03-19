@@ -46,10 +46,10 @@ TEST(StatusRegisterTest, RoundtripConcreteSymbolicConcrete) {
 
   // Create a concrete value
   ErrorInfoConcrete ei_orig{};
-  ei_orig.code = std::get<0>(z3w::UInt<4>::checked(5));
-  ei_orig.severity = std::get<0>(z3w::SInt<2>::checked(-1));
+  ei_orig.code = std::get<0>(z3w::UInt<4>::Checked(5));
+  ei_orig.severity = std::get<0>(z3w::SInt<2>::Checked(-1));
   ei_orig.fatal = true;
-  ei_orig.reserved = std::get<0>(z3w::UInt<1>::checked(0));
+  ei_orig.reserved = std::get<0>(z3w::UInt<1>::Checked(0));
 
   // Convert to symbolic
   auto ei_sym = ErrorInfoSymbolic::FromConcrete(ctx, ei_orig);
@@ -93,20 +93,20 @@ TEST(StatusRegisterTest, PackConstraint) {
 
 TEST(StatusRegisterTest, ConcreteToProtoRoundtrip) {
   ErrorInfoConcrete ei{};
-  ei.code = std::get<0>(z3w::UInt<4>::checked(7));
-  ei.severity = std::get<0>(z3w::SInt<2>::checked(-2));
+  ei.code = std::get<0>(z3w::UInt<4>::Checked(7));
+  ei.severity = std::get<0>(z3w::SInt<2>::Checked(-2));
   ei.fatal = false;
-  ei.reserved = std::get<0>(z3w::UInt<1>::checked(0));
+  ei.reserved = std::get<0>(z3w::UInt<1>::Checked(0));
 
   StatusRegisterConcrete sr{};
   sr.ready = true;
-  sr.mode = std::get<0>(z3w::UInt<2>::checked(1));
+  sr.mode = std::get<0>(z3w::UInt<2>::Checked(1));
   sr.error = ei;
-  sr.counters[0] = std::get<0>(z3w::UInt<4>::checked(1));
-  sr.counters[1] = std::get<0>(z3w::UInt<4>::checked(2));
-  sr.counters[2] = std::get<0>(z3w::UInt<4>::checked(3));
-  sr.counters[3] = std::get<0>(z3w::UInt<4>::checked(4));
-  sr.reserved = std::get<0>(z3w::UInt<5>::checked(0));
+  sr.counters[0] = std::get<0>(z3w::UInt<4>::Checked(1));
+  sr.counters[1] = std::get<0>(z3w::UInt<4>::Checked(2));
+  sr.counters[2] = std::get<0>(z3w::UInt<4>::Checked(3));
+  sr.counters[3] = std::get<0>(z3w::UInt<4>::Checked(4));
+  sr.reserved = std::get<0>(z3w::UInt<5>::Checked(0));
 
   // Convert to proto and back
   auto proto = sr.ToProto();
@@ -126,12 +126,12 @@ TEST(StatusRegisterTest, ConcreteToProtoRoundtrip) {
 TEST(StatusRegisterTest, ProtoOmitsReservedFields) {
   StatusRegisterConcrete sr{};
   sr.ready = false;
-  sr.mode = std::get<0>(z3w::UInt<2>::checked(0));
-  sr.counters[0] = std::get<0>(z3w::UInt<4>::checked(0));
-  sr.counters[1] = std::get<0>(z3w::UInt<4>::checked(0));
-  sr.counters[2] = std::get<0>(z3w::UInt<4>::checked(0));
-  sr.counters[3] = std::get<0>(z3w::UInt<4>::checked(0));
-  sr.reserved = std::get<0>(z3w::UInt<5>::checked(31));
+  sr.mode = std::get<0>(z3w::UInt<2>::Checked(0));
+  sr.counters[0] = std::get<0>(z3w::UInt<4>::Checked(0));
+  sr.counters[1] = std::get<0>(z3w::UInt<4>::Checked(0));
+  sr.counters[2] = std::get<0>(z3w::UInt<4>::Checked(0));
+  sr.counters[3] = std::get<0>(z3w::UInt<4>::Checked(0));
+  sr.reserved = std::get<0>(z3w::UInt<5>::Checked(31));
 
   auto proto = sr.ToProto();
 

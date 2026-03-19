@@ -75,41 +75,41 @@ TEST(BitVecTest, LiteralSignedNegative) {
 // --- Checked construction ---
 
 TEST(BitVecTest, CheckedNoTruncation) {
-  auto [val, truncated] = UInt<8>::checked(200);
+  auto [val, truncated] = UInt<8>::Checked(200);
   EXPECT_EQ(val.value(), 200);
   EXPECT_FALSE(truncated);
 }
 
 TEST(BitVecTest, CheckedWithTruncation) {
-  auto [val, truncated] = UInt<8>::checked(300);
+  auto [val, truncated] = UInt<8>::Checked(300);
   EXPECT_EQ(val.value(), 44);
   EXPECT_TRUE(truncated);
 }
 
 TEST(BitVecTest, CheckedNegativeOnUnsigned) {
-  auto [val, truncated] = UInt<8>::checked(-1);
+  auto [val, truncated] = UInt<8>::Checked(-1);
   EXPECT_TRUE(truncated);
 }
 
 TEST(BitVecTest, SignedCheckedNoTruncation) {
-  auto [val, truncated] = SInt<8>::checked(-128);
+  auto [val, truncated] = SInt<8>::Checked(-128);
   EXPECT_EQ(val.value(), -128);
   EXPECT_FALSE(truncated);
 }
 
 TEST(BitVecTest, SignedCheckedPositive) {
-  auto [val, truncated] = SInt<8>::checked(127);
+  auto [val, truncated] = SInt<8>::Checked(127);
   EXPECT_EQ(val.value(), 127);
   EXPECT_FALSE(truncated);
 }
 
 TEST(BitVecTest, SignedCheckedOverflowNegative) {
-  auto [val, truncated] = SInt<8>::checked(-200);
+  auto [val, truncated] = SInt<8>::Checked(-200);
   EXPECT_TRUE(truncated);
 }
 
 TEST(BitVecTest, SignedCheckedOverflowPositive) {
-  auto [val, truncated] = SInt<8>::checked(200);
+  auto [val, truncated] = SInt<8>::Checked(200);
   EXPECT_TRUE(truncated);
 }
 
@@ -161,13 +161,13 @@ TEST(BitVecTest, Inequality) {
 // --- W=64 boundary ---
 
 TEST(BitVecTest, Width64Construction) {
-  auto [val, truncated] = UInt<64>::checked(UINT64_MAX);
+  auto [val, truncated] = UInt<64>::Checked(UINT64_MAX);
   EXPECT_EQ(val.value(), UINT64_MAX);
   EXPECT_FALSE(truncated);
 }
 
 TEST(BitVecTest, Width1) {
-  auto [val, truncated] = UInt<1>::checked(3);
+  auto [val, truncated] = UInt<1>::Checked(3);
   EXPECT_EQ(val.value(), 1);  // 3 & 0x1
   EXPECT_TRUE(truncated);
 }

@@ -89,7 +89,7 @@ Future directions for Z3Wire, roughly in priority order.
     lightweight helpers (e.g., a named-field factory) once real usage patterns
     emerge.
 
-- **Clamp on truncation in `checked()`** — When `checked()` truncates, return
+- **Clamp on truncation in `Checked()`** — When `Checked()` truncates, return
     the clamped value (min or max of the range) instead of the low-W-bit
     truncation. Clamping is more meaningful for a data holder type.
 

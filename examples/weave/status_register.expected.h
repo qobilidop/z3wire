@@ -101,8 +101,8 @@ inline ErrorInfoProto ErrorInfoConcrete::ToProto() const {
 
 inline ErrorInfoConcrete ErrorInfoConcrete::FromProto(const ErrorInfoProto& proto) {
   ErrorInfoConcrete result{};
-  result.code = std::get<0>(z3w::UInt<4>::checked(proto.code()));
-  result.severity = std::get<0>(z3w::SInt<2>::checked(proto.severity()));
+  result.code = std::get<0>(z3w::UInt<4>::Checked(proto.code()));
+  result.severity = std::get<0>(z3w::SInt<2>::Checked(proto.severity()));
   result.fatal = z3w::Bool(proto.fatal());
   return result;
 }
@@ -123,10 +123,10 @@ inline z3w::SymUInt<8> ErrorInfoSymbolic::Pack() const {
 
 inline ErrorInfoConcrete ErrorInfoSymbolic::ToConcrete(const z3::model& model) const {
   ErrorInfoConcrete result{};
-  result.code = std::get<0>(z3w::UInt<4>::checked(static_cast<uint32_t>(model.eval(code.expr(), true).get_numeral_int64())));
-  result.severity = std::get<0>(z3w::SInt<2>::checked(static_cast<int32_t>(model.eval(severity.expr(), true).get_numeral_int64())));
+  result.code = std::get<0>(z3w::UInt<4>::Checked(static_cast<uint32_t>(model.eval(code.expr(), true).get_numeral_int64())));
+  result.severity = std::get<0>(z3w::SInt<2>::Checked(static_cast<int32_t>(model.eval(severity.expr(), true).get_numeral_int64())));
   result.fatal = z3w::Bool(model.eval(fatal.expr(), true).is_true());
-  result.reserved = std::get<0>(z3w::UInt<1>::checked(static_cast<uint32_t>(model.eval(reserved.expr(), true).get_numeral_int64())));
+  result.reserved = std::get<0>(z3w::UInt<1>::Checked(static_cast<uint32_t>(model.eval(reserved.expr(), true).get_numeral_int64())));
   return result;
 }
 
@@ -154,10 +154,10 @@ inline StatusRegisterProto StatusRegisterConcrete::ToProto() const {
 inline StatusRegisterConcrete StatusRegisterConcrete::FromProto(const StatusRegisterProto& proto) {
   StatusRegisterConcrete result{};
   result.ready = z3w::Bool(proto.ready());
-  result.mode = std::get<0>(z3w::UInt<2>::checked(proto.mode()));
+  result.mode = std::get<0>(z3w::UInt<2>::Checked(proto.mode()));
   result.error = ErrorInfoConcrete::FromProto(proto.error());
   for (size_t i = 0; i < 4; ++i) {
-    result.counters[i] = std::get<0>(z3w::UInt<4>::checked(proto.counters(i)));
+    result.counters[i] = std::get<0>(z3w::UInt<4>::Checked(proto.counters(i)));
   }
   return result;
 }
@@ -182,12 +182,12 @@ inline z3w::SymUInt<32> StatusRegisterSymbolic::Pack() const {
 inline StatusRegisterConcrete StatusRegisterSymbolic::ToConcrete(const z3::model& model) const {
   StatusRegisterConcrete result{};
   result.ready = z3w::Bool(model.eval(ready.expr(), true).is_true());
-  result.mode = std::get<0>(z3w::UInt<2>::checked(static_cast<uint32_t>(model.eval(mode.expr(), true).get_numeral_int64())));
+  result.mode = std::get<0>(z3w::UInt<2>::Checked(static_cast<uint32_t>(model.eval(mode.expr(), true).get_numeral_int64())));
   result.error = error.ToConcrete(model);
   for (size_t i = 0; i < 4; ++i) {
-    result.counters[i] = std::get<0>(z3w::UInt<4>::checked(static_cast<uint32_t>(model.eval(counters[i].expr(), true).get_numeral_int64())));
+    result.counters[i] = std::get<0>(z3w::UInt<4>::Checked(static_cast<uint32_t>(model.eval(counters[i].expr(), true).get_numeral_int64())));
   }
-  result.reserved = std::get<0>(z3w::UInt<5>::checked(static_cast<uint32_t>(model.eval(reserved.expr(), true).get_numeral_int64())));
+  result.reserved = std::get<0>(z3w::UInt<5>::Checked(static_cast<uint32_t>(model.eval(reserved.expr(), true).get_numeral_int64())));
   return result;
 }
 

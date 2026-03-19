@@ -177,7 +177,7 @@ class EmitHeaderTest(unittest.TestCase):
             "inline RegConcrete RegConcrete::FromProto(const RegProto& proto) {", output
         )
         self.assertIn("result.flag = z3w::Bool(proto.flag());", output)
-        self.assertIn("std::get<0>(z3w::UInt<8>::checked(proto.val()))", output)
+        self.assertIn("std::get<0>(z3w::UInt<8>::Checked(proto.val()))", output)
 
     def test_pack_body(self):
         module = rdl_pb2.Module(

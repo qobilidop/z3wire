@@ -100,10 +100,10 @@ BitVec<W, S> to_concrete(const SymBitVec<W, S>& symbolic,
                          const z3::model& model) {
   static_assert(W <= 64, "to_concrete requires width <= 64.");
   if constexpr (S) {
-    return std::get<0>(BitVec<W, S>::checked(
+    return std::get<0>(BitVec<W, S>::Checked(
         model.eval(symbolic.expr(), true).get_numeral_int64()));
   } else {
-    return std::get<0>(BitVec<W, S>::checked(
+    return std::get<0>(BitVec<W, S>::Checked(
         model.eval(symbolic.expr(), true).get_numeral_uint64()));
   }
 }

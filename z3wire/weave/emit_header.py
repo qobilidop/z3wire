@@ -68,7 +68,7 @@ def _from_proto_expr(field: ResolvedField, accessor: str) -> str:
         return f"z3w::Bool({accessor})"
     elif field.kind == "bitvec" or field.kind == "enum_ref":
         ctype = _concrete_type(field)
-        return f"std::get<0>({ctype}::checked({accessor}))"
+        return f"std::get<0>({ctype}::Checked({accessor}))"
     elif field.kind == "struct_ref":
         ctype = _concrete_type(field)
         return f"{ctype}::FromProto({accessor})"
@@ -82,7 +82,7 @@ def _to_concrete_expr(field: ResolvedField, accessor: str) -> str:
     elif field.kind == "bitvec" or field.kind == "enum_ref":
         ctype = _concrete_type(field)
         return (
-            f"std::get<0>({ctype}::checked("
+            f"std::get<0>({ctype}::Checked("
             f"static_cast<{_proto_value_type(field)}>("
             f"model.eval({accessor}.expr(), true).get_numeral_int64())))"
         )
