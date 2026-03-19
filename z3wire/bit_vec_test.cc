@@ -1,5 +1,6 @@
 #include "z3wire/bit_vec.h"
 
+#include <array>
 #include <cstdint>
 #include <type_traits>
 
@@ -205,6 +206,63 @@ TEST(BitVecTest, CrossTypeEqualityMixedSignednessNegative) {
   auto a = SInt<32>::Literal<-1>();
   auto b = UInt<32>::Checked(UINT32_MAX);
   EXPECT_FALSE(a == std::get<0>(b));
+}
+
+// --- Wide (W > 64) unsigned ---
+
+TEST(BitVecTest, WideValueType) {
+  // 120 bits = 15 bytes
+  static_assert(std::is_same_v<UInt<120>::ValueType, std::array<uint8_t, 15>>);
+  // 128 bits = 16 bytes
+  static_assert(std::is_same_v<UInt<128>::ValueType, std::array<uint8_t, 16>>);
+  // 100 bits = 13 bytes (non-byte-aligned)
+  static_assert(std::is_same_v<UInt<100>::ValueType, std::array<uint8_t, 13>>);
+}
+
+TEST(BitVecTest, WideTypeTraits) {
+  static_assert(UInt<128>::kWidth == 128);
+  static_assert(!UInt<128>::kIsSigned);
+}
+
+TEST(BitVecTest, WideIsConcreteV) { static_assert(is_concrete_v<UInt<128>>); }
+
+TEST(BitVecTest, WideDefaultConstruction) {
+  UInt<128> a;
+  std::array<uint8_t, 16> expected{};
+  EXPECT_EQ(a.value(), expected);
+}
+
+TEST(BitVecTest, WideLiteral) {
+  auto a = UInt<128>::Literal<42>();
+  auto bytes = a.value();
+  EXPECT_EQ(bytes[0], 42);  // LSB
+  for (size_t i = 1; i < bytes.size(); ++i) {
+    EXPECT_EQ(bytes[i], 0);
+  }
+}
+
+TEST(BitVecTest, WideLiteralZero) {
+  auto a = UInt<128>::Literal<0>();
+  std::array<uint8_t, 16> expected{};
+  EXPECT_EQ(a.value(), expected);
+}
+
+TEST(BitVecTest, WideCheckedFromIntegral) {
+  auto [val, truncated] = UInt<128>::Checked(uint64_t{0xDEADBEEF});
+  EXPECT_FALSE(truncated);
+  auto bytes = val.value();
+  EXPECT_EQ(bytes[0], 0xEF);
+  EXPECT_EQ(bytes[1], 0xBE);
+  EXPECT_EQ(bytes[2], 0xAD);
+  EXPECT_EQ(bytes[3], 0xDE);
+  for (size_t i = 4; i < bytes.size(); ++i) {
+    EXPECT_EQ(bytes[i], 0);
+  }
+}
+
+TEST(BitVecTest, WideCheckedNegativeOnUnsigned) {
+  auto [val, truncated] = UInt<128>::Checked(-1);
+  EXPECT_TRUE(truncated);
 }
 
 }  // namespace

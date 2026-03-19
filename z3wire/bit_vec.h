@@ -1,6 +1,8 @@
 #ifndef Z3WIRE_BIT_VEC_H_
 #define Z3WIRE_BIT_VEC_H_
 
+#include <algorithm>
+#include <array>
 #include <concepts>
 #include <cstddef>
 #include <cstdint>
@@ -13,16 +15,20 @@ namespace z3w {
 
 template <size_t W, bool IsSigned>
 class BitVec {
-  static_assert(W >= 1 && W <= 64, "Bit-width must be between 1 and 64.");
+  static_assert(W >= 1, "Bit-width must be at least 1.");
+  static_assert(W <= 64 || !IsSigned,
+                "Signed bit-vectors wider than 64 bits are not supported.");
 
-  // Smallest unsigned integer type that fits W bits.
-  using Unsigned = std::conditional_t<
+  static constexpr size_t kNumBytes = (W + 7) / 8;
+
+  // Smallest unsigned integer type that fits W bits (W <= 64 only).
+  using NarrowUnsigned = std::conditional_t<
       (W <= 8), uint8_t,
       std::conditional_t<(W <= 16), uint16_t,
                          std::conditional_t<(W <= 32), uint32_t, uint64_t>>>;
 
-  // Smallest signed integer type that fits W bits.
-  using Signed = std::conditional_t<
+  // Smallest signed integer type that fits W bits (W <= 64 only).
+  using NarrowSigned = std::conditional_t<
       (W <= 8), int8_t,
       std::conditional_t<(W <= 16), int16_t,
                          std::conditional_t<(W <= 32), int32_t, int64_t>>>;
@@ -30,15 +36,21 @@ class BitVec {
  public:
   static constexpr size_t kWidth = W;
   static constexpr bool kIsSigned = IsSigned;
-  using ValueType = std::conditional_t<IsSigned, Signed, Unsigned>;
+
+  using ValueType = std::conditional_t<
+      (W > 64), std::array<uint8_t, kNumBytes>,
+      std::conditional_t<IsSigned, NarrowSigned, NarrowUnsigned>>;
 
   // Default constructor: zero-initializes.
-  constexpr BitVec() : value_(0) {}
+  constexpr BitVec() : value_{} {}
 
   // Compile-time range-checked literal.
   template <int64_t Value>
   static constexpr BitVec Literal() {
-    if constexpr (IsSigned) {
+    if constexpr (W > 64) {
+      static_assert(Value >= 0, "Wide unsigned literal must be non-negative.");
+      return BitVec(static_cast<uint64_t>(Value));
+    } else if constexpr (IsSigned) {
       static_assert(Value >= min_signed() && Value <= max_signed(),
                     "Literal value does not fit in bit-width.");
       return BitVec(static_cast<uint64_t>(Value));
@@ -53,7 +65,14 @@ class BitVec {
   // Runtime checked construction. Returns {result, truncated}.
   template <std::integral T>
   [[nodiscard]] static std::tuple<BitVec, bool> Checked(T raw) {
-    if constexpr (IsSigned) {
+    if constexpr (W > 64) {
+      if constexpr (std::is_signed_v<T>) {
+        if (raw < 0) {
+          return {BitVec(static_cast<uint64_t>(raw)), true};
+        }
+      }
+      return {BitVec(static_cast<uint64_t>(raw)), false};
+    } else if constexpr (IsSigned) {
       auto val = static_cast<int64_t>(raw);
       BitVec result(static_cast<uint64_t>(val));
       bool truncated = (val < min_signed() || val > max_signed());
@@ -75,11 +94,24 @@ class BitVec {
   [[nodiscard]] constexpr ValueType value() const { return value_; }
 
  private:
-  // Truncates raw to W bits.
-  constexpr explicit BitVec(uint64_t raw) : value_(truncate(raw)) {}
+  constexpr explicit BitVec(uint64_t raw) : value_(make_value(raw)) {}
 
-  static constexpr ValueType truncate(uint64_t val) {
-    if constexpr (W >= 64) {
+  static constexpr ValueType make_value(uint64_t val) {
+    if constexpr (W > 64) {
+      ValueType bytes{};
+      for (size_t i = 0; i < std::min(size_t{8}, kNumBytes); ++i) {
+        bytes[i] = static_cast<uint8_t>(val >> (i * 8));
+      }
+      return bytes;
+    } else {
+      return truncate(val);
+    }
+  }
+
+  static constexpr ValueType truncate(uint64_t val)
+    requires(W <= 64)
+  {
+    if constexpr (W == 64) {
       return static_cast<ValueType>(val);
     } else if constexpr (IsSigned) {
       // Mask to W bits, then sign-extend to native width.

@@ -10,14 +10,14 @@ cc_compile_fail_test(
 cc_compile_fail_test(
     name = "bit_vec_zero_width_test",
     src = "bit_vec_zero_width_test.cc",
-    expected_message = "Bit-width must be between 1 and 64",
+    expected_message = "Bit-width must be at least 1",
     deps = ["//z3wire:bit_vec"],
 )
 
 cc_compile_fail_test(
     name = "bit_vec_width_too_large_test",
     src = "bit_vec_width_too_large_test.cc",
-    expected_message = "Bit-width must be between 1 and 64",
+    expected_message = "Signed bit-vectors wider than 64 bits are not supported",
     deps = ["//z3wire:bit_vec"],
 )
 
