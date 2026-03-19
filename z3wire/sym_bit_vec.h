@@ -108,9 +108,7 @@ BitVec<W, S> to_concrete(const SymBitVec<W, S>& symbolic,
   }
 }
 
-// --- Mixed operand support ---
-// Promotes concrete operands to symbolic, delegating to the pure-symbolic
-// operators. Requires exactly one of the two operands to be concrete.
+// --- Internal helpers ---
 
 namespace internal {
 
@@ -134,19 +132,7 @@ decltype(auto) promote(const T& val, z3::context& ctx) {
   }
 }
 
-}  // namespace internal
-
-// True when exactly one operand is concrete and the other is symbolic.
-template <typename L, typename R>
-concept mixed_operands = (is_symbolic_v<L> && is_concrete_v<R>) ||
-                         (is_concrete_v<L> && is_symbolic_v<R>);
-
-// --- Bit-growth arithmetic ---
-// Result width = max(W1, W2) + 1. Operands are extended to the result width
-// before the operation.
-
-namespace internal {
-
+// Extend a symbolic bit-vector to a wider width.
 template <size_t TargetWidth, size_t SrcWidth, bool SrcSigned>
 z3::expr extend(const SymBitVec<SrcWidth, SrcSigned>& val) {
   static_assert(TargetWidth >= SrcWidth,
@@ -161,6 +147,15 @@ z3::expr extend(const SymBitVec<SrcWidth, SrcSigned>& val) {
 }
 
 }  // namespace internal
+
+// True when exactly one operand is concrete and the other is symbolic.
+template <typename L, typename R>
+concept mixed_operands = (is_symbolic_v<L> && is_concrete_v<R>) ||
+                         (is_concrete_v<L> && is_symbolic_v<R>);
+
+// --- Bit-growth arithmetic ---
+// Result width = max(W1, W2) + 1. Operands are extended to the result width
+// before the operation.
 
 // Addition: result width = max(W1, W2) + 1.
 // Result is signed if either operand is signed.
@@ -323,7 +318,15 @@ auto operator>=(const L& lhs, const R& rhs) {
   return internal::promote(lhs, ctx) >= internal::promote(rhs, ctx);
 }
 
-// --- Mixed ite ---
+// --- Conditional selection (ite) ---
+
+// SymBool condition with symbolic values.
+template <size_t W, bool S>
+SymBitVec<W, S> ite(const SymBool& cond, const SymBitVec<W, S>& true_val,
+                    const SymBitVec<W, S>& false_val) {
+  return SymBitVec<W, S>(
+      z3::ite(cond.expr(), true_val.expr(), false_val.expr()));
+}
 
 // SymBool condition with concrete values.
 template <size_t W, bool S>
@@ -539,15 +542,6 @@ SymBitVec<W, S> shr(const SymBitVec<W, S>& val, const SymUInt<K>& amount) {
   } else {
     return SymBitVec<W, S>(z3::lshr(val.expr(), amt_ext.expr()));
   }
-}
-
-// --- Conditional selection (ite) ---
-
-template <size_t W, bool S>
-SymBitVec<W, S> ite(const SymBool& cond, const SymBitVec<W, S>& true_val,
-                    const SymBitVec<W, S>& false_val) {
-  return SymBitVec<W, S>(
-      z3::ite(cond.expr(), true_val.expr(), false_val.expr()));
 }
 
 }  // namespace z3w
