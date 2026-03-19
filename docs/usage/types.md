@@ -123,3 +123,21 @@ y.value();  // -1 (int8_t)
 z3w::Bool flag = true;
 if (flag) { /* ... */ }  // OK: contextual conversion to bool
 ```
+
+## Type traits
+
+Z3Wire provides type traits to distinguish its types in generic code:
+
+```cpp
+#include "z3wire/type_traits.h"
+
+// Concrete types: Bool, UInt<W>, SInt<W>
+static_assert(z3w::is_concrete_v<z3w::Bool>);
+static_assert(z3w::is_concrete_v<z3w::UInt<8>>);
+static_assert(!z3w::is_concrete_v<int>);
+
+// Symbolic types: SymBool, SymUInt<W>, SymSInt<W>
+static_assert(z3w::is_symbolic_v<z3w::SymBool>);
+static_assert(z3w::is_symbolic_v<z3w::SymUInt<8>>);
+static_assert(!z3w::is_symbolic_v<int>);
+```

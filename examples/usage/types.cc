@@ -5,12 +5,15 @@
 //
 // Run: ./dev.sh bazel run //examples/usage:types
 
+#include <optional>
+
 #include <z3++.h>
 
 #include "z3wire/bit_vec.h"
 #include "z3wire/bool.h"
 #include "z3wire/sym_bit_vec.h"
 #include "z3wire/sym_bool.h"
+#include "z3wire/type_traits.h"
 
 // --- Symbolic types ---
 
@@ -37,6 +40,12 @@ void demo_z3_interop() {
   z3::solver solver(ctx);
   z3w::SymUInt<8> x(ctx, "x");
   solver.add(x.expr() > 0);  // Pass to Z3 solver directly
+
+  z3::expr raw = ctx.bv_val(42, 8);
+
+  // Returns std::optional — nullopt if sort or width doesn't match.
+  std::optional<z3w::SymUInt<8>> a = z3w::SymUInt<8>::FromExpr(raw);
+  std::optional<z3w::SymBool> b = z3w::SymBool::FromExpr(raw);
 }
 
 // --- Concrete types ---
@@ -44,7 +53,7 @@ void demo_z3_interop() {
 void demo_concrete_construction() {
   z3w::Bool flag = true;  // OK: implicit from bool
 
-  // Compile error: deleted integral constructor
+  // Compile error: only bool accepted
   // z3w::Bool flag2 = 42;
 
   auto a = z3w::UInt<8>::Literal<255>();  // OK
@@ -74,10 +83,25 @@ void demo_value_access() {
   }
 }
 
+// --- Type traits ---
+
+void demo_type_traits() {
+  // Concrete types: Bool, UInt<W>, SInt<W>
+  static_assert(z3w::is_concrete_v<z3w::Bool>);
+  static_assert(z3w::is_concrete_v<z3w::UInt<8>>);
+  static_assert(!z3w::is_concrete_v<int>);
+
+  // Symbolic types: SymBool, SymUInt<W>, SymSInt<W>
+  static_assert(z3w::is_symbolic_v<z3w::SymBool>);
+  static_assert(z3w::is_symbolic_v<z3w::SymUInt<8>>);
+  static_assert(!z3w::is_symbolic_v<int>);
+}
+
 int main() {
   demo_symbolic_construction();
   demo_z3_interop();
   demo_concrete_construction();
   demo_value_access();
+  demo_type_traits();
   return 0;
 }

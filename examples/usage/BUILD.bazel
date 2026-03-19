@@ -12,6 +12,7 @@ cc_binary(
         "//z3wire:bool",
         "//z3wire:sym_bit_vec",
         "//z3wire:sym_bool",
+        "//z3wire:type_traits",
     ],
 )
 
