@@ -93,7 +93,19 @@ using SymSInt = SymBitVec<W, true>;
 // Convert a concrete BitVec to a symbolic SymBitVec.
 template <size_t W, bool S>
 SymBitVec<W, S> to_symbolic(const BitVec<W, S>& val, z3::context& ctx) {
-  if constexpr (S) {
+  if constexpr (W > 64) {
+    // Convert little-endian byte array to Z3 bool array.
+    // Z3_mk_bv_numeral: bits[0] = LSB, matching our byte layout.
+    constexpr size_t kNumBytes = (W + 7) / 8;
+    bool bits[W];
+    auto bytes = val.value();
+    for (size_t i = 0; i < kNumBytes; ++i) {
+      for (size_t b = 0; b < 8 && i * 8 + b < W; ++b) {
+        bits[i * 8 + b] = (bytes[i] >> b) & 1;
+      }
+    }
+    return SymBitVec<W, S>(z3::expr(ctx, Z3_mk_bv_numeral(ctx, W, bits)));
+  } else if constexpr (S) {
     return SymBitVec<W, S>(ctx.bv_val(static_cast<int64_t>(val.value()), W));
   } else {
     return SymBitVec<W, S>(ctx.bv_val(static_cast<uint64_t>(val.value()), W));

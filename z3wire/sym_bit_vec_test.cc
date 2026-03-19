@@ -959,6 +959,45 @@ TEST(SymBitVecDeathTest, ExprOnUninitializedAborts) {
   EXPECT_DEATH((void)uninit.expr(), "SymBitVec used before initialization");
 }
 
+// --- Wide concrete to symbolic (W > 64) ---
+
+TEST_F(SymBitVecTest, WideToSymbolic) {
+  auto concrete = UInt<128>::Literal<42>();
+  auto symbolic = to_symbolic(concrete, ctx_);
+  EXPECT_EQ(symbolic.expr().get_sort().bv_size(), 128);
+
+  // Verify the value via solver.
+  z3::solver s(ctx_);
+  s.add(symbolic.expr() == ctx_.bv_val(uint64_t{42}, 128));
+  EXPECT_EQ(s.check(), z3::sat);
+}
+
+TEST_F(SymBitVecTest, WideToSymbolicZero) {
+  UInt<128> concrete;
+  auto symbolic = to_symbolic(concrete, ctx_);
+
+  z3::solver s(ctx_);
+  s.add(symbolic.expr() == ctx_.bv_val(uint64_t{0}, 128));
+  EXPECT_EQ(s.check(), z3::sat);
+}
+
+TEST_F(SymBitVecTest, WideToSymbolicLargeValue) {
+  // Construct a 128-bit value with bytes set in high positions.
+  std::array<uint8_t, 16> bytes{};
+  bytes[0] = 0xEF;
+  bytes[8] = 0xAB;
+  auto [concrete, truncated] = UInt<128>::Checked(bytes);
+  ASSERT_FALSE(truncated);
+
+  auto symbolic = to_symbolic(concrete, ctx_);
+
+  // Verify by extracting bits.
+  z3::solver s(ctx_);
+  s.add(symbolic.expr().extract(7, 0) == ctx_.bv_val(0xEF, 8));
+  s.add(symbolic.expr().extract(71, 64) == ctx_.bv_val(0xAB, 8));
+  EXPECT_EQ(s.check(), z3::sat);
+}
+
 // NOLINTBEGIN(readability-function-cognitive-complexity)
 TEST(SymBitVecDeathTest, ConstructorRejectsWrongSort) {
   z3::context ctx;
