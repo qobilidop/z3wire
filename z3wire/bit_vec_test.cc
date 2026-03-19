@@ -293,5 +293,26 @@ TEST(BitVecTest, WideCheckedFromBytesExactFit) {
   EXPECT_EQ(val.value(), bytes);
 }
 
+TEST(BitVecTest, WideEquality) {
+  auto a = UInt<128>::Literal<42>();
+  auto b = UInt<128>::Literal<42>();
+  auto c = UInt<128>::Literal<99>();
+  EXPECT_TRUE(a == b);
+  EXPECT_FALSE(a == c);
+}
+
+TEST(BitVecTest, WideInequality) {
+  auto a = UInt<128>::Literal<42>();
+  auto b = UInt<128>::Literal<99>();
+  EXPECT_TRUE(a != b);
+  EXPECT_FALSE(a != a);
+}
+
+TEST(BitVecTest, WideDefaultIsZero) {
+  UInt<128> a;
+  auto b = UInt<128>::Literal<0>();
+  EXPECT_TRUE(a == b);
+}
+
 }  // namespace
 }  // namespace z3w

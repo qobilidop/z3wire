@@ -179,11 +179,20 @@ using UInt = BitVec<W, false>;
 template <size_t W>
 using SInt = BitVec<W, true>;
 
-// --- Equality (any width/signedness combination) ---
+// --- Equality ---
 
+// Narrow equality (any width/signedness combination, W <= 64 only).
 template <size_t W1, bool S1, size_t W2, bool S2>
+  requires(W1 <= 64 && W2 <= 64)
 bool operator==(const BitVec<W1, S1>& lhs, const BitVec<W2, S2>& rhs) {
   return std::cmp_equal(lhs.value(), rhs.value());
+}
+
+// Wide equality (same width, unsigned only).
+template <size_t W>
+  requires(W > 64)
+bool operator==(const BitVec<W, false>& lhs, const BitVec<W, false>& rhs) {
+  return lhs.value() == rhs.value();
 }
 
 }  // namespace z3w
