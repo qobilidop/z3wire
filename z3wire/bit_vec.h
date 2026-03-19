@@ -32,7 +32,8 @@ class BitVec {
  public:
   static constexpr size_t kWidth = W;
   static constexpr bool kIsSigned = IsSigned;
-  using Storage = UnsignedStorageType<W>;
+  using Storage = std::conditional_t<IsSigned, SignedStorageType<W>,
+                                     UnsignedStorageType<W>>;
 
   // Compile-time range-checked literal.
   template <int64_t Value>
@@ -71,24 +72,9 @@ class BitVec {
     }
   }
 
-  // Access the raw bit pattern (always unsigned).
-  [[nodiscard]] constexpr Storage bits() const { return bits_; }
-
-  // Access the interpreted value.
-  // For unsigned types, same as bits(). For signed types, sign-extends to
-  // the corresponding signed storage type.
-  [[nodiscard]] constexpr auto value() const {
-    if constexpr (IsSigned) {
-      return static_cast<SignedStorageType<W>>(sign_extend(bits_));
-    } else {
-      return bits_;
-    }
-  }
-
-  // Public for use by internal::extend.
-  static constexpr int64_t sign_extend_value(Storage val) {
-    return sign_extend(val);
-  }
+  // Access the stored value.
+  // Returns unsigned type for UInt, signed type for SInt.
+  [[nodiscard]] constexpr Storage value() const { return bits_; }
 
   // Default constructor: zero-initializes.
   constexpr BitVec() : bits_(0) {}
@@ -100,6 +86,13 @@ class BitVec {
   static constexpr Storage mask(uint64_t val) {
     if constexpr (W >= 64) {
       return static_cast<Storage>(val);
+    } else if constexpr (IsSigned) {
+      // Mask to W bits, then sign-extend from W to storage width.
+      uint64_t masked = val & ((uint64_t{1} << W) - 1);
+      uint64_t sign_bit = uint64_t{1} << (W - 1);
+      int64_t sign_extended =
+          static_cast<int64_t>((masked ^ sign_bit) - sign_bit);
+      return static_cast<Storage>(sign_extended);
     } else {
       return static_cast<Storage>(val & ((uint64_t{1} << W) - 1));
     }
@@ -118,16 +111,6 @@ class BitVec {
       return std::numeric_limits<int64_t>::max();
     } else {
       return (int64_t{1} << (W - 1)) - 1;
-    }
-  }
-
-  static constexpr int64_t sign_extend(Storage val) {
-    if constexpr (W >= 64) {
-      return static_cast<int64_t>(val);
-    } else {
-      uint64_t sign_bit = uint64_t{1} << (W - 1);
-      return static_cast<int64_t>((static_cast<uint64_t>(val) ^ sign_bit) -
-                                  sign_bit);
     }
   }
 
@@ -169,9 +152,9 @@ namespace internal {
 template <size_t TargetW, size_t SrcW, bool SrcS>
 uint64_t extend(const BitVec<SrcW, SrcS>& val) {
   if constexpr (!SrcS) {
-    return val.bits();
+    return static_cast<uint64_t>(val.value());
   } else {
-    int64_t signed_val = BitVec<SrcW, SrcS>::sign_extend_value(val.bits());
+    auto signed_val = static_cast<int64_t>(val.value());
     if constexpr (TargetW >= 64) {
       return static_cast<uint64_t>(signed_val);
     } else {

@@ -75,16 +75,23 @@ Future directions for Z3Wire, roughly in priority order.
     `model.eval()` call requires `.expr()` to unwrap Z3Wire types. A thin
     `z3w::Solver` wrapper (or free-function helpers like `z3w::eval()`) could
     accept Z3Wire types directly, delegating to `z3::solver` under the hood.
+
 - **Shorter literal construction** — `SymUInt<2>::Literal<0>(ctx)` is verbose
     for a common operation. Consider a free-function shorthand (e.g.,
     `z3w::lit<SymUInt<2>, 0>(ctx)`) or dedicated helpers.
+
 - **Scoped solver checks** — The push/add/check/pop pattern is repeated in every
     verification. A helper like `z3w::check(solver, constraint)` could
     encapsulate this. Trades explicitness for brevity — needs careful design.
+
 - **Symbolic struct construction helpers** — Creating structs of symbolic types
     requires threading `z3::context&` through every field. Investigate
     lightweight helpers (e.g., a named-field factory) once real usage patterns
     emerge.
+
+- **Clamp on truncation in `checked()`** — When `checked()` truncates, return
+    the clamped value (min or max of the range) instead of the low-W-bit
+    truncation. Clamping is more meaningful for a data holder type.
 
 ## Quality
 

@@ -644,7 +644,7 @@ TEST_F(SymBitVecTest, SymbolicToConcrete) {
   ASSERT_EQ(s.check(), z3::sat);
 
   auto concrete = to_concrete(sym, s.get_model());
-  EXPECT_EQ(concrete.bits(), 42);
+  EXPECT_EQ(concrete.value(), 42);
 }
 
 TEST_F(SymBitVecTest, SignedSymbolicToConcrete) {
@@ -666,7 +666,7 @@ TEST_F(SymBitVecTest, SymbolicToConcreteRoundTrip) {
   ASSERT_EQ(s.check(), z3::sat);
 
   auto result = to_concrete(sym, s.get_model());
-  EXPECT_EQ(result.bits(), original.bits());
+  EXPECT_EQ(result.value(), original.value());
 }
 
 TEST_F(SymBitVecTest, SymbolicToConcreteMaxUInt64) {
@@ -678,7 +678,7 @@ TEST_F(SymBitVecTest, SymbolicToConcreteMaxUInt64) {
   ASSERT_EQ(s.check(), z3::sat);
 
   auto concrete = to_concrete(sym, s.get_model());
-  EXPECT_EQ(concrete.bits(), UINT64_MAX);
+  EXPECT_EQ(concrete.value(), UINT64_MAX);
 }
 
 // --- Mixed concrete + symbolic arithmetic ---

@@ -222,10 +222,10 @@ auto w = z3w::SInt<8>::Literal<128>();   // Compile error: out of range
 
 ```cpp
 auto [val, truncated] = z3w::UInt<8>::checked(300);
-// val.bits() == 44, truncated == true
+// val.value() == 44, truncated == true
 
 auto [val2, truncated2] = z3w::UInt<8>::checked(200);
-// val2.bits() == 200, truncated2 == false
+// val2.value() == 200, truncated2 == false
 
 auto [val3, truncated3] = z3w::SInt<8>::checked(-128);
 // val3.value() == -128, truncated3 == false
@@ -236,19 +236,15 @@ to fit. Negative values on unsigned types are flagged as truncated.
 
 ### Accessing the value
 
-Two accessors:
-
-- `.bits()` — raw unsigned bit pattern (always `UnsignedStorageType<W>`)
-- `.value()` — interpreted value (unsigned for `UInt`, signed for `SInt`)
+`.value()` returns the stored value in its natural type - unsigned for `UInt`,
+signed for `SInt`:
 
 ```cpp
 auto x = z3w::UInt<8>::Literal<200>();
-x.bits();   // 200 (uint8_t)
-x.value();  // 200 (uint8_t) — same as bits() for unsigned
+x.value();  // 200 (uint8_t)
 
 auto y = z3w::SInt<8>::Literal<-1>();
-y.bits();   // 0xFF (uint8_t) — raw two's complement
-y.value();  // -1   (int8_t)  — interpreted signed value
+y.value();  // -1 (int8_t)
 ```
 
 ### Mixing with symbolic types

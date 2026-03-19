@@ -87,7 +87,11 @@ inline constexpr bool is_symbolic_v = is_symbolic<T>::value;
 // Convert a concrete BitVec to a symbolic SymBitVec.
 template <size_t W, bool S>
 SymBitVec<W, S> to_symbolic(const BitVec<W, S>& val, z3::context& ctx) {
-  return SymBitVec<W, S>(ctx.bv_val(static_cast<uint64_t>(val.bits()), W));
+  if constexpr (S) {
+    return SymBitVec<W, S>(ctx.bv_val(static_cast<int64_t>(val.value()), W));
+  } else {
+    return SymBitVec<W, S>(ctx.bv_val(static_cast<uint64_t>(val.value()), W));
+  }
 }
 
 // Convert a symbolic SymBitVec to a concrete BitVec using a solved model.

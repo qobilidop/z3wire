@@ -67,24 +67,22 @@ TEST(BitVecTest, LiteralSigned) {
 
 TEST(BitVecTest, LiteralSignedNegative) {
   auto a = SInt<8>::Literal<-128>();
-  EXPECT_EQ(a.bits(), 0x80);   // Bit pattern
-  EXPECT_EQ(a.value(), -128);  // Interpreted value
+  EXPECT_EQ(a.value(), -128);
   auto b = SInt<8>::Literal<-1>();
-  EXPECT_EQ(b.bits(), 0xFF);  // Bit pattern
-  EXPECT_EQ(b.value(), -1);   // Interpreted value
+  EXPECT_EQ(b.value(), -1);
 }
 
 // --- Checked construction ---
 
 TEST(BitVecTest, CheckedNoTruncation) {
   auto [val, truncated] = UInt<8>::checked(200);
-  EXPECT_EQ(val.bits(), 200);
+  EXPECT_EQ(val.value(), 200);
   EXPECT_FALSE(truncated);
 }
 
 TEST(BitVecTest, CheckedWithTruncation) {
   auto [val, truncated] = UInt<8>::checked(300);
-  EXPECT_EQ(val.bits(), 44);
+  EXPECT_EQ(val.value(), 44);
   EXPECT_TRUE(truncated);
 }
 
@@ -95,8 +93,7 @@ TEST(BitVecTest, CheckedNegativeOnUnsigned) {
 
 TEST(BitVecTest, SignedCheckedNoTruncation) {
   auto [val, truncated] = SInt<8>::checked(-128);
-  EXPECT_EQ(val.bits(), 0x80);   // Bit pattern
-  EXPECT_EQ(val.value(), -128);  // Interpreted value
+  EXPECT_EQ(val.value(), -128);
   EXPECT_FALSE(truncated);
 }
 
@@ -116,42 +113,33 @@ TEST(BitVecTest, SignedCheckedOverflowPositive) {
   EXPECT_TRUE(truncated);
 }
 
-// --- bits() vs value() ---
+// --- value() ---
 
-TEST(BitVecTest, UnsignedBitsAndValueMatch) {
+TEST(BitVecTest, UnsignedValueType) {
   auto a = UInt<8>::Literal<200>();
-  EXPECT_EQ(a.bits(), 200);
   EXPECT_EQ(a.value(), 200);
-  static_assert(std::is_same_v<decltype(a.bits()), uint8_t>);
   static_assert(std::is_same_v<decltype(a.value()), uint8_t>);
 }
 
-TEST(BitVecTest, SignedBitsVsValue) {
+TEST(BitVecTest, SignedValueType) {
   auto a = SInt<8>::Literal<-1>();
-  EXPECT_EQ(a.bits(), 0xFF);
   EXPECT_EQ(a.value(), -1);
-  static_assert(std::is_same_v<decltype(a.bits()), uint8_t>);
   static_assert(std::is_same_v<decltype(a.value()), int8_t>);
 }
 
-TEST(BitVecTest, SignedBitsVsValueMinMax) {
+TEST(BitVecTest, SignedValueMinMax) {
   auto min_val = SInt<8>::Literal<-128>();
-  EXPECT_EQ(min_val.bits(), 0x80);
   EXPECT_EQ(min_val.value(), -128);
 
   auto max_val = SInt<8>::Literal<127>();
-  EXPECT_EQ(max_val.bits(), 0x7F);
   EXPECT_EQ(max_val.value(), 127);
 }
 
-TEST(BitVecTest, SignedNonPowerOfTwoBitsVsValue) {
-  // SInt<5>: range -16 to 15. Value 0x1F = 31 unsigned = -1 signed.
+TEST(BitVecTest, SignedNonPowerOfTwoValue) {
+  // SInt<5>: range -16 to 15.
   auto a = SInt<5>::Literal<-1>();
-  EXPECT_EQ(a.bits(), 0x1F);
   EXPECT_EQ(a.value(), -1);
 }
-
-// --- Exact equality ---
 
 // --- Equality ---
 
@@ -174,13 +162,13 @@ TEST(BitVecTest, Inequality) {
 
 TEST(BitVecTest, Width64Construction) {
   auto [val, truncated] = UInt<64>::checked(UINT64_MAX);
-  EXPECT_EQ(val.bits(), UINT64_MAX);
+  EXPECT_EQ(val.value(), UINT64_MAX);
   EXPECT_FALSE(truncated);
 }
 
 TEST(BitVecTest, Width1) {
   auto [val, truncated] = UInt<1>::checked(3);
-  EXPECT_EQ(val.bits(), 1);  // 3 & 0x1
+  EXPECT_EQ(val.value(), 1);  // 3 & 0x1
   EXPECT_TRUE(truncated);
 }
 
