@@ -116,8 +116,26 @@ SymBitVec<W, S> to_symbolic(const BitVec<W, S>& val, z3::context& ctx) {
 template <size_t W, bool S>
 BitVec<W, S> to_concrete(const SymBitVec<W, S>& symbolic,
                          const z3::model& model) {
-  static_assert(W <= 64, "to_concrete requires width <= 64.");
-  if constexpr (S) {
+  if constexpr (W > 64) {
+    // Get MSB-first binary string from Z3.
+    z3::expr evaluated = model.eval(symbolic.expr(), true);
+    std::string bits_str =
+        Z3_get_numeral_binary_string(evaluated.ctx(), evaluated);
+
+    constexpr size_t kNumBytes = (W + 7) / 8;
+    std::array<uint8_t, kNumBytes> bytes{};
+
+    // bits_str is MSB-first. Reverse iterate to fill little-endian bytes.
+    size_t bit_index = 0;
+    for (auto it = bits_str.rbegin(); it != bits_str.rend(); ++it) {
+      if (*it == '1') {
+        bytes[bit_index / 8] |= uint8_t{1} << (bit_index % 8);
+      }
+      ++bit_index;
+    }
+
+    return std::get<0>(BitVec<W, S>::Checked(bytes));
+  } else if constexpr (S) {
     return std::get<0>(BitVec<W, S>::Checked(
         model.eval(symbolic.expr(), true).get_numeral_int64()));
   } else {

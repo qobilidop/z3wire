@@ -998,6 +998,41 @@ TEST_F(SymBitVecTest, WideToSymbolicLargeValue) {
   EXPECT_EQ(s.check(), z3::sat);
 }
 
+// --- Wide symbolic to concrete (W > 64) ---
+
+TEST_F(SymBitVecTest, WideToConcrete) {
+  SymUInt<128> x(ctx_, "x");
+
+  z3::solver s(ctx_);
+  s.add(x.expr() == ctx_.bv_val(uint64_t{42}, 128));
+  ASSERT_EQ(s.check(), z3::sat);
+
+  auto concrete = to_concrete(x, s.get_model());
+  auto bytes = concrete.value();
+  EXPECT_EQ(bytes[0], 42);
+  for (size_t i = 1; i < bytes.size(); ++i) {
+    EXPECT_EQ(bytes[i], 0);
+  }
+}
+
+TEST_F(SymBitVecTest, WideToConcreteRoundTrip) {
+  // Construct a wide concrete value, convert to symbolic, solve, convert back.
+  std::array<uint8_t, 16> bytes{};
+  bytes[0] = 0xEF;
+  bytes[8] = 0xAB;
+  auto [original, truncated] = UInt<128>::Checked(bytes);
+  ASSERT_FALSE(truncated);
+
+  auto symbolic = to_symbolic(original, ctx_);
+
+  z3::solver s(ctx_);
+  s.add(symbolic.expr() == symbolic.expr());  // trivially sat
+  ASSERT_EQ(s.check(), z3::sat);
+
+  auto result = to_concrete(symbolic, s.get_model());
+  EXPECT_EQ(result.value(), original.value());
+}
+
 // NOLINTBEGIN(readability-function-cognitive-complexity)
 TEST(SymBitVecDeathTest, ConstructorRejectsWrongSort) {
   z3::context ctx;
