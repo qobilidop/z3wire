@@ -387,14 +387,8 @@ call.
 
 ### Storage
 
-Both `UInt` and `SInt` use unsigned storage (`uint8_t` / `uint16_t` / `uint32_t`
-/ `uint64_t`, whichever is smallest). Width is constrained to 1--64.
-
-**Why unsigned storage for `SInt`?** Signed integer overflow is undefined
-behavior in C++, while unsigned overflow is well-defined (wraps mod 2^N). A
-bit-vector library performs intermediate arithmetic with masking, and unsigned
-storage avoids UB. The bits are identical (two's complement); signed
-interpretation happens only at comparison and sign-extension boundaries.
+`UInt<W>` uses the smallest unsigned integer type that fits W bits, and
+`SInt<W>` uses the smallest signed integer type. Width is constrained to 1-64.
 
 ### Promotion to symbolic
 

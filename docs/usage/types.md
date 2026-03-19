@@ -279,16 +279,8 @@ z3w::SymUInt<8> sym = z3w::to_symbolic(conc, ctx);
 
 ### Storage
 
-Both `UInt` and `SInt` use unsigned storage internally. For `SInt`, values are
-stored in two's complement representation.
-
-!!! info "Why unsigned storage?"
-
-    Signed integer overflow is undefined behavior in C++, while unsigned overflow is
-    well-defined (wraps mod 2^N). A bit-vector library performs intermediate
-    arithmetic with masking, and unsigned storage avoids UB. The bits are the same
-    either way; signed interpretation happens only at comparison and sign-extension
-    boundaries.
+`UInt<W>` uses the smallest unsigned integer type that fits W bits, and
+`SInt<W>` uses the smallest signed integer type. Width is constrained to 1-64.
 
 ## Design principle: explicit over implicit
 
