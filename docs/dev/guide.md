@@ -99,11 +99,15 @@ To check without modifying (used in CI):
 - Follow
     [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html).
 - Follow Google Abseil [C++ Tips of the Week](https://abseil.io/tips/).
-- **Naming deviation:** Free functions and member methods use `snake_case`
-    (e.g., `to_symbolic`, `safe_cast`, `shl`, `value()`, `expr()`), not
-    `PascalCase`. This aligns with Z3 and other SMT/hardware libraries in the
-    ecosystem, and reads more naturally for hardware primitives. Static factory
-    methods use `PascalCase` (e.g., `Literal`, `Checked`, `True`, `False`).
+- **Naming deviations:**
+    - Free functions and member methods use `snake_case` (e.g., `to_symbolic`,
+        `safe_cast`, `shl`, `value()`, `expr()`), not `PascalCase`. This aligns
+        with Z3 and other SMT/hardware libraries in the ecosystem, and reads more
+        naturally for hardware primitives. Static factory methods use `PascalCase`
+        (e.g., `Literal`, `Checked`, `True`, `False`).
+    - Type traits use `snake_case` with a `_v` helper (e.g., `is_concrete`,
+        `is_symbolic_v`), following `std::` conventions rather than Google's
+        `PascalCase`.
 
 ### Python
 
