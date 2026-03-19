@@ -12,8 +12,8 @@
 
 `docs/superpowers/` is gitignored and available for temporary working documents
 (implementation plans, specs in progress, etc.). These are ephemeral - don't
-expect them to persist across sessions. Durable artifacts belong in code,
-tests, or `docs/`.
+expect them to persist across sessions. Durable artifacts belong in code, tests,
+or `docs/`.
 
 ## Development guide
 
