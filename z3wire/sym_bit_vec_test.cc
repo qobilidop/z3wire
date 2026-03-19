@@ -958,5 +958,42 @@ TEST(SymBitVecDeathTest, ExprOnUninitializedAborts) {
   EXPECT_DEATH((void)uninit.expr(), "SymBitVec used before initialization");
 }
 
+// NOLINTBEGIN(readability-function-cognitive-complexity)
+TEST(SymBitVecDeathTest, ConstructorRejectsWrongSort) {
+  z3::context ctx;
+  z3::expr bool_expr = ctx.bool_val(true);
+  EXPECT_DEATH((void)SymUInt<8>(bool_expr), "");
+}
+
+TEST(SymBitVecDeathTest, ConstructorRejectsWrongWidth) {
+  z3::context ctx;
+  z3::expr bv16 = ctx.bv_val(0, 16);
+  EXPECT_DEATH((void)SymUInt<8>(bv16), "");
+}
+// NOLINTEND(readability-function-cognitive-complexity)
+
+class FromExprTest : public ::testing::Test {
+ protected:
+  z3::context ctx_;
+};
+
+TEST_F(FromExprTest, SymBitVecFromExprWithValidExpr) {
+  auto result = SymUInt<8>::FromExpr(ctx_.bv_val(42, 8));
+  ASSERT_TRUE(result.has_value());
+  z3::solver s(ctx_);
+  s.add(result->expr() == ctx_.bv_val(42, 8));
+  EXPECT_EQ(s.check(), z3::sat);
+}
+
+TEST_F(FromExprTest, SymBitVecFromExprWithWrongWidth) {
+  auto result = SymUInt<8>::FromExpr(ctx_.bv_val(0, 16));
+  EXPECT_FALSE(result.has_value());
+}
+
+TEST_F(FromExprTest, SymBitVecFromExprWithBoolExpr) {
+  auto result = SymUInt<8>::FromExpr(ctx_.bool_val(true));
+  EXPECT_FALSE(result.has_value());
+}
+
 }  // namespace
 }  // namespace z3w

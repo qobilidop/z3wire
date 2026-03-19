@@ -22,9 +22,21 @@ class SymBool {
   explicit SymBool(z3::context& ctx, const std::string& name)
       : expr_(ctx.bool_const(name.c_str())) {}
 
-  // Create a SymBool from a raw z3::expr. The caller must ensure it has Bool
-  // sort.
-  explicit SymBool(z3::expr expr) : expr_(std::move(expr)) {}
+  // Create a SymBool from a raw z3::expr. Aborts if the expression does not
+  // have Bool sort. Prefer FromExpr for a non-aborting alternative.
+  explicit SymBool(z3::expr expr) : expr_(std::move(expr)) {
+    Z3W_CHECK(expr_->is_bool())
+        << "Expected Bool sort, got " << expr_->get_sort();
+  }
+
+  // Create a SymBool from a raw z3::expr with validation. Returns nullopt if
+  // the expression does not have Bool sort.
+  static std::optional<SymBool> FromExpr(z3::expr expr) {
+    if (!expr.is_bool()) {
+      return std::nullopt;
+    }
+    return SymBool(std::move(expr));
+  }
 
   // Boolean literals.
   static SymBool True(z3::context& ctx) { return SymBool(ctx.bool_val(true)); }

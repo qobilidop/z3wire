@@ -134,5 +134,24 @@ TEST(SymBoolDeathTest, ExprOnUninitializedAborts) {
   EXPECT_DEATH((void)uninit.expr(), "SymBool used before initialization");
 }
 
+// NOLINTBEGIN(readability-function-cognitive-complexity)
+TEST(SymBoolDeathTest, ConstructorRejectsNonBoolExpr) {
+  z3::context ctx;
+  z3::expr bv_expr = ctx.bv_val(42, 8);
+  EXPECT_DEATH((void)SymBool(bv_expr), "");
+}
+// NOLINTEND(readability-function-cognitive-complexity)
+
+TEST_F(SymBoolTest, FromExprWithValidBoolExpr) {
+  auto result = SymBool::FromExpr(ctx_.bool_val(true));
+  ASSERT_TRUE(result.has_value());
+  EXPECT_TRUE(result->expr().is_true());
+}
+
+TEST_F(SymBoolTest, FromExprWithBitVecExprReturnsNullopt) {
+  auto result = SymBool::FromExpr(ctx_.bv_val(42, 8));
+  EXPECT_FALSE(result.has_value());
+}
+
 }  // namespace
 }  // namespace z3w

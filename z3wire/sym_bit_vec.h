@@ -33,8 +33,23 @@ class SymBitVec {
   explicit SymBitVec(z3::context& ctx, const std::string& name)
       : expr_(ctx.bv_const(name.c_str(), Width)) {}
 
-  // Create a SymBitVec from a raw z3::expr. Caller must ensure correct sort.
-  explicit SymBitVec(z3::expr expr) : expr_(std::move(expr)) {}
+  // Create a SymBitVec from a raw z3::expr. Aborts if the expression does not
+  // have the correct bit-vector sort and width. Prefer FromExpr for a
+  // non-aborting alternative.
+  explicit SymBitVec(z3::expr expr) : expr_(std::move(expr)) {
+    Z3W_CHECK(expr_->get_sort().is_bv() && expr_->get_sort().bv_size() == Width)
+        << "Expected BitVec sort of width " << Width << ", got "
+        << expr_->get_sort();
+  }
+
+  // Create a SymBitVec from a raw z3::expr with validation. Returns nullopt if
+  // the expression does not have the correct bit-vector sort and width.
+  static std::optional<SymBitVec> FromExpr(z3::expr expr) {
+    if (!expr.get_sort().is_bv() || expr.get_sort().bv_size() != Width) {
+      return std::nullopt;
+    }
+    return SymBitVec(std::move(expr));
+  }
 
   // Compile-time range-checked literal.
   template <uint64_t Value>

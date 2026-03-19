@@ -54,6 +54,16 @@ z3w::SymUInt<8> x(ctx, "x");
 solver.add(x.expr() > 0);  // Pass to Z3 solver directly
 ```
 
+To wrap a raw `z3::expr` back into a Z3Wire type, use `FromExpr`:
+
+```cpp
+z3::expr raw = /* ... from Z3 API ... */;
+
+// Returns std::optional — nullopt if sort or width doesn't match.
+std::optional<z3w::SymUInt<8>> x = z3w::SymUInt<8>::FromExpr(raw);
+std::optional<z3w::SymBool> b = z3w::SymBool::FromExpr(raw);
+```
+
 !!! note
 
     Z3Wire does not wrap `z3::context` or `z3::solver`. You interact with them
