@@ -265,5 +265,33 @@ TEST(BitVecTest, WideCheckedNegativeOnUnsigned) {
   EXPECT_TRUE(truncated);
 }
 
+TEST(BitVecTest, WideCheckedFromBytesNoTruncation) {
+  std::array<uint8_t, 16> bytes{};
+  bytes[0] = 0xFF;
+  bytes[15] = 0x01;
+  auto [val, truncated] = UInt<128>::Checked(bytes);
+  EXPECT_FALSE(truncated);
+  EXPECT_EQ(val.value(), bytes);
+}
+
+TEST(BitVecTest, WideCheckedFromBytesWithTruncation) {
+  // UInt<100>: 13 bytes, but only 4 bits used in byte[12].
+  std::array<uint8_t, 13> bytes{};
+  bytes[12] = 0xFF;  // Upper 4 bits are unused → truncation.
+  auto [val, truncated] = UInt<100>::Checked(bytes);
+  EXPECT_TRUE(truncated);
+  auto result = val.value();
+  EXPECT_EQ(result[12], 0x0F);  // Upper 4 bits zeroed.
+}
+
+TEST(BitVecTest, WideCheckedFromBytesExactFit) {
+  // UInt<100>: 13 bytes, 4 bits used in byte[12].
+  std::array<uint8_t, 13> bytes{};
+  bytes[12] = 0x0F;  // Exactly fills the 4 used bits.
+  auto [val, truncated] = UInt<100>::Checked(bytes);
+  EXPECT_FALSE(truncated);
+  EXPECT_EQ(val.value(), bytes);
+}
+
 }  // namespace
 }  // namespace z3w

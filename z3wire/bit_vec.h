@@ -90,6 +90,27 @@ class BitVec {
     }
   }
 
+  // Runtime checked construction from byte array (W > 64 only).
+  // Returns {result, truncated} where truncated indicates unused high bits
+  // were non-zero.
+  template <size_t Dummy = W>
+    requires(Dummy > 64 && Dummy == W)
+  [[nodiscard]] static std::tuple<BitVec, bool> Checked(
+      const std::array<uint8_t, kNumBytes>& bytes) {
+    BitVec result;
+    result.value_ = bytes;
+    // Mask unused bits in the high byte.
+    constexpr size_t used_bits = W % 8;
+    if constexpr (used_bits != 0) {
+      constexpr uint8_t mask = (uint8_t{1} << used_bits) - 1;
+      bool truncated = (bytes[kNumBytes - 1] & ~mask) != 0;
+      result.value_[kNumBytes - 1] &= mask;
+      return {result, truncated};
+    } else {
+      return {result, false};
+    }
+  }
+
   // Access the stored value.
   [[nodiscard]] constexpr ValueType value() const { return value_; }
 
