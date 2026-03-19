@@ -76,6 +76,14 @@ Future directions for Z3Wire.
     the clamped value (min or max of the range) instead of the low-W-bit
     truncation. Clamping is more meaningful for a data holder type.
 
+## Safety
+
+- **Audit `z3::expr` constructors** — `SymBool(z3::expr)` and
+    `SymBitVec(z3::expr)` accept any `z3::expr` with no sort or width
+    verification. Wrong sort leads to silent corruption, bypassing the type
+    safety Z3Wire is built to provide. Consider making these private (with
+    friend access for internal operators) or adding runtime sort checks.
+
 ## Quality
 
 - **Improve test coverage** — Key gaps: signed (`SymSInt`/`SInt`) operations are

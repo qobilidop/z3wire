@@ -40,12 +40,12 @@ class BitVec {
   static constexpr BitVec Literal() {
     if constexpr (IsSigned) {
       static_assert(Value >= min_signed() && Value <= max_signed(),
-                    "Literal value does not fit in signed bit-width.");
+                    "Literal value does not fit in bit-width.");
       return BitVec(static_cast<uint64_t>(Value));
     } else {
       static_assert(Value >= 0, "Unsigned literal must be non-negative.");
       static_assert(static_cast<uint64_t>(Value) <= max_unsigned(),
-                    "Literal value does not fit in unsigned bit-width.");
+                    "Literal value does not fit in bit-width.");
       return BitVec(static_cast<uint64_t>(Value));
     }
   }

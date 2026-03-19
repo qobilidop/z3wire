@@ -1,0 +1,16 @@
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+
+cc_binary(
+    name = "types",
+    srcs = ["types.cc"],
+    copts = [
+        "-Wno-unused-variable",
+        "-Wno-unused-result",
+    ],
+    deps = [
+        "//z3wire:bit_vec",
+        "//z3wire:bool",
+        "//z3wire:sym_bit_vec",
+        "//z3wire:sym_bool",
+    ],
+)

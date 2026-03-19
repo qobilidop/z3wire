@@ -29,12 +29,3 @@ cc_binary(
     srcs = ["safe_adder.cc"],
     deps = ["//z3wire:sym_bit_vec"],
 )
-
-cc_binary(
-    name = "types",
-    srcs = ["types.cc"],
-    deps = [
-        "//z3wire:sym_bit_vec",
-        "//z3wire:sym_bool",
-    ],
-)

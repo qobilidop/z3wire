@@ -45,6 +45,7 @@ nav:
   - Examples: https://github.com/qobilidop/z3wire/tree/main/examples
   - Usage:
       - Types: usage/types.md
+      - Casting: usage/casting.md
       - Operations: usage/operations.md
   - Design:
       - Overview: design/overview.md

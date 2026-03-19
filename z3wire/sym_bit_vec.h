@@ -39,7 +39,7 @@ class SymBitVec {
   template <uint64_t Value>
   static SymBitVec Literal(z3::context& ctx) {
     static_assert(Width >= 64 || Value < (uint64_t{1} << Width),
-                  "Literal value does not fit in the specified bit-width.");
+                  "Literal value does not fit in bit-width.");
     return SymBitVec(ctx.bv_val(Value, Width));
   }
 

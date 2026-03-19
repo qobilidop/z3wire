@@ -24,14 +24,14 @@ cc_compile_fail_test(
 cc_compile_fail_test(
     name = "bit_vec_signed_literal_above_max_test",
     src = "bit_vec_signed_literal_above_max_test.cc",
-    expected_message = "Literal value does not fit in signed bit-width",
+    expected_message = "Literal value does not fit in bit-width",
     deps = ["//z3wire:bit_vec"],
 )
 
 cc_compile_fail_test(
     name = "bit_vec_signed_literal_below_min_test",
     src = "bit_vec_signed_literal_below_min_test.cc",
-    expected_message = "Literal value does not fit in signed bit-width",
+    expected_message = "Literal value does not fit in bit-width",
     deps = ["//z3wire:bit_vec"],
 )
 
@@ -45,14 +45,14 @@ cc_compile_fail_test(
 cc_compile_fail_test(
     name = "bit_vec_unsigned_literal_above_max_test",
     src = "bit_vec_unsigned_literal_above_max_test.cc",
-    expected_message = "Literal value does not fit in unsigned bit-width",
+    expected_message = "Literal value does not fit in bit-width",
     deps = ["//z3wire:bit_vec"],
 )
 
 cc_compile_fail_test(
     name = "sym_bit_vec_literal_above_max_test",
     src = "sym_bit_vec_literal_above_max_test.cc",
-    expected_message = "Literal value does not fit in the specified bit-width",
+    expected_message = "Literal value does not fit in bit-width",
     deps = ["//z3wire:sym_bit_vec"],
 )
 
