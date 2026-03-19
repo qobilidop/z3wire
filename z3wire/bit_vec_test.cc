@@ -8,28 +8,28 @@
 namespace z3w {
 namespace {
 
-// --- Storage types ---
+// --- ValueType ---
 
-TEST(BitVecTest, UnsignedStorageType) {
-  static_assert(std::is_same_v<UnsignedStorageType<1>, uint8_t>);
-  static_assert(std::is_same_v<UnsignedStorageType<8>, uint8_t>);
-  static_assert(std::is_same_v<UnsignedStorageType<9>, uint16_t>);
-  static_assert(std::is_same_v<UnsignedStorageType<16>, uint16_t>);
-  static_assert(std::is_same_v<UnsignedStorageType<17>, uint32_t>);
-  static_assert(std::is_same_v<UnsignedStorageType<32>, uint32_t>);
-  static_assert(std::is_same_v<UnsignedStorageType<33>, uint64_t>);
-  static_assert(std::is_same_v<UnsignedStorageType<64>, uint64_t>);
+TEST(BitVecTest, UnsignedValueType) {
+  static_assert(std::is_same_v<UInt<1>::ValueType, uint8_t>);
+  static_assert(std::is_same_v<UInt<8>::ValueType, uint8_t>);
+  static_assert(std::is_same_v<UInt<9>::ValueType, uint16_t>);
+  static_assert(std::is_same_v<UInt<16>::ValueType, uint16_t>);
+  static_assert(std::is_same_v<UInt<17>::ValueType, uint32_t>);
+  static_assert(std::is_same_v<UInt<32>::ValueType, uint32_t>);
+  static_assert(std::is_same_v<UInt<33>::ValueType, uint64_t>);
+  static_assert(std::is_same_v<UInt<64>::ValueType, uint64_t>);
 }
 
-TEST(BitVecTest, SignedStorageType) {
-  static_assert(std::is_same_v<SignedStorageType<1>, int8_t>);
-  static_assert(std::is_same_v<SignedStorageType<8>, int8_t>);
-  static_assert(std::is_same_v<SignedStorageType<9>, int16_t>);
-  static_assert(std::is_same_v<SignedStorageType<16>, int16_t>);
-  static_assert(std::is_same_v<SignedStorageType<17>, int32_t>);
-  static_assert(std::is_same_v<SignedStorageType<32>, int32_t>);
-  static_assert(std::is_same_v<SignedStorageType<33>, int64_t>);
-  static_assert(std::is_same_v<SignedStorageType<64>, int64_t>);
+TEST(BitVecTest, SignedValueType) {
+  static_assert(std::is_same_v<SInt<1>::ValueType, int8_t>);
+  static_assert(std::is_same_v<SInt<8>::ValueType, int8_t>);
+  static_assert(std::is_same_v<SInt<9>::ValueType, int16_t>);
+  static_assert(std::is_same_v<SInt<16>::ValueType, int16_t>);
+  static_assert(std::is_same_v<SInt<17>::ValueType, int32_t>);
+  static_assert(std::is_same_v<SInt<32>::ValueType, int32_t>);
+  static_assert(std::is_same_v<SInt<33>::ValueType, int64_t>);
+  static_assert(std::is_same_v<SInt<64>::ValueType, int64_t>);
 }
 
 // --- Type traits ---
@@ -115,13 +115,13 @@ TEST(BitVecTest, SignedCheckedOverflowPositive) {
 
 // --- value() ---
 
-TEST(BitVecTest, UnsignedValueType) {
+TEST(BitVecTest, UnsignedValueAccess) {
   auto a = UInt<8>::Literal<200>();
   EXPECT_EQ(a.value(), 200);
   static_assert(std::is_same_v<decltype(a.value()), uint8_t>);
 }
 
-TEST(BitVecTest, SignedValueType) {
+TEST(BitVecTest, SignedValueAccess) {
   auto a = SInt<8>::Literal<-1>();
   EXPECT_EQ(a.value(), -1);
   static_assert(std::is_same_v<decltype(a.value()), int8_t>);
@@ -195,6 +195,14 @@ TEST(BitVecTest, CrossTypeEqualityMixedSignedness) {
   auto b = SInt<16>::Literal<42>();
   EXPECT_TRUE(a == b);
   EXPECT_FALSE(a != b);
+}
+
+TEST(BitVecTest, CrossTypeEqualityMixedSignednessNegative) {
+  // SInt<32>(-1) != UInt<32>(4294967295) — mathematically different values,
+  // even though they share the same bit pattern.
+  auto a = SInt<32>::Literal<-1>();
+  auto b = UInt<32>::Checked(UINT32_MAX);
+  EXPECT_FALSE(a == std::get<0>(b));
 }
 
 }  // namespace

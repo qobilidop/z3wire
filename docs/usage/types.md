@@ -81,7 +81,7 @@ time):
 
 ```cpp
 z3w::Bool flag = true;   // OK: implicit from bool
-z3w::Bool flag2 = 42;    // Compile error: deleted integral constructor
+z3w::Bool flag2 = 42;    // Compile error: only bool accepted
 ```
 
 `UInt`/`SInt` literals are range-checked at compile time:
