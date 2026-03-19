@@ -120,8 +120,29 @@ cc_compile_fail_test(
 )
 
 cc_compile_fail_test(
+    name = "bool_from_float_test",
+    src = "bool_from_float_test.cc",
+    expected_message = "deleted",
+    deps = ["//z3wire:bool"],
+)
+
+cc_compile_fail_test(
     name = "bool_from_int_test",
     src = "bool_from_int_test.cc",
+    expected_message = "deleted",
+    deps = ["//z3wire:bool"],
+)
+
+cc_compile_fail_test(
+    name = "bool_from_nullptr_test",
+    src = "bool_from_nullptr_test.cc",
+    expected_message = "deleted",
+    deps = ["//z3wire:bool"],
+)
+
+cc_compile_fail_test(
+    name = "bool_from_pointer_test",
+    src = "bool_from_pointer_test.cc",
     expected_message = "deleted",
     deps = ["//z3wire:bool"],
 )
