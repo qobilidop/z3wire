@@ -36,8 +36,8 @@ Future directions for Z3Wire, roughly in priority order.
 ## Arithmetic
 
 - **Multiply** (`*`) — Fundamental operation supported by all SMT bit-vector
-    libraries. Design question: bit-growth semantics (result width =
-    `W1 + W2`?) vs same-width with overflow detection.
+    libraries. Design question: bit-growth semantics (result width = `W1 + W2`?)
+    vs same-width with overflow detection.
 - **Division and remainder** (`/`, `%`) — `udiv`, `sdiv`, `urem`, `srem`.
     Signedness-aware type system makes the API design interesting: signed vs
     unsigned division can be selected by operand types rather than separate

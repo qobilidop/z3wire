@@ -124,9 +124,12 @@ Before commit, ALWAYS run the following commands and fix any issues you see:
 ```sh
 ./dev.sh bazel build //...
 ./dev.sh bazel test //...
-./dev.sh ./tools/format.sh
+
 ./dev.sh ./tools/lint.sh
 ./dev.sh ./tools/docs.sh
+
+# Run format last so no subsequent edits undo it.
+./dev.sh ./tools/format.sh
 ```
 
 ## Commit style
