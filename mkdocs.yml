@@ -48,7 +48,6 @@ nav:
       - Cheatsheet: usage/cheatsheet.md
       - Types: usage/types.md
       - Operations: usage/operations.md
-      - Limitations: usage/limitations.md
   - Design:
       - Overview: design/overview.md
       - Compile-Fail Tests: design/compile-fail-tests.md
