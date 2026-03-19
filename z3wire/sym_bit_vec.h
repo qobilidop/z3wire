@@ -7,7 +7,6 @@
 #include <optional>
 #include <string>
 #include <tuple>
-#include <type_traits>
 #include <utility>
 
 #include <z3++.h>
@@ -15,15 +14,16 @@
 #include "z3wire/bit_vec.h"
 #include "z3wire/check.h"
 #include "z3wire/sym_bool.h"
+#include "z3wire/type_traits.h"
 
 namespace z3w {
 
-template <size_t Width, bool IsSigned>
+template <size_t W, bool IsSigned>
 class SymBitVec {
-  static_assert(Width > 0, "Width must be at least 1.");
+  static_assert(W > 0, "Width must be at least 1.");
 
  public:
-  static constexpr size_t kWidth = Width;
+  static constexpr size_t kWidth = W;
   static constexpr bool kIsSigned = IsSigned;
 
   // Default constructor: creates an uninitialized SymBitVec.
@@ -31,21 +31,21 @@ class SymBitVec {
 
   // Create a symbolic bit-vector variable.
   explicit SymBitVec(z3::context& ctx, const std::string& name)
-      : expr_(ctx.bv_const(name.c_str(), Width)) {}
+      : expr_(ctx.bv_const(name.c_str(), W)) {}
 
   // Create a SymBitVec from a raw z3::expr. Aborts if the expression does not
   // have the correct bit-vector sort and width. Prefer FromExpr for a
   // non-aborting alternative.
   explicit SymBitVec(z3::expr expr) : expr_(std::move(expr)) {
-    Z3W_CHECK(expr_->get_sort().is_bv() && expr_->get_sort().bv_size() == Width)
-        << "Expected BitVec sort of width " << Width << ", got "
+    Z3W_CHECK(expr_->get_sort().is_bv() && expr_->get_sort().bv_size() == W)
+        << "Expected BitVec sort of width " << W << ", got "
         << expr_->get_sort();
   }
 
   // Create a SymBitVec from a raw z3::expr with validation. Returns nullopt if
   // the expression does not have the correct bit-vector sort and width.
   static std::optional<SymBitVec> FromExpr(z3::expr expr) {
-    if (!expr.get_sort().is_bv() || expr.get_sort().bv_size() != Width) {
+    if (!expr.get_sort().is_bv() || expr.get_sort().bv_size() != W) {
       return std::nullopt;
     }
     return SymBitVec(std::move(expr));
@@ -54,9 +54,9 @@ class SymBitVec {
   // Compile-time range-checked literal.
   template <uint64_t Value>
   static SymBitVec Literal(z3::context& ctx) {
-    static_assert(Width >= 64 || Value < (uint64_t{1} << Width),
+    static_assert(W >= 64 || Value < (uint64_t{1} << W),
                   "Literal value does not fit in bit-width.");
-    return SymBitVec(ctx.bv_val(Value, Width));
+    return SymBitVec(ctx.bv_val(Value, W));
   }
 
   [[nodiscard]] const z3::expr& expr() const {
@@ -89,19 +89,6 @@ using SymUInt = SymBitVec<W, false>;
 
 template <size_t W>
 using SymSInt = SymBitVec<W, true>;
-
-// Type trait: is this a symbolic SymBitVec type?
-template <typename T>
-struct is_symbolic : std::false_type {};
-
-template <size_t W, bool S>
-struct is_symbolic<SymBitVec<W, S>> : std::true_type {};
-
-template <>
-struct is_symbolic<SymBool> : std::true_type {};
-
-template <typename T>
-inline constexpr bool is_symbolic_v = is_symbolic<T>::value;
 
 // Convert a concrete BitVec to a symbolic SymBitVec.
 template <size_t W, bool S>

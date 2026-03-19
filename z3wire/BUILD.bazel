@@ -13,6 +13,7 @@ cc_test(
     srcs = ["bit_vec_test.cc"],
     deps = [
         ":bit_vec",
+        ":type_traits",
         "@googletest//:gtest_main",
     ],
 )
@@ -52,6 +53,7 @@ cc_library(
     deps = [
         ":bit_vec",
         ":sym_bool",
+        ":type_traits",
         "@z3//:z3_static",
     ],
 )
@@ -61,6 +63,7 @@ cc_test(
     srcs = ["sym_bit_vec_test.cc"],
     deps = [
         ":sym_bit_vec",
+        ":type_traits",
         "@googletest//:gtest_main",
     ],
 )
@@ -82,4 +85,9 @@ cc_test(
         ":sym_bool",
         "@googletest//:gtest_main",
     ],
+)
+
+cc_library(
+    name = "type_traits",
+    hdrs = ["type_traits.h"],
 )

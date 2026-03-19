@@ -8,6 +8,7 @@
 
 #include "z3wire/bit_vec.h"
 #include "z3wire/sym_bool.h"
+#include "z3wire/type_traits.h"
 
 namespace z3w {
 namespace {

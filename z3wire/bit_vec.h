@@ -16,24 +16,21 @@ class BitVec {
   static_assert(W >= 1 && W <= 64, "Bit-width must be between 1 and 64.");
 
   // Smallest unsigned integer type that fits W bits.
-  template <size_t Width>
   using Unsigned = std::conditional_t<
-      (Width <= 8), uint8_t,
-      std::conditional_t<
-          (Width <= 16), uint16_t,
-          std::conditional_t<(Width <= 32), uint32_t, uint64_t>>>;
+      (W <= 8), uint8_t,
+      std::conditional_t<(W <= 16), uint16_t,
+                         std::conditional_t<(W <= 32), uint32_t, uint64_t>>>;
 
   // Smallest signed integer type that fits W bits.
-  template <size_t Width>
   using Signed = std::conditional_t<
-      (Width <= 8), int8_t,
-      std::conditional_t<(Width <= 16), int16_t,
-                         std::conditional_t<(Width <= 32), int32_t, int64_t>>>;
+      (W <= 8), int8_t,
+      std::conditional_t<(W <= 16), int16_t,
+                         std::conditional_t<(W <= 32), int32_t, int64_t>>>;
 
  public:
   static constexpr size_t kWidth = W;
   static constexpr bool kIsSigned = IsSigned;
-  using ValueType = std::conditional_t<IsSigned, Signed<W>, Unsigned<W>>;
+  using ValueType = std::conditional_t<IsSigned, Signed, Unsigned>;
 
   // Default constructor: zero-initializes.
   constexpr BitVec() : value_(0) {}
@@ -128,22 +125,6 @@ using UInt = BitVec<W, false>;
 
 template <size_t W>
 using SInt = BitVec<W, true>;
-
-// Type trait: is this a concrete BitVec type?
-template <typename T>
-struct is_concrete : std::false_type {};
-
-template <size_t W, bool S>
-struct is_concrete<BitVec<W, S>> : std::true_type {};
-
-// Forward declaration for concrete Bool.
-class Bool;
-
-template <>
-struct is_concrete<Bool> : std::true_type {};
-
-template <typename T>
-inline constexpr bool is_concrete_v = is_concrete<T>::value;
 
 // --- Equality (any width/signedness combination) ---
 

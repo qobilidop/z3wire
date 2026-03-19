@@ -5,6 +5,8 @@
 
 #include <gtest/gtest.h>
 
+#include "z3wire/type_traits.h"
+
 namespace z3w {
 namespace {
 
