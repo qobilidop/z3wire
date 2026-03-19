@@ -11,6 +11,9 @@
 
 Type-safe Z3 bit-vectors for hardware verification. C++20 and above.
 
+Named for the wires in digital circuits: single bits and fixed-width bundles,
+now type-safe.
+
 ## Why Z3Wire?
 
 Using Z3 bit-vectors directly for hardware verification is error-prone:
@@ -32,15 +35,6 @@ Z3Wire solves these by bringing hardware semantics into the type system:
 - **Bit-growth arithmetic** — results widen automatically, making every
     truncation an explicit, reviewable decision.
 
-## What's in the name?
-
-The name reflects the scope: hardware is built from *wires*. Every signal in a
-digital circuit is either a single bit or a bundle of bits with a known width.
-Z3Wire wraps Z3 with type-safe Booleans and fixed-width bit-vectors, covering
-the complete set of
-[combinational logic primitives](https://qobilidop.github.io/z3wire/design/overview/#combinational-logic-primitives)
-that operate on these wires.
-
 ## Quick example
 
 The classic binary search midpoint formula `(a + b) >> 1` has an overflow bug
@@ -48,55 +42,45 @@ that lurked in Java's `Arrays.binarySearch` for 9 years before
 [Joshua Bloch discovered it in 2006](https://research.google/blog/extra-extra-read-all-about-it-nearly-all-binary-searches-and-mergesorts-are-broken/).
 Can we prove the well-known bit-hack fix
 [`(a & b) + ((a ^ b) >> 1)`](https://devblogs.microsoft.com/oldnewthing/20220207-00/?p=106223)
-is correct? This is something we could do with Z3 directly - Z3Wire just makes
-the types explicit, and certain things easier to express.
+is correct? Here's how it looks with Z3Wire:
 
 ```cpp
-#include <z3++.h>
-#include "z3wire/bit_vec.h"
-#include "z3wire/sym_bit_vec.h"
-
-z3::context ctx;
-z3::solver solver(ctx);
-
 z3w::SymUInt<32> a(ctx, "a");
 z3w::SymUInt<32> b(ctx, "b");
 auto one = z3w::UInt<32>::Literal<1>();
 
-// Result types are derived at compile time. Written out explicitly for clarity.
-
-// Buggy: ((uint32_t) (a + b)) >> 1
-// Truncating sum wraps, then shift gives wrong answer.
+// Original `(a + b) >> 1` in hardware: 32-bit sum wraps, giving wrong answer.
 z3w::SymUInt<32> buggy =
     z3w::shr(z3w::unsafe_cast<z3w::SymUInt<32>>(a + b), one);
 
-// Bit-hack fix: (uint32_t) ((a & b) + ((a ^ b) >> 1))
-// Magical! We shall prove it's correct.
+// Bit-hack fix `(a & b) + ((a ^ b) >> 1)`: avoids overflow via bitwise tricks.
 z3w::SymUInt<32> hack =
     z3w::unsafe_cast<z3w::SymUInt<32>>((a & b) + z3w::shr(a ^ b, one));
 
-// Z3Wire: (a + b) >> 1
-// Expresses the intended correct semantics naturally.
+// Correct semantics: 33-bit sum can't overflow, result is exact.
 z3w::SymUInt<33> correct = z3w::shr(a + b, one);
-
-// Prove the buggy version can produce wrong results.
-solver.push();
-solver.add((buggy != correct).expr());
-assert(solver.check() == z3::sat);  // Yes — overflow exists.
-solver.pop();
-
-// Prove the bit-hack always matches the correct result.
-solver.push();
-solver.add((hack != correct).expr());
-assert(solver.check() == z3::unsat);  // Proven correct for all inputs.
-solver.pop();
 ```
 
-Check out
+The full example uses Z3 to prove that `buggy` can produce wrong results and
+that `hack` always matches `correct` for all 32-bit inputs. The key insight:
+`a + b` returns `SymUInt<33>`, so overflow is impossible, and truncation
+requires an explicit `unsafe_cast`.
+
+See
 [`examples/midpoint_overflow.cc`](https://github.com/qobilidop/z3wire/blob/main/examples/midpoint_overflow.cc)
 for the full example.
 
 ## Getting started
+
+To run the quick example yourself, make sure you have
+[Docker and Dev Container CLI](https://qobilidop.github.io/z3wire/dev/guide/#prerequisites),
+then:
+
+```sh
+git clone https://github.com/qobilidop/z3wire.git
+cd z3wire
+./dev.sh bazel run //examples:midpoint_overflow
+```
 
 Visit [qobilidop.github.io/z3wire](https://qobilidop.github.io/z3wire/) for the
 full documentation.

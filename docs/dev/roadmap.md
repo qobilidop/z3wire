@@ -52,6 +52,12 @@ Future directions for Z3Wire, roughly in priority order.
     snapshot rather than tracking `main`.
 - **Publish to Bazel Central Registry** — Allow users to use
     `bazel_dep(name = "z3wire", version = "...")` without `git_override`.
+- **vcpkg port** — Submit a port to the vcpkg registry so CMake users can depend
+    on Z3Wire via `vcpkg.json`. Z3 already has a vcpkg port, so the dependency
+    chain is straightforward.
+- **Publish Weave to PyPI** — Package the Weave codegen tool for `pip install`.
+    Separate from the C++ library since Weave is a development-time tool, not a
+    runtime dependency.
 
 ## Weave
 
