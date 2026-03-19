@@ -1,6 +1,8 @@
 #include "z3wire/bit_vec.h"
 
+#include <algorithm>
 #include <array>
+#include <cstddef>
 #include <cstdint>
 #include <type_traits>
 
@@ -255,9 +257,10 @@ TEST(BitVecTest, WideCheckedFromIntegral) {
   EXPECT_EQ(bytes[1], 0xBE);
   EXPECT_EQ(bytes[2], 0xAD);
   EXPECT_EQ(bytes[3], 0xDE);
-  for (size_t i = 4; i < bytes.size(); ++i) {
-    EXPECT_EQ(bytes[i], 0);
-  }
+  // Remaining bytes should be zero.
+  std::array<uint8_t, 12> upper_bytes;
+  std::copy(bytes.begin() + 4, bytes.end(), upper_bytes.begin());
+  EXPECT_EQ(upper_bytes, (std::array<uint8_t, 12>{}));
 }
 
 TEST(BitVecTest, WideCheckedNegativeOnUnsigned) {

@@ -1,5 +1,7 @@
 #include "z3wire/sym_bit_vec.h"
 
+#include <array>
+#include <cstddef>
 #include <cstdint>
 #include <type_traits>
 

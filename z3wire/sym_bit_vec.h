@@ -2,6 +2,7 @@
 #define Z3WIRE_SYM_BIT_VEC_H_
 
 #include <algorithm>
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <optional>
@@ -94,17 +95,20 @@ using SymSInt = SymBitVec<W, true>;
 template <size_t W, bool S>
 SymBitVec<W, S> to_symbolic(const BitVec<W, S>& val, z3::context& ctx) {
   if constexpr (W > 64) {
-    // Convert little-endian byte array to Z3 bool array.
-    // Z3_mk_bv_numeral: bits[0] = LSB, matching our byte layout.
-    constexpr size_t kNumBytes = (W + 7) / 8;
-    bool bits[W];
+    // Build wide Z3 bit-vector by concatenating 8-bit chunks.
+    // Each byte becomes a Z3 bv_val(byte, 8), then we concat MSB-first.
     auto bytes = val.value();
-    for (size_t i = 0; i < kNumBytes; ++i) {
-      for (size_t b = 0; b < 8 && i * 8 + b < W; ++b) {
-        bits[i * 8 + b] = (bytes[i] >> b) & 1;
-      }
+    constexpr size_t kNumBytes = (W + 7) / 8;
+    constexpr unsigned kTopBits = ((W % 8) == 0) ? 8 : (W % 8);
+    // Start with the most significant byte (possibly narrower than 8 bits).
+    z3::expr result =
+        ctx.bv_val(static_cast<unsigned>(bytes[kNumBytes - 1]), kTopBits);
+    // Concat remaining bytes from high to low.
+    for (size_t i = kNumBytes - 1; i > 0; --i) {
+      result = z3::concat(result,
+                          ctx.bv_val(static_cast<unsigned>(bytes[i - 1]), 8));
     }
-    return SymBitVec<W, S>(z3::expr(ctx, Z3_mk_bv_numeral(ctx, W, bits)));
+    return SymBitVec<W, S>(result);
   } else if constexpr (S) {
     return SymBitVec<W, S>(ctx.bv_val(static_cast<int64_t>(val.value()), W));
   } else {
@@ -117,21 +121,17 @@ template <size_t W, bool S>
 BitVec<W, S> to_concrete(const SymBitVec<W, S>& symbolic,
                          const z3::model& model) {
   if constexpr (W > 64) {
-    // Get MSB-first binary string from Z3.
+    // Extract byte-by-byte from the evaluated Z3 expression.
     z3::expr evaluated = model.eval(symbolic.expr(), true);
-    std::string bits_str =
-        Z3_get_numeral_binary_string(evaluated.ctx(), evaluated);
 
     constexpr size_t kNumBytes = (W + 7) / 8;
     std::array<uint8_t, kNumBytes> bytes{};
-
-    // bits_str is MSB-first. Reverse iterate to fill little-endian bytes.
-    size_t bit_index = 0;
-    for (auto it = bits_str.rbegin(); it != bits_str.rend(); ++it) {
-      if (*it == '1') {
-        bytes[bit_index / 8] |= uint8_t{1} << (bit_index % 8);
-      }
-      ++bit_index;
+    for (size_t i = 0; i < kNumBytes; ++i) {
+      unsigned hi = std::min(static_cast<unsigned>(i * 8 + 7),
+                             static_cast<unsigned>(W - 1));
+      unsigned lo = static_cast<unsigned>(i * 8);
+      bytes[i] = static_cast<uint8_t>(
+          evaluated.extract(hi, lo).simplify().get_numeral_uint());
     }
 
     return std::get<0>(BitVec<W, S>::Checked(bytes));
