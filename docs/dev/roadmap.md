@@ -1,40 +1,12 @@
 # Roadmap
 
-Future directions for Z3Wire, roughly in priority order.
+Future directions for Z3Wire.
 
-## Recently completed
-
-- **Concrete types (`UInt<W>`, `SInt<W>`)** — Fixed-width integer value holders
-    that automatically promote in mixed expressions. See the
-    [types guide](../usage/types.md#concrete-types).
-- **Relaxed comparisons** — Comparison operators now allow different widths and
-    signedness, automatically extending operands to a common type.
-- **Unary negate** (`-x`) — Two's complement negation with bit-growth (width +
-    1, always signed), consistent with binary subtraction.
-- **Single-bit extraction** — `z3w::bit<N>(val)` shorthand for
-    `z3w::extract<N, N>(val)`.
-- **Combinational logic framing** — Documented the complete set of combinational
-    logic primitives as the organizing principle for the API. See the
-    [design overview](../design/overview.md#combinational-logic-primitives).
-- **Weave codegen tool** — Generates C++ structs (symbolic + concrete) with full
-    method implementations and protobuf messages from RDL bit field
-    descriptions. See the [design doc](../design/weave.md).
-
-## Next features
+## Operations
 
 - **SymBool XOR** (`^`) — Dedicated XOR operator for `SymBool`. Currently
     expressible as `!=`, but a dedicated `^` would be more readable in
     logic-heavy code.
-- **Reduction operators** (`reduce_and`, `reduce_or`, `reduce_xor`) — collapse
-    all bits to a single `SymBool`. Low priority: `reduce_and` and `reduce_or`
-    are expressible via comparisons (`x == ~0`, `x != 0`); `reduce_xor` (parity)
-    is the only one that's hard to express today. Defer until a use case arises.
-- **`SymUInt<1>` / `SymBool` friction** — Consider reducing friction between
-    `SymUInt<1>` and `SymBool` (e.g., direct comparison), while respecting the
-    "explicit over implicit" principle. Defer until real usage patterns emerge.
-
-## Arithmetic
-
 - **Multiply** (`*`) — Fundamental operation supported by all SMT bit-vector
     libraries. Design question: bit-growth semantics (result width = `W1 + W2`?)
     vs same-width with overflow detection.
@@ -45,6 +17,13 @@ Future directions for Z3Wire, roughly in priority order.
 - **Rotate** (`rotate_left`, `rotate_right`) — Useful in crypto and hardware
     modeling. Constant and dynamic amount variants.
 - **Repeat** — Replicate a bit pattern N times. Useful for mask generation.
+- **Reduction operators** (`reduce_and`, `reduce_or`, `reduce_xor`) — Collapse
+    all bits to a single `SymBool`. Low priority: `reduce_and` and `reduce_or`
+    are expressible via comparisons (`x == ~0`, `x != 0`); `reduce_xor` (parity)
+    is the only one that's hard to express today. Defer until a use case arises.
+- **`SymUInt<1>` / `SymBool` friction** — Consider reducing friction between
+    `SymUInt<1>` and `SymBool` (e.g., direct comparison), while respecting the
+    "explicit over implicit" principle. Defer until real usage patterns emerge.
 
 ## Release and distribution
 
