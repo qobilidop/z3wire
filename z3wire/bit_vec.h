@@ -17,7 +17,7 @@ class BitVec {
 
   // Smallest unsigned integer type that fits W bits.
   template <size_t Width>
-  using UnsignedValueType = std::conditional_t<
+  using Unsigned = std::conditional_t<
       (Width <= 8), uint8_t,
       std::conditional_t<
           (Width <= 16), uint16_t,
@@ -25,7 +25,7 @@ class BitVec {
 
   // Smallest signed integer type that fits W bits.
   template <size_t Width>
-  using SignedValueType = std::conditional_t<
+  using Signed = std::conditional_t<
       (Width <= 8), int8_t,
       std::conditional_t<(Width <= 16), int16_t,
                          std::conditional_t<(Width <= 32), int32_t, int64_t>>>;
@@ -33,11 +33,10 @@ class BitVec {
  public:
   static constexpr size_t kWidth = W;
   static constexpr bool kIsSigned = IsSigned;
-  using ValueType =
-      std::conditional_t<IsSigned, SignedValueType<W>, UnsignedValueType<W>>;
+  using ValueType = std::conditional_t<IsSigned, Signed<W>, Unsigned<W>>;
 
   // Default constructor: zero-initializes.
-  constexpr BitVec() : bits_(0) {}
+  constexpr BitVec() : value_(0) {}
 
   // Compile-time range-checked literal.
   template <int64_t Value>
@@ -54,8 +53,7 @@ class BitVec {
     }
   }
 
-  // Runtime checked construction. Returns {value, truncated}.
-  // Accepts any integer type; no implicit conversions.
+  // Runtime checked construction. Returns {result, truncated}.
   template <std::integral T>
   [[nodiscard]] static std::tuple<BitVec, bool> Checked(T raw) {
     if constexpr (IsSigned) {
@@ -71,24 +69,23 @@ class BitVec {
       }
       auto val = static_cast<uint64_t>(raw);
       BitVec result(val);
-      bool truncated = (val != result.bits_);
+      bool truncated = (val != result.value_);
       return {result, truncated};
     }
   }
 
   // Access the stored value.
-  // Returns unsigned type for UInt, signed type for SInt.
-  [[nodiscard]] constexpr ValueType value() const { return bits_; }
+  [[nodiscard]] constexpr ValueType value() const { return value_; }
 
  private:
-  // Raw constructor: masks to W bits. Private to prevent silent truncation.
-  constexpr explicit BitVec(uint64_t raw) : bits_(mask(raw)) {}
+  // Truncates raw to W bits.
+  constexpr explicit BitVec(uint64_t raw) : value_(truncate(raw)) {}
 
-  static constexpr ValueType mask(uint64_t val) {
+  static constexpr ValueType truncate(uint64_t val) {
     if constexpr (W >= 64) {
       return static_cast<ValueType>(val);
     } else if constexpr (IsSigned) {
-      // Mask to W bits, then sign-extend from W to storage width.
+      // Mask to W bits, then sign-extend to native width.
       uint64_t masked = val & ((uint64_t{1} << W) - 1);
       uint64_t sign_bit = uint64_t{1} << (W - 1);
       int64_t sign_extended =
@@ -123,7 +120,7 @@ class BitVec {
     }
   }
 
-  ValueType bits_;
+  ValueType value_;
 };
 
 template <size_t W>

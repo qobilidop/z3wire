@@ -9,6 +9,7 @@ namespace z3w {
 // pointers, and all other types.
 class Bool {
  public:
+  // Default constructor: zero-initializes.
   constexpr Bool() : value_(false) {}
   constexpr Bool(bool v) : value_(v) {}  // NOLINT: implicit conversion intended
   template <typename T>
