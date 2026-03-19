@@ -129,5 +129,10 @@ TEST_F(SymBoolTest, ToConcreteFromSymbolicFalse) {
   EXPECT_FALSE(concrete.value());
 }
 
+TEST(SymBoolDeathTest, ExprOnUninitializedAborts) {
+  SymBool uninit;
+  EXPECT_DEATH((void)uninit.expr(), "SymBool used before initialization");
+}
+
 }  // namespace
 }  // namespace z3w

@@ -953,5 +953,10 @@ TEST_F(SymBitVecTest, BitExtract) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
+TEST(SymBitVecDeathTest, ExprOnUninitializedAborts) {
+  SymUInt<8> uninit;
+  EXPECT_DEATH((void)uninit.expr(), "SymBitVec used before initialization");
+}
+
 }  // namespace
 }  // namespace z3w

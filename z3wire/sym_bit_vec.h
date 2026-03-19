@@ -13,6 +13,7 @@
 #include <z3++.h>
 
 #include "z3wire/bit_vec.h"
+#include "z3wire/check.h"
 #include "z3wire/sym_bool.h"
 
 namespace z3w {
@@ -43,7 +44,10 @@ class SymBitVec {
     return SymBitVec(ctx.bv_val(Value, Width));
   }
 
-  [[nodiscard]] const z3::expr& expr() const { return *expr_; }
+  [[nodiscard]] const z3::expr& expr() const {
+    Z3W_CHECK(expr_.has_value()) << "SymBitVec used before initialization";
+    return *expr_;
+  }
 
   // --- Bitwise operators (strict: same width and signedness) ---
 

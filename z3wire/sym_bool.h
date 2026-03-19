@@ -8,6 +8,7 @@
 #include <z3++.h>
 
 #include "z3wire/bool.h"
+#include "z3wire/check.h"
 
 namespace z3w {
 
@@ -32,7 +33,10 @@ class SymBool {
   }
 
   // Access the underlying z3::expr.
-  [[nodiscard]] const z3::expr& expr() const { return *expr_; }
+  [[nodiscard]] const z3::expr& expr() const {
+    Z3W_CHECK(expr_.has_value()) << "SymBool used before initialization";
+    return *expr_;
+  }
 
   // Logical operators.
   friend SymBool operator&&(const SymBool& lhs, const SymBool& rhs) {

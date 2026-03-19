@@ -1,10 +1,54 @@
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "bit_vec",
+    hdrs = ["bit_vec.h"],
+)
+
+cc_test(
+    name = "bit_vec_test",
+    srcs = ["bit_vec_test.cc"],
+    deps = [
+        ":bit_vec",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "bool",
+    hdrs = ["bool.h"],
+)
+
+cc_test(
+    name = "bool_test",
+    srcs = ["bool_test.cc"],
+    deps = [
+        ":bool",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "check",
+    hdrs = ["check.h"],
+    visibility = ["//z3wire:__subpackages__"],
+)
+
+cc_test(
+    name = "check_test",
+    srcs = ["check_test.cc"],
+    deps = [
+        ":check",
+        "@googletest//:gtest_main",
+    ],
+)
+
 cc_library(
     name = "sym_bit_vec",
     hdrs = ["sym_bit_vec.h"],
-    visibility = ["//visibility:public"],
     deps = [
         ":bit_vec",
         ":sym_bool",
@@ -24,9 +68,9 @@ cc_test(
 cc_library(
     name = "sym_bool",
     hdrs = ["sym_bool.h"],
-    visibility = ["//visibility:public"],
     deps = [
         ":bool",
+        ":check",
         "@z3//:z3_static",
     ],
 )
@@ -36,36 +80,6 @@ cc_test(
     srcs = ["sym_bool_test.cc"],
     deps = [
         ":sym_bool",
-        "@googletest//:gtest_main",
-    ],
-)
-
-cc_library(
-    name = "bool",
-    hdrs = ["bool.h"],
-    visibility = ["//visibility:public"],
-)
-
-cc_test(
-    name = "bool_test",
-    srcs = ["bool_test.cc"],
-    deps = [
-        ":bool",
-        "@googletest//:gtest_main",
-    ],
-)
-
-cc_library(
-    name = "bit_vec",
-    hdrs = ["bit_vec.h"],
-    visibility = ["//visibility:public"],
-)
-
-cc_test(
-    name = "bit_vec_test",
-    srcs = ["bit_vec_test.cc"],
-    deps = [
-        ":bit_vec",
         "@googletest//:gtest_main",
     ],
 )
