@@ -64,6 +64,25 @@ py_test(
     deps = [":emit_proto"],
 )
 
+cc_library(
+    name = "cc_emit_proto",
+    srcs = ["emit_proto.cc"],
+    hdrs = ["emit_proto.h"],
+    deps = [
+        ":cc_resolver",
+        "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_test(
+    name = "cc_emit_proto_test",
+    srcs = ["emit_proto_test.cc"],
+    deps = [
+        ":cc_emit_proto",
+        "@googletest//:gtest_main",
+    ],
+)
+
 py_library(
     name = "emit_header",
     srcs = ["emit_header.py"],
