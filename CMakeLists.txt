@@ -13,6 +13,10 @@ set_target_properties(z3::libz3 PROPERTIES
     INTERFACE_LINK_LIBRARIES "${Z3_LIBRARY}"
 )
 
+find_package(absl CONFIG REQUIRED)
+find_package(protobuf CONFIG REQUIRED)
+find_package(GTest CONFIG REQUIRED)
+
 include(CTest)
 
 add_subdirectory(z3wire)

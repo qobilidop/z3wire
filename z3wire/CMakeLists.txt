@@ -39,16 +39,7 @@ target_include_directories(z3wire_sym_bit_vec INTERFACE
 target_link_libraries(z3wire_sym_bit_vec INTERFACE z3wire_sym_bool z3wire_bit_vec z3::libz3)
 
 # Tests
-include(CTest)
 if(BUILD_TESTING)
-    include(FetchContent)
-    FetchContent_Declare(
-        googletest
-        GIT_REPOSITORY https://github.com/google/googletest.git
-        GIT_TAG v1.16.0
-    )
-    FetchContent_MakeAvailable(googletest)
-
     add_executable(bool_test bool_test.cc)
     target_link_libraries(bool_test PRIVATE z3wire_bool GTest::gtest_main)
     add_test(NAME bool_test COMMAND bool_test)
@@ -65,3 +56,5 @@ if(BUILD_TESTING)
     target_link_libraries(sym_bit_vec_test PRIVATE z3wire_sym_bit_vec GTest::gtest_main)
     add_test(NAME sym_bit_vec_test COMMAND sym_bit_vec_test)
 endif()
+
+add_subdirectory(weave)

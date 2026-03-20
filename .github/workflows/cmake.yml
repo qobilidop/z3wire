@@ -16,7 +16,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .ccache
-          key: ccache-${{ runner.os }}-${{ hashFiles('CMakeLists.txt', 'z3wire/CMakeLists.txt') }}
+          key: ccache-${{ runner.os }}-${{ hashFiles('CMakeLists.txt', 'z3wire/CMakeLists.txt', 'z3wire/weave/CMakeLists.txt') }}
           restore-keys: |
             ccache-${{ runner.os }}-
 
