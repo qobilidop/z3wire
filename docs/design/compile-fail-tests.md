@@ -9,7 +9,7 @@ and the test asserts that compilation fails with the expected error message.
 ## Directory structure
 
 ```
-compile_fail_tests/
+tests/compile_fail/
   defs.bzl          # cc_compile_fail_test Starlark rule
   BUILD.bazel       # test targets
   *_test.cc         # one file per guard
