@@ -238,6 +238,9 @@ auto nibble = z3w::extract<4>(x, offset);  // SymUInt<4>
 auto byte   = z3w::extract<8>(x, offset);  // SymUInt<8>
 ```
 
+Offsets beyond the source width yield zero bits (zero-extension semantics). The
+index can be wider than the source bit-vector.
+
 ### Concatenation
 
 Glue bit-vectors together. The result width is `W1 + W2`, always returned as
