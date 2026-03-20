@@ -4,7 +4,7 @@ project(z3wire LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Locate the pre-built Z3 installed in the devcontainer (see Dockerfile).
+# Locate the pre-built Z3 installed in the dev container (see Dockerfile).
 find_path(Z3_INCLUDE_DIR NAMES z3++.h REQUIRED)
 find_library(Z3_LIBRARY NAMES z3 REQUIRED)
 add_library(z3::libz3 IMPORTED INTERFACE)

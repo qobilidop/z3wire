@@ -1,7 +1,11 @@
-name: Devcontainer
+name: Dev Container
 
 on:
   push:
+    branches: [main]
+    paths:
+      - ".devcontainer/**"
+  pull_request:
     branches: [main]
     paths:
       - ".devcontainer/**"
@@ -27,4 +31,4 @@ jobs:
         uses: devcontainers/ci@v0.3
         with:
           imageName: ghcr.io/qobilidop/z3wire-dev
-          push: always
+          push: ${{ github.event_name == 'push' && 'always' || 'never' }}
