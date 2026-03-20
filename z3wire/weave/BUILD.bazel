@@ -33,6 +33,25 @@ py_test(
     deps = [":resolver"],
 )
 
+cc_library(
+    name = "cc_resolver",
+    srcs = ["resolver.cc"],
+    hdrs = ["resolver.h"],
+    deps = [
+        ":rdl_cc_proto",
+        "@abseil-cpp//absl/strings:str_format",
+    ],
+)
+
+cc_test(
+    name = "cc_resolver_test",
+    srcs = ["resolver_test.cc"],
+    deps = [
+        ":cc_resolver",
+        "@googletest//:gtest_main",
+    ],
+)
+
 py_library(
     name = "emit_proto",
     srcs = ["emit_proto.py"],
