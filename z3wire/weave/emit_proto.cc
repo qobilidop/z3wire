@@ -60,6 +60,12 @@ std::string EmitProto(const ResolvedModule& module) {
     absl::StrAppend(&out, "\n");
   }
 
+  // Remove trailing blank line to match Python output format.
+  if (!out.empty() && out.back() == '\n' && out.size() >= 2 &&
+      out[out.size() - 2] == '\n') {
+    out.pop_back();
+  }
+
   return out;
 }
 

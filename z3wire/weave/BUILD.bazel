@@ -117,14 +117,15 @@ py_test(
     deps = [":emit_header"],
 )
 
-py_binary(
+cc_binary(
     name = "weave",
-    srcs = ["weave.py"],
+    srcs = ["weave_main.cc"],
     visibility = ["//visibility:public"],
     deps = [
-        ":emit_header",
-        ":emit_proto",
-        ":rdl_py_proto",
-        ":resolver",
+        ":cc_emit_header",
+        ":cc_emit_proto",
+        ":cc_resolver",
+        ":rdl_cc_proto",
+        "@protobuf//:protobuf",
     ],
 )
