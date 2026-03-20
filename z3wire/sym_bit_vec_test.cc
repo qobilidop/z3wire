@@ -437,6 +437,43 @@ TEST_F(SymBitVecTest, SymbolicExtract) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
+TEST_F(SymBitVecTest, SymbolicExtractWideIndex) {
+  // Index wider than source: IdxW (16) > W (8).
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<16> idx(ctx_, "idx");
+  auto nibble = extract<4>(a, idx);
+
+  static_assert(decltype(nibble)::kWidth == 4);
+
+  // In-range offset: 0xAB >> 4 = 0x0A, low 4 bits = 0xA.
+  {
+    z3::solver s(ctx_);
+    s.add(a.expr() == ctx_.bv_val(0xAB, 8));
+    s.add(idx.expr() == ctx_.bv_val(4, 16));
+    s.add(nibble.expr() != ctx_.bv_val(0xA, 4));
+    EXPECT_EQ(s.check(), z3::unsat);
+  }
+
+  // Out-of-range offset: shifting by 100 should yield zero (zero-extension).
+  {
+    z3::solver s(ctx_);
+    s.add(a.expr() == ctx_.bv_val(0xAB, 8));
+    s.add(idx.expr() == ctx_.bv_val(100, 16));
+    s.add(nibble.expr() != ctx_.bv_val(0, 4));
+    EXPECT_EQ(s.check(), z3::unsat);
+  }
+
+  // Solver must not find an out-of-range offset that produces non-zero.
+  // For any offset >= W (8), the result should be zero.
+  {
+    z3::solver s(ctx_);
+    s.add(a.expr() == ctx_.bv_val(0xFF, 8));
+    s.add(z3::uge(idx.expr(), ctx_.bv_val(8, 16)));
+    s.add(nibble.expr() != ctx_.bv_val(0, 4));
+    EXPECT_EQ(s.check(), z3::unsat);
+  }
+}
+
 // --- concat ---
 
 TEST_F(SymBitVecTest, Concat) {
