@@ -646,6 +646,114 @@ TEST_F(SymBitVecTest, ShrSignedWithUnsignedAmount) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
+// --- rotl ---
+
+TEST_F(SymBitVecTest, ConstantRotl) {
+  SymUInt<8> a(ctx_, "a");
+  auto result = rotl<3>(a);
+
+  static_assert((std::is_same_v<decltype(result), SymUInt<8>>));
+
+  z3::solver s(ctx_);
+  s.add(a.expr() == ctx_.bv_val(0xB2, 8));
+  // rotl(0xB2, 3) = 0xB2 << 3 | 0xB2 >> 5 = 0x90 | 0x05 = 0x95.
+  s.add(result.expr() != ctx_.bv_val(0x95, 8));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(SymBitVecTest, SymbolicRotl) {
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<3> n(ctx_, "n");
+  auto result = rotl(a, n);
+
+  static_assert((std::is_same_v<decltype(result), SymUInt<8>>));
+
+  z3::solver s(ctx_);
+  s.add(a.expr() == ctx_.bv_val(0xB2, 8));
+  s.add(n.expr() == ctx_.bv_val(3, 3));
+  s.add(result.expr() != ctx_.bv_val(0x95, 8));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(SymBitVecTest, ConcreteRotl) {
+  SymUInt<8> a(ctx_, "a");
+  auto n = std::get<0>(UInt<3>::Checked(3));
+  auto result = rotl(a, n);
+
+  static_assert((std::is_same_v<decltype(result), SymUInt<8>>));
+
+  z3::solver s(ctx_);
+  s.add(a.expr() == ctx_.bv_val(0xB2, 8));
+  s.add(result.expr() != ctx_.bv_val(0x95, 8));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(SymBitVecTest, ConstantRotlPreservesSignedness) {
+  SymSInt<8> a(ctx_, "a");
+  auto result = rotl<3>(a);
+
+  static_assert((std::is_same_v<decltype(result), SymSInt<8>>));
+}
+
+// --- rotr ---
+
+TEST_F(SymBitVecTest, ConstantRotr) {
+  SymUInt<8> a(ctx_, "a");
+  auto result = rotr<3>(a);
+
+  static_assert((std::is_same_v<decltype(result), SymUInt<8>>));
+
+  z3::solver s(ctx_);
+  s.add(a.expr() == ctx_.bv_val(0xB2, 8));
+  // rotr(0xB2, 3) = 0xB2 >> 3 | 0xB2 << 5 = 0x16 | 0x40 = 0x56.
+  s.add(result.expr() != ctx_.bv_val(0x56, 8));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(SymBitVecTest, SymbolicRotr) {
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<3> n(ctx_, "n");
+  auto result = rotr(a, n);
+
+  static_assert((std::is_same_v<decltype(result), SymUInt<8>>));
+
+  z3::solver s(ctx_);
+  s.add(a.expr() == ctx_.bv_val(0xB2, 8));
+  s.add(n.expr() == ctx_.bv_val(3, 3));
+  s.add(result.expr() != ctx_.bv_val(0x56, 8));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(SymBitVecTest, ConcreteRotr) {
+  SymUInt<8> a(ctx_, "a");
+  auto n = std::get<0>(UInt<3>::Checked(3));
+  auto result = rotr(a, n);
+
+  static_assert((std::is_same_v<decltype(result), SymUInt<8>>));
+
+  z3::solver s(ctx_);
+  s.add(a.expr() == ctx_.bv_val(0xB2, 8));
+  s.add(result.expr() != ctx_.bv_val(0x56, 8));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(SymBitVecTest, ConstantRotrPreservesSignedness) {
+  SymSInt<8> a(ctx_, "a");
+  auto result = rotr<3>(a);
+
+  static_assert((std::is_same_v<decltype(result), SymSInt<8>>));
+}
+
+TEST_F(SymBitVecTest, RotlRotrRoundtrip) {
+  SymUInt<8> a(ctx_, "a");
+  // rotl then rotr by same amount should be identity.
+  auto result = rotr<5>(rotl<5>(a));
+
+  z3::solver s(ctx_);
+  s.add(result.expr() != a.expr());
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
 // --- Type traits ---
 
 TEST_F(SymBitVecTest, IsSymbolicV) {

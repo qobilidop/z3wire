@@ -586,6 +586,54 @@ SymBitVec<W, S> shr(const SymBitVec<W, S>& val, const SymUInt<K>& amount) {
   }
 }
 
+// --- Left rotation ---
+
+// Constant rotation: result preserves type.
+template <size_t N, size_t W, bool S>
+SymBitVec<W, S> rotl(const SymBitVec<W, S>& val) {
+  return SymBitVec<W, S>(val.expr().rotate_left(N));
+}
+
+// Symbolic rotation: amount width may differ from value width.
+template <size_t W, bool S, size_t K>
+SymBitVec<W, S> rotl(const SymBitVec<W, S>& val,
+                     const BitVec<K, false>& amount) {
+  return rotl(val, to_symbolic(amount, val.expr().ctx()));
+}
+
+template <size_t W, bool S, size_t K>
+SymBitVec<W, S> rotl(const SymBitVec<W, S>& val, const SymUInt<K>& amount) {
+  auto amt_ext = unsafe_cast<SymUInt<W>>(amount);
+  auto& ctx = val.expr().ctx();
+  z3::expr r(ctx, Z3_mk_ext_rotate_left(ctx, val.expr(), amt_ext.expr()));
+  ctx.check_error();
+  return SymBitVec<W, S>(r);
+}
+
+// --- Right rotation ---
+
+// Constant rotation: result preserves type.
+template <size_t N, size_t W, bool S>
+SymBitVec<W, S> rotr(const SymBitVec<W, S>& val) {
+  return SymBitVec<W, S>(val.expr().rotate_right(N));
+}
+
+// Symbolic rotation: amount width may differ from value width.
+template <size_t W, bool S, size_t K>
+SymBitVec<W, S> rotr(const SymBitVec<W, S>& val,
+                     const BitVec<K, false>& amount) {
+  return rotr(val, to_symbolic(amount, val.expr().ctx()));
+}
+
+template <size_t W, bool S, size_t K>
+SymBitVec<W, S> rotr(const SymBitVec<W, S>& val, const SymUInt<K>& amount) {
+  auto amt_ext = unsafe_cast<SymUInt<W>>(amount);
+  auto& ctx = val.expr().ctx();
+  z3::expr r(ctx, Z3_mk_ext_rotate_right(ctx, val.expr(), amt_ext.expr()));
+  ctx.check_error();
+  return SymBitVec<W, S>(r);
+}
+
 }  // namespace z3w
 
 #endif  // Z3WIRE_SYM_BIT_VEC_H_

@@ -13,6 +13,7 @@ symbolic in mixed expressions (see
 | Comparison       | `==`, `!=`, `<`, `<=`, `>`, `>=` | Mixed allowed, auto-extends |
 | Arithmetic       | `+`, `-`, unary `-`              | Mixed allowed, auto-extends |
 | Shifting         | `shl`, `shr`                     | Any widths, `shl` widens    |
+| Rotation         | `rotl`, `rotr`                   | Any widths, preserves type  |
 | Bit manipulation | `bit`, `extract`, `concat`       | Any widths                  |
 | Mux              | `ite`                            | Same type                   |
 
@@ -193,6 +194,46 @@ shift patterns:
 | Raw left shift (fixed width)  | `unsafe_cast<SymUInt<W>>(shl<N>(val))`  |
 | Checked left shift (verify)   | `checked_cast<SymUInt<W>>(shl<N>(val))` |
 | Logical right shift on signed | `shr(as_unsigned(val), amt)`            |
+
+## Rotation
+
+Bit rotation (circular shift). The result preserves the input type and width.
+
+### `rotl` - Left rotation
+
+**Constant rotation:**
+
+```cpp
+z3w::SymUInt<8> x(ctx, "x");
+auto r = z3w::rotl<3>(x);  // SymUInt<8>
+```
+
+**Symbolic rotation:**
+
+```cpp
+z3w::SymUInt<8> x(ctx, "x");
+z3w::SymUInt<3> n(ctx, "n");
+auto r = z3w::rotl(x, n);  // SymUInt<8>
+```
+
+### `rotr` - Right rotation
+
+**Constant rotation:**
+
+```cpp
+z3w::SymUInt<8> x(ctx, "x");
+auto r = z3w::rotr<3>(x);  // SymUInt<8>
+```
+
+**Symbolic rotation:**
+
+```cpp
+z3w::SymUInt<8> x(ctx, "x");
+z3w::SymUInt<3> n(ctx, "n");
+auto r = z3w::rotr(x, n);  // SymUInt<8>
+```
+
+Rotation amounts wrap modulo the bit width, so `rotl<W>(x) == x`.
 
 ## Bit manipulation
 
