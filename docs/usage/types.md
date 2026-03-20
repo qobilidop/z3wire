@@ -71,13 +71,12 @@ std::optional<z3w::SymBool> b = z3w::SymBool::FromExpr(raw);
 
 ## Concrete types
 
-Concrete types store native values and do not require a `z3::context`. Unsigned
-bit-vector width must be at least 1. Signed bit-vector width must be between 1
-and 64.
+Concrete types store native values and do not require a `z3::context`.
+Bit-vector width must be at least 1.
 
 For widths up to 64, `.value()` returns a native integer type. For widths above
-64 (unsigned only), `.value()` returns `std::array<uint8_t, (W + 7) / 8>` in
-little-endian byte order.
+64, `.value()` returns `std::array<uint8_t, (W + 7) / 8>` in little-endian byte
+order.
 
 ### Construction
 
@@ -107,7 +106,7 @@ auto [y, y_truncated] = z3w::UInt<8>::Checked(200);
 // y.value() == 200, y_truncated == false
 ```
 
-Wide unsigned types (W > 64) store values as a byte array:
+Wide types (W > 64) store values as a byte array:
 
 ```cpp
 auto wide = z3w::UInt<128>::Literal<42>();

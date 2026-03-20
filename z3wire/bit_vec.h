@@ -9,15 +9,12 @@
 #include <limits>
 #include <tuple>
 #include <type_traits>
-#include <utility>
 
 namespace z3w {
 
 template <size_t W, bool IsSigned>
 class BitVec {
   static_assert(W >= 1, "Bit-width must be at least 1.");
-  static_assert(W <= 64 || !IsSigned,
-                "Signed bit-vectors wider than 64 bits are not supported.");
 
   static constexpr size_t kNumBytes = (W + 7) / 8;
 
@@ -179,19 +176,10 @@ using UInt = BitVec<W, false>;
 template <size_t W>
 using SInt = BitVec<W, true>;
 
-// --- Equality ---
+// --- Equality (same type: same width and signedness) ---
 
-// Narrow equality (any width/signedness combination, W <= 64 only).
-template <size_t W1, bool S1, size_t W2, bool S2>
-  requires(W1 <= 64 && W2 <= 64)
-bool operator==(const BitVec<W1, S1>& lhs, const BitVec<W2, S2>& rhs) {
-  return std::cmp_equal(lhs.value(), rhs.value());
-}
-
-// Wide equality (same width, unsigned only).
-template <size_t W>
-  requires(W > 64)
-bool operator==(const BitVec<W, false>& lhs, const BitVec<W, false>& rhs) {
+template <size_t W, bool S>
+bool operator==(const BitVec<W, S>& lhs, const BitVec<W, S>& rhs) {
   return lhs.value() == rhs.value();
 }
 

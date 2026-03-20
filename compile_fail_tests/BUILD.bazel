@@ -15,13 +15,6 @@ cc_compile_fail_test(
 )
 
 cc_compile_fail_test(
-    name = "bit_vec_width_too_large_test",
-    src = "bit_vec_width_too_large_test.cc",
-    expected_message = "Signed bit-vectors wider than 64 bits are not supported",
-    deps = ["//z3wire:bit_vec"],
-)
-
-cc_compile_fail_test(
     name = "bit_vec_signed_literal_above_max_test",
     src = "bit_vec_signed_literal_above_max_test.cc",
     expected_message = "Literal value does not fit in bit-width",

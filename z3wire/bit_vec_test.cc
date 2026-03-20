@@ -177,37 +177,24 @@ TEST(BitVecTest, Width1) {
   EXPECT_TRUE(truncated);
 }
 
-// --- Cross-type equality (different widths and/or signedness) ---
+// --- Same-type equality ---
 
-TEST(BitVecTest, CrossTypeEqualitySameSignedness) {
+TEST(BitVecTest, SameTypeEquality) {
   auto a = UInt<8>::Literal<42>();
-  auto b = UInt<16>::Literal<42>();
+  auto b = UInt<8>::Literal<42>();
+  auto c = UInt<8>::Literal<99>();
   EXPECT_TRUE(a == b);
+  EXPECT_FALSE(a == c);
   EXPECT_FALSE(a != b);
+  EXPECT_TRUE(a != c);
 }
 
-TEST(BitVecTest, CrossTypeEqualityDifferentValues) {
-  auto a = UInt<8>::Literal<100>();
-  auto b = UInt<16>::Literal<200>();
-  EXPECT_FALSE(a == b);
-  EXPECT_TRUE(a != b);
-}
-
-TEST(BitVecTest, CrossTypeEqualityMixedSignedness) {
-  // UInt<8>(42) == SInt<16>(42) → true
-  // Common type: signed, width = max(8,16)+1 = 17.
-  auto a = UInt<8>::Literal<42>();
-  auto b = SInt<16>::Literal<42>();
+TEST(BitVecTest, SameTypeEqualitySigned) {
+  auto a = SInt<8>::Literal<-1>();
+  auto b = SInt<8>::Literal<-1>();
+  auto c = SInt<8>::Literal<42>();
   EXPECT_TRUE(a == b);
-  EXPECT_FALSE(a != b);
-}
-
-TEST(BitVecTest, CrossTypeEqualityMixedSignednessNegative) {
-  // SInt<32>(-1) != UInt<32>(4294967295) — mathematically different values,
-  // even though they share the same bit pattern.
-  auto a = SInt<32>::Literal<-1>();
-  auto b = UInt<32>::Checked(UINT32_MAX);
-  EXPECT_FALSE(a == std::get<0>(b));
+  EXPECT_FALSE(a == c);
 }
 
 // --- Wide (W > 64) unsigned ---
@@ -315,6 +302,16 @@ TEST(BitVecTest, WideDefaultIsZero) {
   UInt<128> a;
   auto b = UInt<128>::Literal<0>();
   EXPECT_TRUE(a == b);
+}
+
+TEST(BitVecTest, WideSignedEquality) {
+  auto a = SInt<128>::Literal<42>();
+  auto b = SInt<128>::Literal<42>();
+  auto c = SInt<128>::Literal<99>();
+  EXPECT_TRUE(a == b);
+  EXPECT_FALSE(a == c);
+  EXPECT_FALSE(a != b);
+  EXPECT_TRUE(a != c);
 }
 
 }  // namespace
