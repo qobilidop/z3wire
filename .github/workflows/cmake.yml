@@ -12,12 +12,25 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Restore ccache
+        uses: actions/cache@v4
+        with:
+          path: .ccache
+          key: ccache-${{ runner.os }}-${{ hashFiles('CMakeLists.txt', 'z3wire/CMakeLists.txt') }}
+          restore-keys: |
+            ccache-${{ runner.os }}-
+
       - name: Configure
         uses: devcontainers/ci@v0.3
         with:
           cacheFrom: ghcr.io/qobilidop/z3wire-dev
           push: never
-          runCmd: cmake -B build -DCMAKE_BUILD_TYPE=Release
+          runCmd: >
+            cmake -B build -DCMAKE_BUILD_TYPE=Release
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          env: |
+            CCACHE_DIR=/workspace/.ccache
 
       - name: Build
         uses: devcontainers/ci@v0.3
@@ -25,6 +38,8 @@ jobs:
           cacheFrom: ghcr.io/qobilidop/z3wire-dev
           push: never
           runCmd: cmake --build build
+          env: |
+            CCACHE_DIR=/workspace/.ccache
 
       - name: Test
         uses: devcontainers/ci@v0.3
