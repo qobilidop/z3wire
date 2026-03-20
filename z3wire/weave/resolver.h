@@ -12,10 +12,10 @@ namespace z3wire::weave {
 struct ResolvedField {
   std::string name;
   std::string desc;
-  int width;           // Total width in bits (element_width * max(count, 1))
-  int offset;          // Bit offset within parent struct
-  int count;           // 0 = scalar, >= 1 = array
-  int element_width;   // Width of a single element
+  int width;          // Total width in bits (element_width * max(count, 1))
+  int offset;         // Bit offset within parent struct
+  int count;          // 0 = scalar, >= 1 = array
+  int element_width;  // Width of a single element
   bool reserved;
   enum Kind { kBool, kBitVec, kEnumRef, kStructRef };
   Kind kind;

@@ -46,12 +46,10 @@ TEST(EmitHeaderTest, EnumConstants) {
   EXPECT_THAT(output, HasSubstr("#pragma once"));
   EXPECT_THAT(output, HasSubstr("namespace test {"));
   EXPECT_THAT(output, HasSubstr("struct OpMode {"));
-  EXPECT_THAT(output,
-              HasSubstr("static constexpr auto kIdle = "
-                        "z3w::UInt<2>::Literal<0>();"));
-  EXPECT_THAT(output,
-              HasSubstr("static constexpr auto kActive = "
-                        "z3w::UInt<2>::Literal<1>();"));
+  EXPECT_THAT(output, HasSubstr("static constexpr auto kIdle = "
+                                "z3w::UInt<2>::Literal<0>();"));
+  EXPECT_THAT(output, HasSubstr("static constexpr auto kActive = "
+                                "z3w::UInt<2>::Literal<1>();"));
   EXPECT_THAT(output, HasSubstr("}  // namespace test"));
 }
 
@@ -88,9 +86,8 @@ TEST(EmitHeaderTest, ConcreteStruct) {
   EXPECT_THAT(output, HasSubstr("z3w::SInt<4> val;"));
   EXPECT_THAT(output, HasSubstr("std::array<z3w::UInt<8>, 2> items;"));
   EXPECT_THAT(output, HasSubstr("RegProto ToProto() const;"));
-  EXPECT_THAT(output,
-              HasSubstr("static RegConcrete FromProto("
-                        "const RegProto& proto);"));
+  EXPECT_THAT(output, HasSubstr("static RegConcrete FromProto("
+                                "const RegProto& proto);"));
 }
 
 TEST(EmitHeaderTest, SymbolicStruct) {
@@ -118,8 +115,7 @@ TEST(EmitHeaderTest, SymbolicStruct) {
   EXPECT_THAT(output, HasSubstr("// [0]"));
   EXPECT_THAT(output, HasSubstr("// [7:1]"));
   EXPECT_THAT(output, HasSubstr("z3w::SymUInt<8> Pack() const;"));
-  EXPECT_THAT(output,
-              HasSubstr("static RegSymbolic Create(z3::context& ctx,"));
+  EXPECT_THAT(output, HasSubstr("static RegSymbolic Create(z3::context& ctx,"));
 }
 
 TEST(EmitHeaderTest, ToProtoBody) {
@@ -150,9 +146,8 @@ TEST(EmitHeaderTest, ToProtoBody) {
   EXPECT_THAT(output,
               HasSubstr("inline RegProto RegConcrete::ToProto() const {"));
   EXPECT_THAT(output, HasSubstr("proto.set_flag(bool(flag));"));
-  EXPECT_THAT(
-      output,
-      HasSubstr("proto.set_val(static_cast<uint32_t>(val.value()));"));
+  EXPECT_THAT(output,
+              HasSubstr("proto.set_val(static_cast<uint32_t>(val.value()));"));
   // Reserved field should not appear in ToProto
   auto to_proto_pos = output.find("ToProto");
   auto brace_pos = output.find("}", to_proto_pos);
@@ -180,11 +175,9 @@ TEST(EmitHeaderTest, FromProtoBody) {
   auto resolved = Resolve(module);
   std::string output = EmitHeader(resolved, "test.pb.h");
 
-  EXPECT_THAT(output,
-              HasSubstr("inline RegConcrete RegConcrete::FromProto("
-                        "const RegProto& proto) {"));
-  EXPECT_THAT(output,
-              HasSubstr("result.flag = z3w::Bool(proto.flag());"));
+  EXPECT_THAT(output, HasSubstr("inline RegConcrete RegConcrete::FromProto("
+                                "const RegProto& proto) {"));
+  EXPECT_THAT(output, HasSubstr("result.flag = z3w::Bool(proto.flag());"));
   EXPECT_THAT(output,
               HasSubstr("std::get<0>(z3w::UInt<8>::Checked(proto.val()))"));
 }
@@ -233,10 +226,8 @@ TEST(EmitHeaderTest, CreateBody) {
   auto resolved = Resolve(module);
   std::string output = EmitHeader(resolved, "test.pb.h");
 
-  EXPECT_THAT(output,
-              HasSubstr("z3w::SymBool(ctx, prefix + \".flag\")"));
-  EXPECT_THAT(output,
-              HasSubstr("z3w::SymUInt<7>(ctx, prefix + \".val\")"));
+  EXPECT_THAT(output, HasSubstr("z3w::SymBool(ctx, prefix + \".flag\")"));
+  EXPECT_THAT(output, HasSubstr("z3w::SymUInt<7>(ctx, prefix + \".val\")"));
 }
 
 TEST(EmitHeaderTest, ArrayInPack) {
@@ -255,9 +246,8 @@ TEST(EmitHeaderTest, ArrayInPack) {
   std::string output = EmitHeader(resolved, "test.pb.h");
 
   // Array elements should be expanded in concat
-  EXPECT_THAT(
-      output,
-      HasSubstr("return z3w::concat(items[2], items[1], items[0]);"));
+  EXPECT_THAT(output,
+              HasSubstr("return z3w::concat(items[2], items[1], items[0]);"));
 }
 
 TEST(EmitHeaderTest, MsbFirstPack) {
@@ -386,12 +376,10 @@ TEST(EmitHeaderTest, FullExample) {
 
   // Enum
   EXPECT_THAT(output, HasSubstr("struct OpMode {"));
-  EXPECT_THAT(output,
-              HasSubstr("static constexpr auto kIdle = "
-                        "z3w::UInt<2>::Literal<0>();"));
-  EXPECT_THAT(output,
-              HasSubstr("static constexpr auto kSleep = "
-                        "z3w::UInt<2>::Literal<2>();"));
+  EXPECT_THAT(output, HasSubstr("static constexpr auto kIdle = "
+                                "z3w::UInt<2>::Literal<0>();"));
+  EXPECT_THAT(output, HasSubstr("static constexpr auto kSleep = "
+                                "z3w::UInt<2>::Literal<2>();"));
 
   // ErrorInfo concrete
   EXPECT_THAT(output, HasSubstr("struct ErrorInfoConcrete {"));
@@ -409,8 +397,7 @@ TEST(EmitHeaderTest, FullExample) {
   // StatusRegister symbolic - bit offsets
   EXPECT_THAT(output, HasSubstr("z3w::SymUInt<32> Pack() const;"));
   EXPECT_THAT(output, HasSubstr("ErrorInfoSymbolic error;"));
-  EXPECT_THAT(output,
-              HasSubstr("std::array<z3w::SymUInt<4>, 4> counters;"));
+  EXPECT_THAT(output, HasSubstr("std::array<z3w::SymUInt<4>, 4> counters;"));
 
   // Namespace
   EXPECT_THAT(output, HasSubstr("namespace example {"));

@@ -6,7 +6,6 @@ cd "$(git rev-parse --show-toplevel)"
 
 cpp_files=$(find z3wire examples -name '*.h' -o -name '*.cc' -o -name '*.proto' |
   grep -v '\.expected\.')
-py_files=$(find z3wire examples -name '*.py' 2>/dev/null || true)
 bzl_files=$(find . -name '*.bazel' -o -name '*.bzl' -o -name 'BUILD' |
   grep -v -e '.git/' -e './build/' -e './site/')
 sh_files=$(find . -name '*.sh' -not -path './.git/*' -not -path './build/*' -not -path './site/*')
@@ -16,11 +15,6 @@ if [[ "${1:-}" == "--check" ]]; then
 
   # --- C++ ---
   if ! echo "$cpp_files" | xargs --no-run-if-empty clang-format --dry-run -Werror 2>&1; then
-    fail=1
-  fi
-
-  # --- Python ---
-  if ! echo "$py_files" | xargs --no-run-if-empty ruff format --check 2>&1; then
     fail=1
   fi
 
@@ -47,7 +41,6 @@ if [[ "${1:-}" == "--check" ]]; then
   echo "All files are properly formatted."
 else
   echo "$cpp_files" | xargs --no-run-if-empty clang-format -i
-  echo "$py_files" | xargs --no-run-if-empty ruff format
   echo "$bzl_files" | xargs --no-run-if-empty buildifier
   echo "$sh_files" | xargs --no-run-if-empty shfmt -w
   dprint fmt

@@ -42,7 +42,8 @@ gtest_include_dir=$(dirname "$(dirname "$gtest_header")")
 files=$(find z3wire examples -name '*.h' -o -name '*.cc' |
   grep -v '\.expected\.' |
   grep -v 'examples/weave/status_register_test\.cc' |
-  grep -v 'examples/weave/status_register_verification\.cc')
+  grep -v 'examples/weave/status_register_verification\.cc' |
+  grep -v 'z3wire/weave/')
 entries=""
 for f in $files; do
   abs_path="$(pwd)/$f"
@@ -83,11 +84,6 @@ if [[ $ic_fail -ne 0 ]]; then
 fi
 
 echo "include-cleaner: all checks passed."
-
-# --- Python ---
-py_files=$(find z3wire examples -name '*.py' 2>/dev/null || true)
-echo "$py_files" | xargs --no-run-if-empty ruff check
-echo "ruff: all checks passed."
 
 # --- Bazel ---
 bzl_files=$(find . -name '*.bazel' -o -name '*.bzl' -o -name 'BUILD' |

@@ -63,20 +63,12 @@ RUN ARCH=$(uname -m | sed 's/x86_64/x86_64/;s/aarch64/aarch64/') && \
     cp /tmp/dprint/dprint /usr/local/bin/dprint && chmod +x /usr/local/bin/dprint && \
     rm -rf /tmp/dprint.zip /tmp/dprint
 
-# Install ruff for Python formatting.
-COPY --from=ghcr.io/astral-sh/ruff:latest /ruff /usr/local/bin/ruff
-
-# Install uv for Python package management.
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
-
-# Install Python packages: MkDocs with Material theme and weave codegen tools.
-RUN uv pip install --system --break-system-packages \
+# Install Python packages for MkDocs.
+RUN pip3 install --break-system-packages \
     mkdocs-include-markdown-plugin \
-    mkdocs-material \
-    protobuf \
-    pytest
+    mkdocs-material
 
-# Non-root user (required by rules_python).
+# Non-root user.
 RUN useradd -m -s /bin/bash dev && \
     mkdir -p /home/dev/.cache/bazel && chown -R dev:dev /home/dev/.cache && \
     git config --system --add safe.directory /workspace

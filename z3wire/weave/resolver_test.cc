@@ -309,10 +309,10 @@ TEST(ResolverTest, FullExample) {
   const auto& ei_r = resolved.structs[0];
   EXPECT_EQ(ei_r.name, "ErrorInfo");
   EXPECT_EQ(ei_r.total_width, 8);
-  EXPECT_EQ(ei_r.fields[0].offset, 0);   // code [3:0]
-  EXPECT_EQ(ei_r.fields[1].offset, 4);   // severity [5:4]
-  EXPECT_EQ(ei_r.fields[2].offset, 6);   // fatal [6]
-  EXPECT_EQ(ei_r.fields[3].offset, 7);   // reserved [7]
+  EXPECT_EQ(ei_r.fields[0].offset, 0);  // code [3:0]
+  EXPECT_EQ(ei_r.fields[1].offset, 4);  // severity [5:4]
+  EXPECT_EQ(ei_r.fields[2].offset, 6);  // fatal [6]
+  EXPECT_EQ(ei_r.fields[3].offset, 7);  // reserved [7]
 
   // StatusRegister: 1 + 2 + 8 + 16 + 5 = 32
   ASSERT_GE(resolved.structs.size(), 2);

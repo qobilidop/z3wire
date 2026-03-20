@@ -114,8 +114,8 @@ std::string ToConcreteExpr(const ResolvedField& field,
                            const std::string& accessor) {
   switch (field.kind) {
     case ResolvedField::kBool:
-      return absl::StrFormat(
-          "z3w::Bool(model.eval(%s.expr(), true).is_true())", accessor);
+      return absl::StrFormat("z3w::Bool(model.eval(%s.expr(), true).is_true())",
+                             accessor);
     case ResolvedField::kBitVec:
     case ResolvedField::kEnumRef: {
       std::string ctype = ConcreteType(field);
@@ -171,17 +171,15 @@ std::string CreateExpr(const ResolvedField& field,
   }
 }
 
-std::string PackExpr(const ResolvedField& field,
-                     const std::string& accessor) {
+std::string PackExpr(const ResolvedField& field, const std::string& accessor) {
   switch (field.kind) {
     case ResolvedField::kBool:
       return absl::StrFormat("z3w::as_uint1(%s)", accessor);
     case ResolvedField::kBitVec:
     case ResolvedField::kEnumRef:
       if (field.signedness == ResolvedField::kSigned) {
-        return absl::StrFormat(
-            "z3w::unsafe_cast<z3w::SymUInt<%d>>(%s)", field.element_width,
-            accessor);
+        return absl::StrFormat("z3w::unsafe_cast<z3w::SymUInt<%d>>(%s)",
+                               field.element_width, accessor);
       }
       return accessor;
     case ResolvedField::kStructRef:
@@ -206,7 +204,7 @@ void EmitConcreteDecl(std::string& out, const ResolvedStruct& s) {
   absl::StrAppend(&out, "\n");
   absl::StrAppend(&out, "  ", s.name, "Proto ToProto() const;\n");
   absl::StrAppend(&out, "  static ", s.name, "Concrete FromProto(const ",
-                   s.name, "Proto& proto);\n");
+                  s.name, "Proto& proto);\n");
   absl::StrAppend(&out, "};\n");
 }
 
@@ -217,7 +215,7 @@ void EmitSymbolicDecl(std::string& out, const ResolvedStruct& s) {
   std::string pack_label =
       s.field_pack_order == ResolvedStruct::kLsbFirst ? "LSB" : "MSB";
   absl::StrAppend(&out, "// Total width: ", s.total_width,
-                   " bits, field pack order: ", pack_label, " first\n");
+                  " bits, field pack order: ", pack_label, " first\n");
   absl::StrAppend(&out, "struct ", s.name, "Symbolic {\n");
   for (const auto& f : s.fields) {
     std::string decl = FieldDecl(SymbolicType(f), f);
@@ -232,14 +230,13 @@ void EmitSymbolicDecl(std::string& out, const ResolvedStruct& s) {
   }
   absl::StrAppend(&out, "\n");
   absl::StrAppend(&out, "  static ", s.name,
-                   "Symbolic Create(z3::context& ctx,\n");
+                  "Symbolic Create(z3::context& ctx,\n");
   absl::StrAppend(&out, "      const std::string& prefix);\n");
-  absl::StrAppend(&out, "  z3w::SymUInt<", s.total_width,
-                   "> Pack() const;\n");
+  absl::StrAppend(&out, "  z3w::SymUInt<", s.total_width, "> Pack() const;\n");
   absl::StrAppend(&out, "  ", s.name,
-                   "Concrete ToConcrete(const z3::model& model) const;\n");
+                  "Concrete ToConcrete(const z3::model& model) const;\n");
   absl::StrAppend(&out, "  static ", s.name,
-                   "Symbolic FromConcrete(z3::context& ctx,\n");
+                  "Symbolic FromConcrete(z3::context& ctx,\n");
   absl::StrAppend(&out, "      const ", s.name, "Concrete& concrete);\n");
   absl::StrAppend(&out, "};\n");
 }
@@ -250,18 +247,15 @@ void EmitSymbolicDecl(std::string& out, const ResolvedStruct& s) {
 
 void EmitToProtoImpl(std::string& out, const ResolvedStruct& s) {
   absl::StrAppend(&out, "inline ", s.name, "Proto ", s.name,
-                   "Concrete::ToProto() const {\n");
+                  "Concrete::ToProto() const {\n");
   absl::StrAppend(&out, "  ", s.name, "Proto proto;\n");
   for (const auto& f : s.fields) {
     if (f.reserved) continue;
     if (f.count >= 1) {
-      absl::StrAppend(&out, "  for (size_t i = 0; i < ", f.count,
-                       "; ++i) {\n");
-      std::string expr =
-          ToProtoExpr(f, absl::StrCat(f.name, "[i]"));
+      absl::StrAppend(&out, "  for (size_t i = 0; i < ", f.count, "; ++i) {\n");
+      std::string expr = ToProtoExpr(f, absl::StrCat(f.name, "[i]"));
       if (f.kind == ResolvedField::kStructRef) {
-        absl::StrAppend(&out, "    *proto.add_", f.name, "() = ", expr,
-                         ";\n");
+        absl::StrAppend(&out, "    *proto.add_", f.name, "() = ", expr, ";\n");
       } else {
         absl::StrAppend(&out, "    proto.add_", f.name, "(", expr, ");\n");
       }
@@ -270,7 +264,7 @@ void EmitToProtoImpl(std::string& out, const ResolvedStruct& s) {
       std::string expr = ToProtoExpr(f, f.name);
       if (f.kind == ResolvedField::kStructRef) {
         absl::StrAppend(&out, "  *proto.mutable_", f.name, "() = ", expr,
-                         ";\n");
+                        ";\n");
       } else {
         absl::StrAppend(&out, "  proto.set_", f.name, "(", expr, ");\n");
       }
@@ -282,20 +276,19 @@ void EmitToProtoImpl(std::string& out, const ResolvedStruct& s) {
 
 void EmitFromProtoImpl(std::string& out, const ResolvedStruct& s) {
   absl::StrAppend(&out, "inline ", s.name, "Concrete ", s.name,
-                   "Concrete::FromProto(const ", s.name, "Proto& proto) {\n");
+                  "Concrete::FromProto(const ", s.name, "Proto& proto) {\n");
   absl::StrAppend(&out, "  ", s.name, "Concrete result{};\n");
   for (const auto& f : s.fields) {
     if (f.reserved) continue;
     if (f.count >= 1) {
-      absl::StrAppend(&out, "  for (size_t i = 0; i < ", f.count,
-                       "; ++i) {\n");
-      std::string expr = FromProtoExpr(
-          f, absl::StrFormat("proto.%s(i)", f.name));
+      absl::StrAppend(&out, "  for (size_t i = 0; i < ", f.count, "; ++i) {\n");
+      std::string expr =
+          FromProtoExpr(f, absl::StrFormat("proto.%s(i)", f.name));
       absl::StrAppend(&out, "    result.", f.name, "[i] = ", expr, ";\n");
       absl::StrAppend(&out, "  }\n");
     } else {
-      std::string expr = FromProtoExpr(
-          f, absl::StrFormat("proto.%s()", f.name));
+      std::string expr =
+          FromProtoExpr(f, absl::StrFormat("proto.%s()", f.name));
       absl::StrAppend(&out, "  result.", f.name, " = ", expr, ";\n");
     }
   }
@@ -305,27 +298,26 @@ void EmitFromProtoImpl(std::string& out, const ResolvedStruct& s) {
 
 void EmitCreateImpl(std::string& out, const ResolvedStruct& s) {
   absl::StrAppend(&out, "inline ", s.name, "Symbolic ", s.name,
-                   "Symbolic::Create(z3::context& ctx,\n");
+                  "Symbolic::Create(z3::context& ctx,\n");
   absl::StrAppend(&out, "    const std::string& prefix) {\n");
   absl::StrAppend(&out, "  ", s.name, "Symbolic result;\n");
   for (const auto& f : s.fields) {
     if (f.count >= 1) {
-      absl::StrAppend(&out, "  for (size_t i = 0; i < ", f.count,
-                       "; ++i) {\n");
+      absl::StrAppend(&out, "  for (size_t i = 0; i < ", f.count, "; ++i) {\n");
       if (f.kind == ResolvedField::kBool) {
         absl::StrAppend(&out, "    result.", f.name,
-                         "[i] = z3w::SymBool(ctx, prefix + \".", f.name,
-                         "[\" + std::to_string(i) + \"]\");\n");
+                        "[i] = z3w::SymBool(ctx, prefix + \".", f.name,
+                        "[\" + std::to_string(i) + \"]\");\n");
       } else if (f.kind == ResolvedField::kStructRef) {
         std::string stype = SymbolicType(f);
         absl::StrAppend(&out, "    result.", f.name, "[i] = ", stype,
-                         "::Create(ctx, prefix + \".", f.name,
-                         "[\" + std::to_string(i) + \"]\");\n");
+                        "::Create(ctx, prefix + \".", f.name,
+                        "[\" + std::to_string(i) + \"]\");\n");
       } else {
         std::string stype = SymbolicType(f);
         absl::StrAppend(&out, "    result.", f.name, "[i] = ", stype,
-                         "(ctx, prefix + \".", f.name,
-                         "[\" + std::to_string(i) + \"]\");\n");
+                        "(ctx, prefix + \".", f.name,
+                        "[\" + std::to_string(i) + \"]\");\n");
       }
       absl::StrAppend(&out, "  }\n");
     } else {
@@ -339,13 +331,12 @@ void EmitCreateImpl(std::string& out, const ResolvedStruct& s) {
 
 void EmitPackImpl(std::string& out, const ResolvedStruct& s) {
   absl::StrAppend(&out, "inline z3w::SymUInt<", s.total_width, "> ", s.name,
-                   "Symbolic::Pack() const {\n");
+                  "Symbolic::Pack() const {\n");
   std::vector<std::string> pack_parts;
   for (const auto& f : s.fields) {
     if (f.count >= 1) {
       for (int i = 0; i < f.count; ++i) {
-        pack_parts.push_back(
-            PackExpr(f, absl::StrFormat("%s[%d]", f.name, i)));
+        pack_parts.push_back(PackExpr(f, absl::StrFormat("%s[%d]", f.name, i)));
       }
     } else {
       pack_parts.push_back(PackExpr(f, f.name));
@@ -365,21 +356,19 @@ void EmitPackImpl(std::string& out, const ResolvedStruct& s) {
       ordered_parts = pack_parts;
     }
     absl::StrAppend(&out, "  return z3w::concat(",
-                     absl::StrJoin(ordered_parts, ", "), ");\n");
+                    absl::StrJoin(ordered_parts, ", "), ");\n");
   }
   absl::StrAppend(&out, "}\n");
 }
 
 void EmitToConcreteImpl(std::string& out, const ResolvedStruct& s) {
   absl::StrAppend(&out, "inline ", s.name, "Concrete ", s.name,
-                   "Symbolic::ToConcrete(const z3::model& model) const {\n");
+                  "Symbolic::ToConcrete(const z3::model& model) const {\n");
   absl::StrAppend(&out, "  ", s.name, "Concrete result{};\n");
   for (const auto& f : s.fields) {
     if (f.count >= 1) {
-      absl::StrAppend(&out, "  for (size_t i = 0; i < ", f.count,
-                       "; ++i) {\n");
-      std::string expr =
-          ToConcreteExpr(f, absl::StrCat(f.name, "[i]"));
+      absl::StrAppend(&out, "  for (size_t i = 0; i < ", f.count, "; ++i) {\n");
+      std::string expr = ToConcreteExpr(f, absl::StrCat(f.name, "[i]"));
       absl::StrAppend(&out, "    result.", f.name, "[i] = ", expr, ";\n");
       absl::StrAppend(&out, "  }\n");
     } else {
@@ -393,20 +382,19 @@ void EmitToConcreteImpl(std::string& out, const ResolvedStruct& s) {
 
 void EmitFromConcreteImpl(std::string& out, const ResolvedStruct& s) {
   absl::StrAppend(&out, "inline ", s.name, "Symbolic ", s.name,
-                   "Symbolic::FromConcrete(z3::context& ctx,\n");
+                  "Symbolic::FromConcrete(z3::context& ctx,\n");
   absl::StrAppend(&out, "    const ", s.name, "Concrete& concrete) {\n");
   absl::StrAppend(&out, "  ", s.name, "Symbolic result;\n");
   for (const auto& f : s.fields) {
     if (f.count >= 1) {
-      absl::StrAppend(&out, "  for (size_t i = 0; i < ", f.count,
-                       "; ++i) {\n");
-      std::string expr = FromConcreteExpr(
-          f, absl::StrFormat("concrete.%s[i]", f.name));
+      absl::StrAppend(&out, "  for (size_t i = 0; i < ", f.count, "; ++i) {\n");
+      std::string expr =
+          FromConcreteExpr(f, absl::StrFormat("concrete.%s[i]", f.name));
       absl::StrAppend(&out, "    result.", f.name, "[i] = ", expr, ";\n");
       absl::StrAppend(&out, "  }\n");
     } else {
-      std::string expr = FromConcreteExpr(
-          f, absl::StrFormat("concrete.%s", f.name));
+      std::string expr =
+          FromConcreteExpr(f, absl::StrFormat("concrete.%s", f.name));
       absl::StrAppend(&out, "  result.", f.name, " = ", expr, ";\n");
     }
   }
@@ -463,8 +451,8 @@ std::string EmitHeader(const ResolvedModule& module,
       absl::StrAppend(&out, "struct ", e.name, " {\n");
       for (const auto& v : e.values) {
         absl::StrAppend(&out, "  static constexpr auto ", v.name,
-                         " = z3w::UInt<", e.width, ">::Literal<", v.value,
-                         ">();\n");
+                        " = z3w::UInt<", e.width, ">::Literal<", v.value,
+                        ">();\n");
       }
       absl::StrAppend(&out, "};\n");
       absl::StrAppend(&out, "\n");

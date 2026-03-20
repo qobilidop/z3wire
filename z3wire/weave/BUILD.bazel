@@ -1,10 +1,8 @@
 load("@protobuf//bazel:cc_proto_library.bzl", "cc_proto_library")
-load("@protobuf//bazel:py_proto_library.bzl", "py_proto_library")
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_proto//proto:defs.bzl", "proto_library")
-load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
 
 proto_library(
     name = "rdl_proto",
@@ -16,25 +14,8 @@ cc_proto_library(
     deps = [":rdl_proto"],
 )
 
-py_proto_library(
-    name = "rdl_py_proto",
-    deps = [":rdl_proto"],
-)
-
-py_library(
-    name = "resolver",
-    srcs = ["resolver.py"],
-    deps = [":rdl_py_proto"],
-)
-
-py_test(
-    name = "resolver_test",
-    srcs = ["resolver_test.py"],
-    deps = [":resolver"],
-)
-
 cc_library(
-    name = "cc_resolver",
+    name = "resolver",
     srcs = ["resolver.cc"],
     hdrs = ["resolver.h"],
     deps = [
@@ -44,77 +25,53 @@ cc_library(
 )
 
 cc_test(
-    name = "cc_resolver_test",
+    name = "resolver_test",
     srcs = ["resolver_test.cc"],
     deps = [
-        ":cc_resolver",
+        ":resolver",
         "@googletest//:gtest_main",
     ],
 )
 
-py_library(
-    name = "emit_proto",
-    srcs = ["emit_proto.py"],
-    deps = [":resolver"],
-)
-
-py_test(
-    name = "emit_proto_test",
-    srcs = ["emit_proto_test.py"],
-    deps = [":emit_proto"],
-)
-
 cc_library(
-    name = "cc_emit_proto",
+    name = "emit_proto",
     srcs = ["emit_proto.cc"],
     hdrs = ["emit_proto.h"],
     deps = [
-        ":cc_resolver",
+        ":resolver",
         "@abseil-cpp//absl/strings",
     ],
 )
 
 cc_test(
-    name = "cc_emit_proto_test",
+    name = "emit_proto_test",
     srcs = ["emit_proto_test.cc"],
     deps = [
-        ":cc_emit_proto",
+        ":emit_proto",
         "@googletest//:gtest_main",
     ],
 )
 
 cc_library(
-    name = "cc_emit_header",
+    name = "emit_header",
     srcs = ["emit_header.cc"],
     hdrs = ["emit_header.h"],
     deps = [
-        ":cc_resolver",
+        ":resolver",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:str_format",
     ],
 )
 
 cc_test(
-    name = "cc_emit_header_test",
+    name = "emit_header_test",
     srcs = ["emit_header_test.cc"],
     deps = [
-        ":cc_emit_header",
-        ":cc_resolver",
+        ":emit_header",
         ":rdl_cc_proto",
+        ":resolver",
         "@googletest//:gtest_main",
     ],
-)
-
-py_library(
-    name = "emit_header",
-    srcs = ["emit_header.py"],
-    deps = [":resolver"],
-)
-
-py_test(
-    name = "emit_header_test",
-    srcs = ["emit_header_test.py"],
-    deps = [":emit_header"],
 )
 
 cc_binary(
@@ -122,10 +79,10 @@ cc_binary(
     srcs = ["weave_main.cc"],
     visibility = ["//visibility:public"],
     deps = [
-        ":cc_emit_header",
-        ":cc_emit_proto",
-        ":cc_resolver",
+        ":emit_header",
+        ":emit_proto",
         ":rdl_cc_proto",
-        "@protobuf//:protobuf",
+        ":resolver",
+        "@protobuf",
     ],
 )

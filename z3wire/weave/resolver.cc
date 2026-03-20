@@ -61,8 +61,8 @@ int FieldElementWidth(
     case z3wire_rdl::FieldType::kEnumRef: {
       auto it = enum_map.find(field_type.enum_ref());
       if (it == enum_map.end()) {
-        throw std::invalid_argument(absl::StrFormat(
-            "Unknown enum_ref '%s'", field_type.enum_ref()));
+        throw std::invalid_argument(
+            absl::StrFormat("Unknown enum_ref '%s'", field_type.enum_ref()));
       }
       return it->second.width;
     }
@@ -76,8 +76,7 @@ int FieldElementWidth(
 }
 
 ResolvedStruct::PackOrder ResolvePackOrder(
-    const z3wire_rdl::Module& module,
-    const z3wire_rdl::Struct& struct_def) {
+    const z3wire_rdl::Module& module, const z3wire_rdl::Struct& struct_def) {
   auto order = struct_def.field_pack_order();
   if (order == z3wire_rdl::FIELD_PACK_ORDER_UNSPECIFIED) {
     order = module.field_pack_order();
@@ -140,16 +139,16 @@ std::vector<ResolvedStruct> ResolveStructs(
     // Validate field names.
     for (const auto& f : struct_def.fields()) {
       if (kReservedNames.count(f.name())) {
-        throw std::invalid_argument(absl::StrFormat(
-            "Struct '%s': field name '%s' is reserved "
-            "(collides with generated method)",
-            struct_def.name(), f.name()));
+        throw std::invalid_argument(
+            absl::StrFormat("Struct '%s': field name '%s' is reserved "
+                            "(collides with generated method)",
+                            struct_def.name(), f.name()));
       }
       if (f.type().kind_case() == z3wire_rdl::FieldType::kEnumRef &&
           enum_map.find(f.type().enum_ref()) == enum_map.end()) {
-        throw std::invalid_argument(absl::StrFormat(
-            "Struct '%s', field '%s': unknown enum_ref '%s'",
-            struct_def.name(), f.name(), f.type().enum_ref()));
+        throw std::invalid_argument(
+            absl::StrFormat("Struct '%s', field '%s': unknown enum_ref '%s'",
+                            struct_def.name(), f.name(), f.type().enum_ref()));
       }
     }
 
@@ -194,8 +193,8 @@ std::vector<ResolvedStruct> ResolveStructs(
         signedness = ResolvedField::kSigned;
       }
 
-      field_infos.push_back({&f, kind, element_width, count, total_width,
-                             signedness});
+      field_infos.push_back(
+          {&f, kind, element_width, count, total_width, signedness});
     }
 
     int struct_total_width = 0;
