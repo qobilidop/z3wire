@@ -13,7 +13,7 @@ output_base=$(bazel info output_base)
 
 # Locate z3 include path.
 z3_header=$(find -L "$output_base" \
-  -path "*/z3_static/include/z3++.h" -print -quit 2>/dev/null)
+  -path "*/z3_static/include/z3++.h" -print -quit 2>/dev/null || true)
 if [[ -z "$z3_header" ]]; then
   echo "Error: could not find z3 include directory in Bazel build output."
   exit 1
@@ -22,15 +22,14 @@ z3_include_dir=$(dirname "$z3_header")
 
 # Locate googletest include path.
 gtest_header=$(find -L "$output_base/external" \
-  -path "*/include/gtest/gtest.h" -print -quit 2>/dev/null)
+  -path "*/include/gtest/gtest.h" -print -quit 2>/dev/null || true)
 if [[ -z "$gtest_header" ]]; then
   echo "Error: could not find googletest include directory in Bazel externals."
   exit 1
 fi
 gtest_include_dir=$(dirname "$(dirname "$gtest_header")")
 
-# Generate compile_commands.json for clang-tidy and include-cleaner.
-trap 'rm -f compile_commands.json' EXIT
+# Generate compile_commands.json for clang-tidy, include-cleaner, and IDE use.
 files=$(find z3wire examples -name '*.h' -o -name '*.cc' |
   grep -v '\.expected\.' |
   grep -v 'examples/weave/status_register_test\.cc' |

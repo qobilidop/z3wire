@@ -1,6 +1,7 @@
 # Bazel
 /bazel-*
 /.bazel-disk-cache/
+/external
 MODULE.bazel.lock
 
 # CMake
