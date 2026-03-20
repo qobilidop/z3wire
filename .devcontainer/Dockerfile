@@ -9,14 +9,34 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libclang-rt-dev \
     make \
     pkg-config \
-    libz3-dev \
     llvm \
     curl \
     git \
     lcov \
     python3 \
     python3-pip \
+    unzip \
     && rm -rf /var/lib/apt/lists/*
+
+# Install pre-built Z3 for the CMake build. Bazel manages its own Z3 via
+# MODULE.bazel; keep Z3_VERSION here in sync with the version pinned there.
+ARG Z3_VERSION=4.15.2
+RUN ARCH=$(uname -m) && \
+    if [ "$ARCH" = "x86_64" ]; then \
+      Z3_ARCHIVE="z3-${Z3_VERSION}-x64-glibc-2.39.zip"; \
+    elif [ "$ARCH" = "aarch64" ]; then \
+      Z3_ARCHIVE="z3-${Z3_VERSION}-arm64-glibc-2.34.zip"; \
+    else \
+      echo "Unsupported architecture: $ARCH" >&2; exit 1; \
+    fi && \
+    curl -fSL "https://github.com/Z3Prover/z3/releases/download/z3-${Z3_VERSION}/${Z3_ARCHIVE}" \
+      -o /tmp/z3.zip && \
+    unzip -q /tmp/z3.zip -d /tmp/z3 && \
+    cp /tmp/z3/z3-*/include/*.h /usr/local/include/ && \
+    cp /tmp/z3/z3-*/bin/libz3.so /usr/local/lib/ && \
+    cp /tmp/z3/z3-*/bin/libz3.a /usr/local/lib/ && \
+    ldconfig && \
+    rm -rf /tmp/z3.zip /tmp/z3
 
 # Install Bazelisk as "bazel"
 ARG BAZELISK_VERSION=v1.28.1

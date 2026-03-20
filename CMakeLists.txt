@@ -4,13 +4,14 @@ project(z3wire LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Find Z3 via CMake config (source builds) or pkg-config (system packages).
-find_package(Z3 QUIET)
-if(NOT Z3_FOUND)
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(Z3 REQUIRED IMPORTED_TARGET z3)
-    add_library(z3::libz3 ALIAS PkgConfig::Z3)
-endif()
+# Locate the pre-built Z3 installed in the devcontainer (see Dockerfile).
+find_path(Z3_INCLUDE_DIR NAMES z3++.h REQUIRED)
+find_library(Z3_LIBRARY NAMES z3 REQUIRED)
+add_library(z3::libz3 IMPORTED INTERFACE)
+set_target_properties(z3::libz3 PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "${Z3_INCLUDE_DIR}"
+    INTERFACE_LINK_LIBRARIES "${Z3_LIBRARY}"
+)
 
 include(CTest)
 
