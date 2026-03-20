@@ -9,9 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     cmake \
     curl \
     git \
-    lcov \
     libclang-rt-dev \
-    llvm \
     make \
     python3 \
     shellcheck \
@@ -78,9 +76,10 @@ RUN uv pip install --system --break-system-packages \
     protobuf \
     pytest
 
-# Non-root user (required by rules_python for bazel coverage).
+# Non-root user (required by rules_python).
 RUN useradd -m -s /bin/bash dev && \
     mkdir -p /home/dev/.cache/bazel && chown -R dev:dev /home/dev/.cache && \
     git config --system --add safe.directory /workspace
+
 # Default to clang for Bazel's C++ toolchain auto-detection.
 ENV CC=clang

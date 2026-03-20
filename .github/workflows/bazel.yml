@@ -30,18 +30,3 @@ jobs:
           cacheFrom: ghcr.io/qobilidop/z3wire-dev
           push: never
           runCmd: bazel test //...
-
-      - name: Coverage
-        uses: devcontainers/ci@v0.3
-        with:
-          cacheFrom: ghcr.io/qobilidop/z3wire-dev
-          push: never
-          runCmd: |
-            ./tools/coverage.sh
-            cp "$(bazel info output_path)/_coverage/_coverage_report.dat" coverage.lcov
-
-      - name: Upload Coverage
-        uses: codecov/codecov-action@v5
-        with:
-          files: coverage.lcov
-          token: ${{ secrets.CODECOV_TOKEN }}
