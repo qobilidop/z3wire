@@ -13,7 +13,7 @@ When modeling hardware registers, wire protocols, or arbitrary bit-packed
 layouts with Z3Wire, users currently write boilerplate by hand:
 
 - A symbolic struct with `z3w::SymBool`, `z3w::SymUInt<W>`, `z3w::SymSInt<W>`
-    fields.
+  fields.
 - A concrete struct with `z3w::Bool`, `z3w::UInt<W>`, `z3w::SInt<W>` fields.
 - Conversion methods between them.
 - `extract` / `concat` logic to pack and unpack flat bit-vectors.
@@ -30,7 +30,7 @@ registers, protocol headers, and control/status words. It does not cover:
 - Variable-length fields or dynamic arrays.
 - Address maps or register files (SystemRDL `addrmap` / `regfile`).
 - Access properties (`sw`, `hw`, `reset`) — these describe register behavior,
-    not bit layout.
+  not bit layout.
 
 ## Source-of-truth format: Z3Wire RDL
 
@@ -121,25 +121,25 @@ message BitVecType {
 ### Key schema concepts
 
 - **Module**: Top-level container. Sets the `file_prefix` (output filename
-    prefix), C++ `namespace`, and a default `field_pack_order` inherited by all
-    structs.
+  prefix), C++ `namespace`, and a default `field_pack_order` inherited by all
+  structs.
 - **Struct**: A named collection of fields occupying a contiguous bit range. Can
-    override the module-level `field_pack_order`. If `width` is set, the tool
-    validates that fields sum to exactly that width.
+  override the module-level `field_pack_order`. If `width` is set, the tool
+  validates that fields sum to exactly that width.
 - **Field**: A named bit range within a struct. Types include `bool` (1 bit),
-    `bitvec` (unsigned or signed, arbitrary width), `enum_ref` (reference to an
-    `EnumDef`), and `struct_ref` (inline nested struct). Setting `count >= 1`
-    makes it a fixed-size array (`std::array<T, N>` in C++); `count = 0`
-    (default) means scalar. Zero-length arrays are not supported. Setting
-    `reserved = true` marks a field as padding — it is included in the C++
-    structs (for correct bit layout) but omitted from the generated proto.
+  `bitvec` (unsigned or signed, arbitrary width), `enum_ref` (reference to an
+  `EnumDef`), and `struct_ref` (inline nested struct). Setting `count >= 1`
+  makes it a fixed-size array (`std::array<T, N>` in C++); `count = 0` (default)
+  means scalar. Zero-length arrays are not supported. Setting `reserved = true`
+  marks a field as padding — it is included in the C++ structs (for correct bit
+  layout) but omitted from the generated proto.
 - **EnumDef**: Named constants with explicit bit-pattern values and a declared
-    width.
+  width.
 - **FieldPackOrder**: Controls the direction fields are packed into the bit
-    range. `FIELD_PACK_ORDER_LSB_FIRST` packs starting from bit 0 (hardware
-    registers). `FIELD_PACK_ORDER_MSB_FIRST` packs starting from the most
-    significant bit (network protocols). Resolved by inheritance: struct
-    overrides module; if both are unspecified, codegen errors.
+  range. `FIELD_PACK_ORDER_LSB_FIRST` packs starting from bit 0 (hardware
+  registers). `FIELD_PACK_ORDER_MSB_FIRST` packs starting from the most
+  significant bit (network protocols). Resolved by inheritance: struct overrides
+  module; if both are unspecified, codegen errors.
 
 ### Example input
 
@@ -322,15 +322,15 @@ Mirror the concrete layout using Z3Wire symbolic types (`SymBool`, `SymUInt<W>`,
 `SymSInt<W>`). Generated methods:
 
 - **`Create(ctx, prefix)`**: Creates fresh Z3 symbolic variables. Each variable
-    is named `prefix.field_name`. Nested structs chain the prefix automatically
-    (e.g., `"sr.error.code"`).
+  is named `prefix.field_name`. Nested structs chain the prefix automatically
+  (e.g., `"sr.error.code"`).
 - **`Pack()`**: Packs all fields into a flat bit-vector using `concat`,
-    following the declared `field_pack_order`. For the structural constraint
-    `bv == reg.Pack()`, users call `Pack()` directly.
+  following the declared `field_pack_order`. For the structural constraint
+  `bv == reg.Pack()`, users call `Pack()` directly.
 - **`ToConcrete(model)`**: Evaluates symbolic fields against a Z3 model to
-    produce a concrete struct.
+  produce a concrete struct.
 - **`FromConcrete(ctx, concrete)`**: Constructs a symbolic struct from concrete
-    values (each field becomes a Z3 constant expression).
+  values (each field becomes a Z3 constant expression).
 
 ### Wire proto (`status_register.proto`)
 
@@ -404,16 +404,16 @@ derived from the `file_prefix` field in the Module, not the input filename).
 ### Implementation
 
 - **Language**: Python. Code generators are fundamentally about reading
-    structured data and emitting text — Python excels at this.
+  structured data and emitting text — Python excels at this.
 - **Parsing**: Protobuf's Python API parses and validates `.txtpb` files against
-    `rdl.proto`. No custom parser.
+  `rdl.proto`. No custom parser.
 - **Resolution**: `resolver.py` validates all references, detects circular
-    struct dependencies, computes per-field bit offsets, and validates total
-    widths.
+  struct dependencies, computes per-field bit offsets, and validates total
+  widths.
 - **Emission**: `emit_header.py` and `emit_proto.py` generate output using
-    f-strings. No template engine dependency.
+  f-strings. No template engine dependency.
 - **Deployment**: Standalone binary for now. Bazel rule integration is future
-    work.
+  work.
 
 ### Validation
 
@@ -426,8 +426,8 @@ Weave validates:
 - `field_pack_order` is resolved (at module or struct level).
 - If `Struct.width` is set, fields sum to exactly that width.
 - Field names are valid C++ identifiers and do not collide with generated method
-    names (`Create`, `Pack`, `ToConcrete`, `FromConcrete`, `ToProto`,
-    `FromProto`).
+  names (`Create`, `Pack`, `ToConcrete`, `FromConcrete`, `ToProto`,
+  `FromProto`).
 
 ## Design decisions
 
@@ -460,4 +460,4 @@ Weave validates:
 - Explicit bit position overrides (placing a field at a specific bit range).
 - Default / reset values for fields.
 - `Unpack()` — construct a symbolic struct from a flat bit-vector using
-    `extract`.
+  `extract`.

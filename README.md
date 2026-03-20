@@ -3,7 +3,7 @@
 [![Devcontainer](https://github.com/qobilidop/z3wire/actions/workflows/devcontainer.yml/badge.svg)](https://github.com/qobilidop/z3wire/actions/workflows/devcontainer.yml)
 [![Bazel](https://github.com/qobilidop/z3wire/actions/workflows/bazel.yml/badge.svg)](https://github.com/qobilidop/z3wire/actions/workflows/bazel.yml)
 [![CMake](https://github.com/qobilidop/z3wire/actions/workflows/cmake.yml/badge.svg)](https://github.com/qobilidop/z3wire/actions/workflows/cmake.yml)
-[![Lint](https://github.com/qobilidop/z3wire/actions/workflows/checks.yml/badge.svg)](https://github.com/qobilidop/z3wire/actions/workflows/checks.yml)
+[![Lint](https://github.com/qobilidop/z3wire/actions/workflows/lint.yml/badge.svg)](https://github.com/qobilidop/z3wire/actions/workflows/lint.yml)
 [![codecov](https://codecov.io/gh/qobilidop/z3wire/graph/badge.svg)](https://codecov.io/gh/qobilidop/z3wire)
 [![Docs](https://github.com/qobilidop/z3wire/actions/workflows/docs.yml/badge.svg)](https://qobilidop.github.io/z3wire/)
 
@@ -19,21 +19,20 @@ now type-safe.
 Using Z3 bit-vectors directly for hardware verification is error-prone:
 
 - **Width mismatches are silent.** Adding a 32-bit vector to an 8-bit vector
-    compiles fine but crashes at runtime with `Z3_SORT_ERROR`.
+  compiles fine but crashes at runtime with `Z3_SORT_ERROR`.
 - **Signedness is unchecked.** Comparing bit-vectors requires choosing the right
-    function (`z3::ult` vs `z3::slt`), but nothing prevents calling the wrong
-    one.
+  function (`z3::ult` vs `z3::slt`), but nothing prevents calling the wrong one.
 - **Overflow requires vigilance.** Arithmetic silently wraps by default. Z3
-    provides overflow predicates (`bvadd_no_overflow`, etc.), but they are
-    opt-in and easy to forget — a missed check means a proof may pass because
-    the formula lost information, not because the design is correct.
+  provides overflow predicates (`bvadd_no_overflow`, etc.), but they are opt-in
+  and easy to forget — a missed check means a proof may pass because the formula
+  lost information, not because the design is correct.
 
 Z3Wire solves these by bringing hardware semantics into the type system:
 
 - **Compile-time type safety** — width and signedness mismatches become
-    compile-time errors, not runtime surprises.
+  compile-time errors, not runtime surprises.
 - **Bit-growth arithmetic** — results widen automatically, making every
-    truncation an explicit, reviewable decision.
+  truncation an explicit, reviewable decision.
 
 ## Quick example
 

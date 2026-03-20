@@ -7,12 +7,12 @@ distinction between Booleans and bit-vectors, no width tracking, and no
 signedness information. This means:
 
 - Adding a 32-bit vector to an 8-bit vector compiles silently but crashes at
-    runtime with `Z3_SORT_ERROR`.
+  runtime with `Z3_SORT_ERROR`.
 - Comparing bit-vectors requires choosing the right function (`z3::ult` vs
-    `z3::slt` for unsigned vs signed less-than), but nothing prevents calling
-    the wrong one.
+  `z3::slt` for unsigned vs signed less-than), but nothing prevents calling the
+  wrong one.
 - A Bool passed where a bit-vector is expected is only caught when Z3 evaluates
-    the expression.
+  the expression.
 
 Furthermore, Z3's arithmetic operates at fixed widths — adding two 8-bit vectors
 produces an 8-bit result, silently discarding the carry bit. In hardware
@@ -27,11 +27,11 @@ and bit-growth arithmetic makes overflow explicit.
 ## Core goals
 
 1. **Compile-time type safety:** Move Z3 "Sort Errors" (bit-width/type
-    mismatches) from runtime exceptions to compile-time errors using C++20
-    template metaprogramming.
+   mismatches) from runtime exceptions to compile-time errors using C++20
+   template metaprogramming.
 1. **Bit-growth arithmetic:** Automatically widen arithmetic result types to
-    prevent silent overflow, making every truncation an explicit, reviewable
-    decision.
+   prevent silent overflow, making every truncation an explicit, reviewable
+   decision.
 
 ## Scope
 
@@ -39,7 +39,7 @@ Z3 supports many SMT theories — unbounded integers, reals, arrays,
 floating-point, uninterpreted functions — but Z3Wire intentionally covers only
 **Booleans** and **fixed-width bit-vectors**.
 
-The reason is in the name: hardware is built from *wires*. Every signal in a
+The reason is in the name: hardware is built from _wires_. Every signal in a
 digital circuit is either a single bit (boolean) or a bundle of bits with a
 known width (bit-vector). Unbounded integers, reals, and other abstract
 mathematical types do not correspond to physical hardware and are irrelevant to
@@ -54,7 +54,7 @@ By targeting only the QF_BV logic (Quantifier-Free Bit-Vectors), Z3Wire can:
 **Out of scope for this project:**
 
 - Non-hardware SMT theories (unbounded integers, reals, arrays, floating-point,
-    uninterpreted functions).
+  uninterpreted functions).
 - Wrapping `z3::context` or `z3::solver`.
 
 ## Combinational logic primitives
@@ -84,12 +84,12 @@ sequential semantics (clocks, state, memory), it is out of scope.
 ## Design philosophy
 
 - **Zero overhead:** Each wrapper stores only a `z3::expr`. No virtual
-    functions, no extra data members.
+  functions, no extra data members.
 - **Explicit over implicit:** No implicit conversions between signed/unsigned or
-    different widths. Users must use the casting API to express intent.
+  different widths. Users must use the casting API to express intent.
 - **Header-based template library.** The core types and operators are templates
-    and must live in headers. Any non-template utilities should go in `.cc`
-    files per Google C++ style guide conventions.
+  and must live in headers. Any non-template utilities should go in `.cc` files
+  per Google C++ style guide conventions.
 
 ## Type system
 
@@ -161,7 +161,7 @@ Under the hood, uses `if constexpr` to select:
 
 - Target width < source width: `z3::extract` (truncation).
 - Target width > source width: `z3::zext` or `z3::sext` based on source
-    signedness.
+  signedness.
 - Target width == source width: zero-overhead type reinterpretation (bitcast).
 
 #### `z3w::safe_cast<T>(val)` —The compiler guard
@@ -194,9 +194,9 @@ needs to convert between them (e.g., a condition flag in a register vs. a
 logical condition). Z3Wire provides explicit conversion functions:
 
 - **`z3w::as_bool(SymUInt<1>)`** — converts a 1-bit vector to SymBool (true if
-    bit is 1).
+  bit is 1).
 - **`z3w::as_uint1(SymBool)`** — converts a SymBool to `SymUInt<1>` (1 if true,
-    0 if false).
+  0 if false).
 
 ```cpp
 z3w::SymUInt<32> status(ctx, "status");
@@ -259,16 +259,16 @@ Arithmetic and comparison operations allow mixed widths and signedness,
 automatically extending operands to a common type.
 
 - **Addition / Subtraction (`+`, `-`):** Result width is `max(W1, W2) + 1`.
-    Operands are automatically sign-extended or zero-extended to match before
-    the operation. (Bit growth.)
+  Operands are automatically sign-extended or zero-extended to match before the
+  operation. (Bit growth.)
 - **Bitwise logic (`&`, `|`, `^`):** Widths and signedness must match exactly.
-    (Strict.)
+  (Strict.)
 - **Equality (`==`, `!=`):** Allows different widths and signedness. Operands
-    are extended to a common type before comparing. (Relaxed.)
+  are extended to a common type before comparing. (Relaxed.)
 - **Ordered comparison (`<`, `<=`, `>`, `>=`):** Allows different widths and
-    signedness. Operands are extended to a common type. Signedness-aware:
-    dispatches to unsigned or signed comparison based on the common type (signed
-    if either operand is signed). Returns `z3w::SymBool`. (Relaxed.)
+  signedness. Operands are extended to a common type. Signedness-aware:
+  dispatches to unsigned or signed comparison based on the common type (signed
+  if either operand is signed). Returns `z3w::SymBool`. (Relaxed.)
 
 Example:
 
@@ -312,7 +312,7 @@ to prevent bit loss.
 
 - **Constant shift `N`:** result width = `W + N`.
 - **Symbolic shift `SymUInt<K>`:** result width = `W + 2^K - 1` (assumes the
-    maximum representable shift amount).
+  maximum representable shift amount).
 
 ```cpp
 z3w::SymUInt<8> a(ctx, "a");
@@ -373,9 +373,9 @@ auto flag = z3w::ite(sel, z3w::SymBool::True(ctx), z3w::SymBool::False(ctx));
 Concrete types (`UInt<W>`, `SInt<W>`) serve as type-safe value holders:
 
 1. **Mixed expressions.** Users can write `symbolic_x + concrete_y` without
-    manually creating Z3 constants. The concrete value auto-promotes.
+   manually creating Z3 constants. The concrete value auto-promotes.
 1. **Type-safe storage.** `UInt<5>` or `SInt<12>` enforce bit-width at the type
-    level, even without Z3.
+   level, even without Z3.
 
 A concrete `Bool` type wraps native `bool` with type-safe construction. Its
 integral constructor is deleted, so `Bool b = 42;` is a compile error while
@@ -408,6 +408,6 @@ values auto-promote to symbolic in mixed expressions, so users can write
 ## Boundary layer
 
 - **`val.expr()`**: Returns the underlying `z3::expr` for interop with raw Z3
-    APIs (e.g., passing to `z3::solver`).
+  APIs (e.g., passing to `z3::solver`).
 - Users interact with `z3::context` and `z3::solver` directly; Z3Wire does not
-    wrap these.
+  wrap these.

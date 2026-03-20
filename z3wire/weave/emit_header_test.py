@@ -3,8 +3,8 @@
 import unittest
 
 from z3wire.weave import rdl_pb2
-from z3wire.weave.resolver import resolve
 from z3wire.weave.emit_header import emit_header
+from z3wire.weave.resolver import resolve
 
 
 class EmitHeaderTest(unittest.TestCase):
@@ -65,7 +65,9 @@ class EmitHeaderTest(unittest.TestCase):
                         ),
                         rdl_pb2.Field(
                             name="items",
-                            type=rdl_pb2.FieldType(bitvec=rdl_pb2.BitVecType(width=8)),
+                            type=rdl_pb2.FieldType(
+                                bitvec=rdl_pb2.BitVecType(width=8)
+                            ),
                             count=2,
                         ),
                     ],
@@ -80,7 +82,9 @@ class EmitHeaderTest(unittest.TestCase):
         self.assertIn("z3w::SInt<4> val;", output)
         self.assertIn("std::array<z3w::UInt<8>, 2> items;", output)
         self.assertIn("RegProto ToProto() const;", output)
-        self.assertIn("static RegConcrete FromProto(const RegProto& proto);", output)
+        self.assertIn(
+            "static RegConcrete FromProto(const RegProto& proto);", output
+        )
 
     def test_symbolic_struct(self):
         module = rdl_pb2.Module(
@@ -97,7 +101,9 @@ class EmitHeaderTest(unittest.TestCase):
                         ),
                         rdl_pb2.Field(
                             name="val",
-                            type=rdl_pb2.FieldType(bitvec=rdl_pb2.BitVecType(width=7)),
+                            type=rdl_pb2.FieldType(
+                                bitvec=rdl_pb2.BitVecType(width=7)
+                            ),
                         ),
                     ],
                 ),
@@ -129,11 +135,15 @@ class EmitHeaderTest(unittest.TestCase):
                         ),
                         rdl_pb2.Field(
                             name="val",
-                            type=rdl_pb2.FieldType(bitvec=rdl_pb2.BitVecType(width=8)),
+                            type=rdl_pb2.FieldType(
+                                bitvec=rdl_pb2.BitVecType(width=8)
+                            ),
                         ),
                         rdl_pb2.Field(
                             name="pad",
-                            type=rdl_pb2.FieldType(bitvec=rdl_pb2.BitVecType(width=7)),
+                            type=rdl_pb2.FieldType(
+                                bitvec=rdl_pb2.BitVecType(width=7)
+                            ),
                             reserved=True,
                         ),
                     ],
@@ -145,7 +155,9 @@ class EmitHeaderTest(unittest.TestCase):
 
         self.assertIn("inline RegProto RegConcrete::ToProto() const {", output)
         self.assertIn("proto.set_flag(bool(flag));", output)
-        self.assertIn("proto.set_val(static_cast<uint32_t>(val.value()));", output)
+        self.assertIn(
+            "proto.set_val(static_cast<uint32_t>(val.value()));", output
+        )
         # Reserved field should not appear in ToProto
         self.assertNotIn("pad", output.split("ToProto")[1].split("}")[0])
 
@@ -164,7 +176,9 @@ class EmitHeaderTest(unittest.TestCase):
                         ),
                         rdl_pb2.Field(
                             name="val",
-                            type=rdl_pb2.FieldType(bitvec=rdl_pb2.BitVecType(width=8)),
+                            type=rdl_pb2.FieldType(
+                                bitvec=rdl_pb2.BitVecType(width=8)
+                            ),
                         ),
                     ],
                 ),
@@ -174,7 +188,9 @@ class EmitHeaderTest(unittest.TestCase):
         output = emit_header(resolved, proto_header="test.pb.h")
 
         self.assertIn(
-            "inline RegConcrete RegConcrete::FromProto(const RegProto& proto) {", output
+            "inline RegConcrete RegConcrete::FromProto("
+            "const RegProto& proto) {",
+            output,
         )
         self.assertIn("result.flag = z3w::Bool(proto.flag());", output)
         self.assertIn("std::get<0>(z3w::UInt<8>::Checked(proto.val()))", output)
@@ -194,7 +210,9 @@ class EmitHeaderTest(unittest.TestCase):
                         ),
                         rdl_pb2.Field(
                             name="val",
-                            type=rdl_pb2.FieldType(bitvec=rdl_pb2.BitVecType(width=7)),
+                            type=rdl_pb2.FieldType(
+                                bitvec=rdl_pb2.BitVecType(width=7)
+                            ),
                         ),
                     ],
                 ),
@@ -222,7 +240,9 @@ class EmitHeaderTest(unittest.TestCase):
                         ),
                         rdl_pb2.Field(
                             name="val",
-                            type=rdl_pb2.FieldType(bitvec=rdl_pb2.BitVecType(width=7)),
+                            type=rdl_pb2.FieldType(
+                                bitvec=rdl_pb2.BitVecType(width=7)
+                            ),
                         ),
                     ],
                 ),
@@ -245,7 +265,9 @@ class EmitHeaderTest(unittest.TestCase):
                     fields=[
                         rdl_pb2.Field(
                             name="items",
-                            type=rdl_pb2.FieldType(bitvec=rdl_pb2.BitVecType(width=4)),
+                            type=rdl_pb2.FieldType(
+                                bitvec=rdl_pb2.BitVecType(width=4)
+                            ),
                             count=3,
                         ),
                     ],
@@ -256,7 +278,9 @@ class EmitHeaderTest(unittest.TestCase):
         output = emit_header(resolved, proto_header="test.pb.h")
 
         # Array elements should be expanded in concat
-        self.assertIn("return z3w::concat(items[2], items[1], items[0]);", output)
+        self.assertIn(
+            "return z3w::concat(items[2], items[1], items[0]);", output
+        )
 
     def test_msb_first_pack(self):
         module = rdl_pb2.Module(
@@ -269,11 +293,15 @@ class EmitHeaderTest(unittest.TestCase):
                     fields=[
                         rdl_pb2.Field(
                             name="high",
-                            type=rdl_pb2.FieldType(bitvec=rdl_pb2.BitVecType(width=4)),
+                            type=rdl_pb2.FieldType(
+                                bitvec=rdl_pb2.BitVecType(width=4)
+                            ),
                         ),
                         rdl_pb2.Field(
                             name="low",
-                            type=rdl_pb2.FieldType(bitvec=rdl_pb2.BitVecType(width=4)),
+                            type=rdl_pb2.FieldType(
+                                bitvec=rdl_pb2.BitVecType(width=4)
+                            ),
                         ),
                     ],
                 ),
@@ -315,7 +343,9 @@ class EmitHeaderTest(unittest.TestCase):
                     fields=[
                         rdl_pb2.Field(
                             name="code",
-                            type=rdl_pb2.FieldType(bitvec=rdl_pb2.BitVecType(width=4)),
+                            type=rdl_pb2.FieldType(
+                                bitvec=rdl_pb2.BitVecType(width=4)
+                            ),
                         ),
                         rdl_pb2.Field(
                             name="severity",
@@ -332,7 +362,9 @@ class EmitHeaderTest(unittest.TestCase):
                         ),
                         rdl_pb2.Field(
                             name="reserved",
-                            type=rdl_pb2.FieldType(bitvec=rdl_pb2.BitVecType(width=1)),
+                            type=rdl_pb2.FieldType(
+                                bitvec=rdl_pb2.BitVecType(width=1)
+                            ),
                             reserved=True,
                         ),
                     ],
@@ -356,12 +388,16 @@ class EmitHeaderTest(unittest.TestCase):
                         ),
                         rdl_pb2.Field(
                             name="counters",
-                            type=rdl_pb2.FieldType(bitvec=rdl_pb2.BitVecType(width=4)),
+                            type=rdl_pb2.FieldType(
+                                bitvec=rdl_pb2.BitVecType(width=4)
+                            ),
                             count=4,
                         ),
                         rdl_pb2.Field(
                             name="reserved",
-                            type=rdl_pb2.FieldType(bitvec=rdl_pb2.BitVecType(width=5)),
+                            type=rdl_pb2.FieldType(
+                                bitvec=rdl_pb2.BitVecType(width=5)
+                            ),
                             reserved=True,
                         ),
                     ],
@@ -419,9 +455,15 @@ class EmitHeaderTest(unittest.TestCase):
         self.assertLess(symbolic_pos, impl_pos)
 
         # Types are in the right sections
-        self.assertLess(concrete_pos, output.index("struct ErrorInfoConcrete {"))
-        self.assertLess(output.index("struct ErrorInfoConcrete {"), symbolic_pos)
-        self.assertLess(symbolic_pos, output.index("struct ErrorInfoSymbolic {"))
+        self.assertLess(
+            concrete_pos, output.index("struct ErrorInfoConcrete {")
+        )
+        self.assertLess(
+            output.index("struct ErrorInfoConcrete {"), symbolic_pos
+        )
+        self.assertLess(
+            symbolic_pos, output.index("struct ErrorInfoSymbolic {")
+        )
         self.assertLess(output.index("struct ErrorInfoSymbolic {"), impl_pos)
 
 

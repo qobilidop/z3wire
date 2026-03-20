@@ -37,7 +37,9 @@ def emit_proto(module: ResolvedModule) -> str:
                 continue
             proto_type = _proto_type(field)
             if field.count >= 1:
-                lines.append(f"  repeated {proto_type} {field.name} = {field_number};")
+                lines.append(
+                    f"  repeated {proto_type} {field.name} = {field_number};"
+                )
             else:
                 lines.append(f"  {proto_type} {field.name} = {field_number};")
             field_number += 1

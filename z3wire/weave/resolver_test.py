@@ -41,11 +41,15 @@ class ResolverTest(unittest.TestCase):
                     fields=[
                         rdl_pb2.Field(
                             name="a",
-                            type=rdl_pb2.FieldType(bitvec=rdl_pb2.BitVecType(width=8)),
+                            type=rdl_pb2.FieldType(
+                                bitvec=rdl_pb2.BitVecType(width=8)
+                            ),
                         ),
                         rdl_pb2.Field(
                             name="b",
-                            type=rdl_pb2.FieldType(bitvec=rdl_pb2.BitVecType(width=4)),
+                            type=rdl_pb2.FieldType(
+                                bitvec=rdl_pb2.BitVecType(width=4)
+                            ),
                         ),
                     ],
                 ),
@@ -67,12 +71,16 @@ class ResolverTest(unittest.TestCase):
                     fields=[
                         rdl_pb2.Field(
                             name="scalar",
-                            type=rdl_pb2.FieldType(bitvec=rdl_pb2.BitVecType(width=8)),
+                            type=rdl_pb2.FieldType(
+                                bitvec=rdl_pb2.BitVecType(width=8)
+                            ),
                             count=0,
                         ),
                         rdl_pb2.Field(
                             name="array",
-                            type=rdl_pb2.FieldType(bitvec=rdl_pb2.BitVecType(width=8)),
+                            type=rdl_pb2.FieldType(
+                                bitvec=rdl_pb2.BitVecType(width=8)
+                            ),
                             count=1,
                         ),
                     ],
@@ -250,11 +258,15 @@ class ResolverTest(unittest.TestCase):
                     fields=[
                         rdl_pb2.Field(
                             name="high",
-                            type=rdl_pb2.FieldType(bitvec=rdl_pb2.BitVecType(width=3)),
+                            type=rdl_pb2.FieldType(
+                                bitvec=rdl_pb2.BitVecType(width=3)
+                            ),
                         ),
                         rdl_pb2.Field(
                             name="mid",
-                            type=rdl_pb2.FieldType(bitvec=rdl_pb2.BitVecType(width=4)),
+                            type=rdl_pb2.FieldType(
+                                bitvec=rdl_pb2.BitVecType(width=4)
+                            ),
                         ),
                         rdl_pb2.Field(
                             name="low",
@@ -325,7 +337,9 @@ class ResolverTest(unittest.TestCase):
                     fields=[
                         rdl_pb2.Field(
                             name="code",
-                            type=rdl_pb2.FieldType(bitvec=rdl_pb2.BitVecType(width=4)),
+                            type=rdl_pb2.FieldType(
+                                bitvec=rdl_pb2.BitVecType(width=4)
+                            ),
                         ),
                         rdl_pb2.Field(
                             name="severity",
@@ -342,7 +356,9 @@ class ResolverTest(unittest.TestCase):
                         ),
                         rdl_pb2.Field(
                             name="reserved",
-                            type=rdl_pb2.FieldType(bitvec=rdl_pb2.BitVecType(width=1)),
+                            type=rdl_pb2.FieldType(
+                                bitvec=rdl_pb2.BitVecType(width=1)
+                            ),
                             reserved=True,
                         ),
                     ],
@@ -366,12 +382,16 @@ class ResolverTest(unittest.TestCase):
                         ),
                         rdl_pb2.Field(
                             name="counters",
-                            type=rdl_pb2.FieldType(bitvec=rdl_pb2.BitVecType(width=4)),
+                            type=rdl_pb2.FieldType(
+                                bitvec=rdl_pb2.BitVecType(width=4)
+                            ),
                             count=4,
                         ),
                         rdl_pb2.Field(
                             name="reserved",
-                            type=rdl_pb2.FieldType(bitvec=rdl_pb2.BitVecType(width=5)),
+                            type=rdl_pb2.FieldType(
+                                bitvec=rdl_pb2.BitVecType(width=5)
+                            ),
                             reserved=True,
                         ),
                     ],

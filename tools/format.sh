@@ -4,37 +4,39 @@ set -euo pipefail
 
 cd "$(git rev-parse --show-toplevel)"
 
-cpp_files=$(find z3wire examples -name '*.h' -o -name '*.cc' |
+cpp_files=$(find z3wire examples -name '*.h' -o -name '*.cc' -o -name '*.proto' |
   grep -v '\.expected\.')
+py_files=$(find z3wire examples -name '*.py' 2>/dev/null || true)
 bzl_files=$(find . -name '*.bazel' -o -name '*.bzl' -o -name 'BUILD' |
   grep -v -e '.git/' -e './build/' -e './site/')
 sh_files=$(find . -name '*.sh' -not -path './.git/*' -not -path './build/*' -not -path './site/*')
-md_files=$(find . -name '*.md' -not -path './.git/*' -not -path './build/*' -not -path './site/*')
-py_files=$(find z3wire examples -name '*.py' 2>/dev/null || true)
 
 if [[ "${1:-}" == "--check" ]]; then
   fail=0
 
-  if ! echo "$cpp_files" | xargs clang-format --dry-run -Werror 2>&1; then
+  # --- C++ ---
+  if ! echo "$cpp_files" | xargs --no-run-if-empty clang-format --dry-run -Werror 2>&1; then
     fail=1
   fi
 
-  if ! echo "$bzl_files" | xargs buildifier -mode=check 2>&1; then
+  # --- Python ---
+  if ! echo "$py_files" | xargs --no-run-if-empty ruff format --check 2>&1; then
     fail=1
   fi
 
-  if ! echo "$sh_files" | xargs shfmt -d 2>&1; then
+  # --- Bazel ---
+  if ! echo "$bzl_files" | xargs --no-run-if-empty buildifier -mode=check 2>&1; then
     fail=1
   fi
 
-  if ! echo "$md_files" | xargs mdformat --check 2>&1; then
+  # --- Shell ---
+  if ! echo "$sh_files" | xargs --no-run-if-empty shfmt -d 2>&1; then
     fail=1
   fi
 
-  if [[ -n "$py_files" ]]; then
-    if ! echo "$py_files" | xargs black --check 2>&1; then
-      fail=1
-    fi
+  # --- Markdown, JSON, YAML, TOML ---
+  if ! dprint check 2>&1; then
+    fail=1
   fi
 
   if [[ $fail -ne 0 ]]; then
@@ -44,12 +46,10 @@ if [[ "${1:-}" == "--check" ]]; then
   fi
   echo "All files are properly formatted."
 else
-  echo "$cpp_files" | xargs clang-format -i
-  echo "$bzl_files" | xargs buildifier
-  echo "$sh_files" | xargs shfmt -w
-  echo "$md_files" | xargs mdformat
-  if [[ -n "$py_files" ]]; then
-    echo "$py_files" | xargs black
-  fi
+  echo "$cpp_files" | xargs --no-run-if-empty clang-format -i
+  echo "$py_files" | xargs --no-run-if-empty ruff format
+  echo "$bzl_files" | xargs --no-run-if-empty buildifier
+  echo "$sh_files" | xargs --no-run-if-empty shfmt -w
+  dprint fmt
   echo "Formatted all files."
 fi

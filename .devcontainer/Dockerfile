@@ -7,15 +7,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     clang-format \
     clang-tidy \
     cmake \
-    libclang-rt-dev \
-    make \
-    pkg-config \
-    llvm \
     curl \
     git \
     lcov \
+    libclang-rt-dev \
+    llvm \
+    make \
     python3 \
-    python3-pip \
+    shellcheck \
     unzip \
     && rm -rf /var/lib/apt/lists/*
 
@@ -57,20 +56,27 @@ RUN ARCH=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/') && \
     curl -fSL "https://github.com/mvdan/sh/releases/download/${SHFMT_VERSION}/shfmt_${SHFMT_VERSION}_linux_${ARCH}" \
     -o /usr/local/bin/shfmt && chmod +x /usr/local/bin/shfmt
 
-# Install shellcheck for shell script linting.
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    shellcheck \
-    && rm -rf /var/lib/apt/lists/*
+# Install dprint for Markdown, JSON, YAML, and TOML formatting.
+ARG DPRINT_VERSION=0.53.0
+RUN ARCH=$(uname -m | sed 's/x86_64/x86_64/;s/aarch64/aarch64/') && \
+    curl -fSL "https://github.com/dprint/dprint/releases/download/${DPRINT_VERSION}/dprint-${ARCH}-unknown-linux-gnu.zip" \
+    -o /tmp/dprint.zip && \
+    unzip -q /tmp/dprint.zip -d /tmp/dprint && \
+    cp /tmp/dprint/dprint /usr/local/bin/dprint && chmod +x /usr/local/bin/dprint && \
+    rm -rf /tmp/dprint.zip /tmp/dprint
 
-# Install MkDocs with Material theme.
-RUN pip install --break-system-packages mkdocs-material mkdocs-include-markdown-plugin
+# Install ruff for Python formatting.
+COPY --from=ghcr.io/astral-sh/ruff:latest /ruff /usr/local/bin/ruff
 
-# Install mdformat for Markdown formatting (mdformat-mkdocs adds mkdocs
-# admonition support so mdformat preserves !!! blocks correctly).
-RUN pip install --break-system-packages mdformat-mkdocs
+# Install uv for Python package management.
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
-# Install Python tools for weave codegen.
-RUN pip install --break-system-packages protobuf pytest black
+# Install Python packages: MkDocs with Material theme and weave codegen tools.
+RUN uv pip install --system --break-system-packages \
+    mkdocs-include-markdown-plugin \
+    mkdocs-material \
+    protobuf \
+    pytest
 
 # Non-root user (required by rules_python for bazel coverage).
 RUN useradd -m -s /bin/bash dev && \

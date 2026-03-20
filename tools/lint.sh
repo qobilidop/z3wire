@@ -4,17 +4,6 @@ set -euo pipefail
 
 cd "$(git rev-parse --show-toplevel)"
 
-# --- Shell ---
-sh_files=$(find . -name '*.sh' -not -path './.git/*' -not -path './build/*' -not -path './site/*')
-echo "$sh_files" | xargs shellcheck
-echo "shellcheck: all checks passed."
-
-# --- Bazel ---
-bzl_files=$(find . -name '*.bazel' -o -name '*.bzl' -o -name 'BUILD' |
-  grep -v -e '.git/' -e './build/' -e './site/')
-echo "$bzl_files" | xargs buildifier -lint=warn
-echo "buildifier: all checks passed."
-
 # --- C++ ---
 
 # Build a test target to ensure external dependencies (z3, googletest) are fetched.
@@ -22,7 +11,7 @@ bazel build //z3wire:sym_bit_vec_test
 
 output_base=$(bazel info output_base)
 
-# Locate z3 include path from the cmake build output.
+# Locate z3 include path.
 z3_header=$(find -L "$output_base" \
   -path "*/z3_static/include/z3++.h" -print -quit 2>/dev/null)
 if [[ -z "$z3_header" ]]; then
@@ -40,7 +29,8 @@ if [[ -z "$gtest_header" ]]; then
 fi
 gtest_include_dir=$(dirname "$(dirname "$gtest_header")")
 
-# Generate a compile_commands.json so clang-tidy knows the compilation flags.
+# Generate compile_commands.json for clang-tidy and include-cleaner.
+trap 'rm -f compile_commands.json' EXIT
 files=$(find z3wire examples -name '*.h' -o -name '*.cc' |
   grep -v '\.expected\.' |
   grep -v 'examples/weave/status_register_test\.cc' |
@@ -59,11 +49,10 @@ done
 echo "[$entries
 ]" >compile_commands.json
 
-echo "$files" | xargs clang-tidy -p .
+echo "$files" | xargs --no-run-if-empty clang-tidy -p .
 status=$?
 
 if [[ $status -ne 0 ]]; then
-  rm -f compile_commands.json
   exit $status
 fi
 
@@ -79,8 +68,6 @@ for f in $files; do
   fi
 done
 
-rm -f compile_commands.json
-
 if [[ $ic_fail -ne 0 ]]; then
   echo ""
   echo "include-cleaner: issues found."
@@ -88,3 +75,19 @@ if [[ $ic_fail -ne 0 ]]; then
 fi
 
 echo "include-cleaner: all checks passed."
+
+# --- Python ---
+py_files=$(find z3wire examples -name '*.py' 2>/dev/null || true)
+echo "$py_files" | xargs --no-run-if-empty ruff check
+echo "ruff: all checks passed."
+
+# --- Bazel ---
+bzl_files=$(find . -name '*.bazel' -o -name '*.bzl' -o -name 'BUILD' |
+  grep -v -e '.git/' -e './build/' -e './site/')
+echo "$bzl_files" | xargs --no-run-if-empty buildifier -lint=warn
+echo "buildifier: all checks passed."
+
+# --- Shell ---
+sh_files=$(find . -name '*.sh' -not -path './.git/*' -not -path './build/*' -not -path './site/*')
+echo "$sh_files" | xargs --no-run-if-empty shellcheck
+echo "shellcheck: all checks passed."

@@ -3,8 +3,8 @@
 import unittest
 
 from z3wire.weave import rdl_pb2
-from z3wire.weave.resolver import resolve
 from z3wire.weave.emit_proto import emit_proto
+from z3wire.weave.resolver import resolve
 
 
 class EmitProtoTest(unittest.TestCase):
@@ -24,11 +24,15 @@ class EmitProtoTest(unittest.TestCase):
                         ),
                         rdl_pb2.Field(
                             name="value",
-                            type=rdl_pb2.FieldType(bitvec=rdl_pb2.BitVecType(width=8)),
+                            type=rdl_pb2.FieldType(
+                                bitvec=rdl_pb2.BitVecType(width=8)
+                            ),
                         ),
                         rdl_pb2.Field(
                             name="pad",
-                            type=rdl_pb2.FieldType(bitvec=rdl_pb2.BitVecType(width=7)),
+                            type=rdl_pb2.FieldType(
+                                bitvec=rdl_pb2.BitVecType(width=7)
+                            ),
                             reserved=True,
                         ),
                     ],
@@ -75,7 +79,9 @@ class EmitProtoTest(unittest.TestCase):
                         ),
                         rdl_pb2.Field(
                             name="data",
-                            type=rdl_pb2.FieldType(bitvec=rdl_pb2.BitVecType(width=4)),
+                            type=rdl_pb2.FieldType(
+                                bitvec=rdl_pb2.BitVecType(width=4)
+                            ),
                             count=3,
                         ),
                     ],

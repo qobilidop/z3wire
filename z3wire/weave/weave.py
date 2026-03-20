@@ -4,10 +4,11 @@ import argparse
 import os
 
 from google.protobuf import text_format
+
 from z3wire.weave import rdl_pb2
-from z3wire.weave.resolver import resolve
 from z3wire.weave.emit_header import emit_header
 from z3wire.weave.emit_proto import emit_proto
+from z3wire.weave.resolver import resolve
 
 
 def main():
@@ -19,7 +20,7 @@ def main():
     args = parser.parse_args()
 
     # Read and parse input
-    with open(args.input, "r") as f:
+    with open(args.input) as f:
         text = f.read()
 
     module = rdl_pb2.Module()

@@ -1,6 +1,6 @@
 """Generates a C++ header from a resolved RDL module."""
 
-from z3wire.weave.resolver import ResolvedModule, ResolvedStruct, ResolvedField
+from z3wire.weave.resolver import ResolvedField, ResolvedModule, ResolvedStruct
 
 
 def _symbolic_type(field: ResolvedField) -> str:
@@ -122,7 +122,10 @@ def _pack_expr(field: ResolvedField, accessor: str) -> str:
         return f"z3w::as_uint1({accessor})"
     elif field.kind == "bitvec" or field.kind == "enum_ref":
         if field.signedness == "signed":
-            return f"z3w::unsafe_cast<z3w::SymUInt<{field.element_width}>>({accessor})"
+            return (
+                f"z3w::unsafe_cast<z3w::SymUInt<{field.element_width}>>"
+                f"({accessor})"
+            )
         return accessor
     elif field.kind == "struct_ref":
         return f"{accessor}.Pack()"
@@ -172,8 +175,12 @@ def _emit_symbolic_decl(lines: list, struct: ResolvedStruct) -> None:
     lines.append(f"  static {struct.name}Symbolic Create(z3::context& ctx,")
     lines.append("      const std::string& prefix);")
     lines.append(f"  z3w::SymUInt<{struct.total_width}> Pack() const;")
-    lines.append(f"  {struct.name}Concrete ToConcrete(const z3::model& model) const;")
-    lines.append(f"  static {struct.name}Symbolic FromConcrete(z3::context& ctx,")
+    lines.append(
+        f"  {struct.name}Concrete ToConcrete(const z3::model& model) const;"
+    )
+    lines.append(
+        f"  static {struct.name}Symbolic FromConcrete(z3::context& ctx,"
+    )
     lines.append(f"      const {struct.name}Concrete& concrete);")
     lines.append("};")
 
@@ -185,7 +192,9 @@ def _emit_symbolic_decl(lines: list, struct: ResolvedStruct) -> None:
 
 def _emit_to_proto_impl(lines: list, struct: ResolvedStruct) -> None:
     """Generate out-of-line ToProto implementation."""
-    lines.append(f"inline {struct.name}Proto {struct.name}Concrete::ToProto() const {{")
+    lines.append(
+        f"inline {struct.name}Proto {struct.name}Concrete::ToProto() const {{"
+    )
     lines.append(f"  {struct.name}Proto proto;")
     for field in struct.fields:
         if field.reserved:
@@ -376,10 +385,9 @@ def emit_header(module: ResolvedModule, proto_header: str) -> str:
             if enum.desc:
                 lines.append(f"// {enum.desc} (width: {enum.width})")
             lines.append(f"struct {enum.name} {{")
-            for name, desc, value in enum.values:
-                lines.append(
-                    f"  static constexpr auto {name} = z3w::UInt<{enum.width}>::Literal<{value}>();"
-                )
+            for name, _desc, value in enum.values:
+                lit = f"z3w::UInt<{enum.width}>::Literal<{value}>()"
+                lines.append(f"  static constexpr auto {name} = {lit};")
             lines.append("};")
             lines.append("")
 

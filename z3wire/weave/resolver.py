@@ -1,6 +1,7 @@
 """Resolves an RDL Module: validates, computes widths and bit offsets."""
 
 from dataclasses import dataclass
+
 from z3wire.weave import rdl_pb2
 
 _RESERVED_NAMES = {
@@ -84,7 +85,9 @@ def _resolve_enums(module):
         seen_values = set()
         for v in enum_def.values:
             if v.value in seen_values:
-                raise ValueError(f"Enum '{enum_def.name}': duplicate value {v.value}")
+                raise ValueError(
+                    f"Enum '{enum_def.name}': duplicate value {v.value}"
+                )
             seen_values.add(v.value)
 
         values = [(v.name, v.desc, v.value) for v in enum_def.values]
@@ -185,7 +188,9 @@ def _resolve_structs(module, enum_map):
             ):
                 signedness = "signed"
 
-            field_infos.append((f, kind, element_width, count, total_width, signedness))
+            field_infos.append(
+                (f, kind, element_width, count, total_width, signedness)
+            )
 
         struct_total_width = sum(fw for _, _, _, _, fw, _ in field_infos)
 
@@ -193,7 +198,14 @@ def _resolve_structs(module, enum_map):
         fields = []
         if pack_order == "lsb_first":
             offset = 0
-            for f, kind, element_width, count, total_width, signedness in field_infos:
+            for (
+                f,
+                kind,
+                element_width,
+                count,
+                total_width,
+                signedness,
+            ) in field_infos:
                 fields.append(
                     ResolvedField(
                         name=f.name,
@@ -205,15 +217,26 @@ def _resolve_structs(module, enum_map):
                         reserved=f.reserved,
                         kind=kind,
                         signedness=signedness,
-                        enum_name=(f.type.enum_ref if kind == "enum_ref" else ""),
-                        struct_name=(f.type.struct_ref if kind == "struct_ref" else ""),
+                        enum_name=(
+                            f.type.enum_ref if kind == "enum_ref" else ""
+                        ),
+                        struct_name=(
+                            f.type.struct_ref if kind == "struct_ref" else ""
+                        ),
                     )
                 )
                 offset += total_width
         else:
             # MSB_FIRST: first field in list occupies highest bits.
             offset = struct_total_width
-            for f, kind, element_width, count, total_width, signedness in field_infos:
+            for (
+                f,
+                kind,
+                element_width,
+                count,
+                total_width,
+                signedness,
+            ) in field_infos:
                 offset -= total_width
                 fields.append(
                     ResolvedField(
@@ -226,8 +249,12 @@ def _resolve_structs(module, enum_map):
                         reserved=f.reserved,
                         kind=kind,
                         signedness=signedness,
-                        enum_name=(f.type.enum_ref if kind == "enum_ref" else ""),
-                        struct_name=(f.type.struct_ref if kind == "struct_ref" else ""),
+                        enum_name=(
+                            f.type.enum_ref if kind == "enum_ref" else ""
+                        ),
+                        struct_name=(
+                            f.type.struct_ref if kind == "struct_ref" else ""
+                        ),
                     )
                 )
 
