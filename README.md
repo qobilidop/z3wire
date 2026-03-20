@@ -6,6 +6,7 @@
 [![Lint](https://github.com/qobilidop/z3wire/actions/workflows/lint.yml/badge.svg)](https://github.com/qobilidop/z3wire/actions/workflows/lint.yml)
 [![codecov](https://codecov.io/gh/qobilidop/z3wire/graph/badge.svg)](https://codecov.io/gh/qobilidop/z3wire)
 [![Docs](https://github.com/qobilidop/z3wire/actions/workflows/docs.yml/badge.svg)](https://qobilidop.github.io/z3wire/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/qobilidop/z3wire/blob/main/LICENSE)
 
 <!-- docs-start -->
 
@@ -83,10 +84,5 @@ cd z3wire
 
 Visit [qobilidop.github.io/z3wire](https://qobilidop.github.io/z3wire/) for the
 full documentation.
-
-## License
-
-[MIT License](https://github.com/qobilidop/z3wire/blob/main/LICENSE), same as
-[Z3](https://github.com/Z3Prover/z3/blob/master/LICENSE.txt).
 
 <!-- docs-end -->
