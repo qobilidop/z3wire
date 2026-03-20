@@ -6,6 +6,7 @@ module(
 # riegeli): its rules_go, rules_swift, and aspect_bazel_lib deps are
 # incompatible with Bazel 9. Fixed upstream but not yet in BCR.
 # See https://github.com/google/flatbuffers/issues/8901
+
 bazel_dep(name = "abseil-cpp", version = "20260107.1")
 bazel_dep(name = "fuzztest", version = "20260219.0")
 bazel_dep(name = "googletest", version = "1.17.0.bcr.2")

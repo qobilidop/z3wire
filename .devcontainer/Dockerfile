@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libclang-rt-dev \
     make \
     python3 \
+    python3-pip \
     shellcheck \
     unzip \
     && rm -rf /var/lib/apt/lists/*
