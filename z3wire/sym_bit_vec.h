@@ -135,10 +135,9 @@ BitVec<W, S> to_concrete(const SymBitVec<W, S>& symbolic,
     }
 
     return std::get<0>(BitVec<W, S>::Checked(bytes));
-  } else if constexpr (S) {
-    return std::get<0>(BitVec<W, S>::Checked(
-        model.eval(symbolic.expr(), true).get_numeral_int64()));
   } else {
+    // Always extract as uint64 and let Checked() handle sign interpretation.
+    // get_numeral_int64() throws for W=64 signed values with the MSB set.
     return std::get<0>(BitVec<W, S>::Checked(
         model.eval(symbolic.expr(), true).get_numeral_uint64()));
   }

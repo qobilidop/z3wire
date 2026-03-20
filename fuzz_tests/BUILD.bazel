@@ -1,0 +1,23 @@
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
+
+cc_test(
+    name = "bit_vec_checked_test",
+    srcs = ["bit_vec_checked_test.cc"],
+    deps = [
+        "//z3wire:bit_vec",
+        "@fuzztest//fuzztest",
+        "@fuzztest//fuzztest:fuzztest_gtest_main",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_test(
+    name = "bit_vec_roundtrip_test",
+    srcs = ["bit_vec_roundtrip_test.cc"],
+    deps = [
+        "//z3wire:sym_bit_vec",
+        "@fuzztest//fuzztest",
+        "@fuzztest//fuzztest:fuzztest_gtest_main",
+        "@googletest//:gtest",
+    ],
+)
