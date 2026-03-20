@@ -12,13 +12,10 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Restore Bazel disk cache
-        uses: actions/cache@v4
-        with:
-          path: .bazel-disk-cache
-          key: bazel-disk-${{ runner.os }}-${{ hashFiles('MODULE.bazel', '.bazelrc') }}
-          restore-keys: |
-            bazel-disk-${{ runner.os }}-
+      - name: Configure remote cache
+        run: |
+          echo "build --config=remote" > ci.bazelrc
+          echo "build --remote_header=x-buildbuddy-api-key=${{ secrets.BUILDBUDDY_API_KEY }}" >> ci.bazelrc
 
       - name: Format Check
         uses: devcontainers/ci@v0.3

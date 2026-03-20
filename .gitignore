@@ -4,6 +4,9 @@
 /external
 MODULE.bazel.lock
 
+# Bazel CI config (written by CI workflow, contains API key).
+/ci.bazelrc
+
 # CMake
 /build/
 
