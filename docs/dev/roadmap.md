@@ -4,9 +4,6 @@ Future directions for Z3Wire.
 
 ## Operations
 
-- **SymBool XOR** (`^`) — Dedicated XOR operator for `SymBool`. Currently
-    expressible as `!=`, but a dedicated `^` would be more readable in
-    logic-heavy code.
 - **Multiply** (`*`) — Fundamental operation supported by all SMT bit-vector
     libraries. Design question: bit-growth semantics (result width = `W1 + W2`?)
     vs same-width with overflow detection.
@@ -76,22 +73,22 @@ Future directions for Z3Wire.
     the clamped value (min or max of the range) instead of the low-W-bit
     truncation. Clamping is more meaningful for a data holder type.
 
-## Safety
-
-- **Audit `z3::expr` constructors** — `SymBool(z3::expr)` and
-    `SymBitVec(z3::expr)` accept any `z3::expr` with no sort or width
-    verification. Wrong sort leads to silent corruption, bypassing the type
-    safety Z3Wire is built to provide. Consider making these private (with
-    friend access for internal operators) or adding runtime sort checks.
-
-- **Audit `BitVec(uint64_t)` constructor** — `BitVec` has an explicit
-    constructor from `uint64_t` that silently truncates without any check. This
-    bypasses both `Literal` (compile-time) and `Checked` (runtime) safety.
-    Consider making it private or removing it in favor of the checked
-    construction APIs.
-
 ## Quality
 
 - **Improve test coverage** — Key gaps: signed (`SymSInt`/`SInt`) operations are
     under-tested across the board, W=1 and W=64 boundary cases are sparse, and
     mixed concrete+symbolic bitwise only tests AND.
+
+- **Fuzz tests** — Property-based tests using Google FuzzTest. Roundtrip
+    (`concrete -> symbolic -> concrete`) is done. Ideas for more:
+
+    - **Checked construction idempotency** — `Checked(v.value())` on a valid
+        `BitVec` should return `{v, false}`. No Z3 needed.
+    - **Cast roundtrip** — Same-width `unsafe_cast<UInt>(unsafe_cast<SInt>(v))`
+        preserves bits.
+    - **Arithmetic properties** — Commutativity (`a + b == b + a`), negation
+        (`a + (-a) == 0`), bitwise identity (`a & a == a`). Verified via solver.
+    - **Shift properties** — `shl<N>(shr<N>(val))` masks lower bits for unsigned.
+        Verified via solver.
+    - **Continuous fuzzing CI** — Scheduled GitHub Actions workflow running
+        `--config=fuzztest` with longer timeouts for deeper coverage.
