@@ -68,7 +68,7 @@ RUN pip3 install --break-system-packages \
     mkdocs-include-markdown-plugin \
     mkdocs-material
 
-# Non-root user.
+# Non-root user (good practice for Bazel sandboxing).
 RUN useradd -m -s /bin/bash dev && \
     mkdir -p /home/dev/.cache/bazel && chown -R dev:dev /home/dev/.cache && \
     git config --system --add safe.directory /workspace

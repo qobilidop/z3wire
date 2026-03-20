@@ -382,10 +382,13 @@ To go from Symbolic to Proto, chain: `sym.ToConcrete(model).ToProto()`.
 ```
 z3wire/weave/
   rdl.proto              # RDL schema definition
-  weave.py               # CLI entry point
-  resolver.py            # Validates refs, computes widths and bit offsets
-  emit_header.py         # Generates the .h file
-  emit_proto.py          # Generates the .proto file
+  weave_main.cc          # CLI entry point
+  resolver.h             # Validates refs, computes widths and bit offsets
+  resolver.cc
+  emit_header.h          # Generates the .h file
+  emit_header.cc
+  emit_proto.h           # Generates the .proto file
+  emit_proto.cc
   BUILD.bazel
 examples/weave/
   status_register.rdl.txtpb  # Example RDL instance
@@ -403,15 +406,15 @@ derived from the `file_prefix` field in the Module, not the input filename).
 
 ### Implementation
 
-- **Language**: Python. Code generators are fundamentally about reading
-  structured data and emitting text — Python excels at this.
-- **Parsing**: Protobuf's Python API parses and validates `.txtpb` files against
-  `rdl.proto`. No custom parser.
-- **Resolution**: `resolver.py` validates all references, detects circular
+- **Language**: C++. Single language toolchain, simpler packaging.
+- **Parsing**: Protobuf's C++ TextFormat API parses and validates `.txtpb` files
+  against `rdl.proto`. No custom parser.
+- **Resolution**: `resolver.cc` validates all references, detects circular
   struct dependencies, computes per-field bit offsets, and validates total
   widths.
-- **Emission**: `emit_header.py` and `emit_proto.py` generate output using
-  f-strings. No template engine dependency.
+- **Emission**: `emit_header.cc` and `emit_proto.cc` generate output using
+  Abseil string utilities (`absl::StrCat`, `absl::StrAppend`,
+  `absl::StrFormat`). No template engine — string building uses Abseil.
 - **Deployment**: Standalone binary for now. Bazel rule integration is future
   work.
 
@@ -431,24 +434,24 @@ Weave validates:
 
 ## Design decisions
 
-| Decision            | Choice                                  | Rationale                                              |
-| ------------------- | --------------------------------------- | ------------------------------------------------------ |
-| SoT format          | Proto `.txtpb`                          | No custom parser needed                                |
-| Codegen language    | Python                                  | Natural fit for text generation                        |
-| Field layout        | Ordered, not positioned                 | Tool computes offsets from order + widths              |
-| Field pack order    | Per-module default, per-struct override | Inheritance with explicit override                     |
-| Enums               | Struct with `constexpr` constants       | Avoids type mismatch with bit-vector fields            |
-| Name transformation | None                                    | Users write target-language names directly             |
-| Arrays              | Fixed-size only                         | Hardware has no dynamic allocation                     |
-| Nesting             | Inline embedding (contiguous bits)      | Natural for hardware/protocol layouts                  |
-| Nested prefixes     | Auto-derived                            | User provides top-level prefix only                    |
-| Conversions         | Symbolic ↔ Concrete ↔ Proto             | Clean chain, each layer knows only its neighbor        |
-| Concrete struct     | POD data holder                         | No Z3 dependency, minimal methods                      |
-| Reserved fields     | Explicit `reserved` flag on Field       | Omitted from proto; included in C++ for correct layout |
-| Generated files     | One `.h` + one `.proto` per input       | Simplicity; split later if needed                      |
-| Templating          | f-strings                               | No extra dependency                                    |
-| Width validation    | Optional `width` field on Struct        | Catches field sum mismatches                           |
-| Method naming       | Google C++ Style Guide (CamelCase)      | Generated code is a separate codebase                  |
+| Decision            | Choice                                  | Rationale                                                         |
+| ------------------- | --------------------------------------- | ----------------------------------------------------------------- |
+| SoT format          | Proto `.txtpb`                          | No custom parser needed                                           |
+| Codegen language    | C++                                     | Single language toolchain, simpler packaging                      |
+| Field layout        | Ordered, not positioned                 | Tool computes offsets from order + widths                         |
+| Field pack order    | Per-module default, per-struct override | Inheritance with explicit override                                |
+| Enums               | Struct with `constexpr` constants       | Avoids type mismatch with bit-vector fields                       |
+| Name transformation | None                                    | Users write target-language names directly                        |
+| Arrays              | Fixed-size only                         | Hardware has no dynamic allocation                                |
+| Nesting             | Inline embedding (contiguous bits)      | Natural for hardware/protocol layouts                             |
+| Nested prefixes     | Auto-derived                            | User provides top-level prefix only                               |
+| Conversions         | Symbolic ↔ Concrete ↔ Proto             | Clean chain, each layer knows only its neighbor                   |
+| Concrete struct     | POD data holder                         | No Z3 dependency, minimal methods                                 |
+| Reserved fields     | Explicit `reserved` flag on Field       | Omitted from proto; included in C++ for correct layout            |
+| Generated files     | One `.h` + one `.proto` per input       | Simplicity; split later if needed                                 |
+| Templating          | Abseil string utilities                 | No extra dependency (Abseil is transitively required by protobuf) |
+| Width validation    | Optional `width` field on Struct        | Catches field sum mismatches                                      |
+| Method naming       | Google C++ Style Guide (CamelCase)      | Generated code is a separate codebase                             |
 
 ## Future work
 
