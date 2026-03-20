@@ -11,14 +11,23 @@ bazel build //z3wire:sym_bit_vec_test
 
 output_base=$(bazel info output_base)
 
-# Locate z3 include path.
-z3_header=$(find -L "$output_base" \
-  -path "*/z3_static/include/z3++.h" -print -quit 2>/dev/null || true)
-if [[ -z "$z3_header" ]]; then
-  echo "Error: could not find z3 include directory in Bazel build output."
+# Locate z3 include paths.
+# z3++.h includes <z3.h>, so we need both directories on the include path.
+z3_cpp_header=$(find -L "$output_base/external" \
+  -path "*/z3++.h" -print -quit 2>/dev/null || true)
+if [[ -z "$z3_cpp_header" ]]; then
+  echo "Error: could not find z3++.h in Bazel build output."
   exit 1
 fi
-z3_include_dir=$(dirname "$z3_header")
+z3_cpp_include_dir=$(dirname "$z3_cpp_header")
+
+z3_c_header=$(find -L "$output_base/external" \
+  -path "*/z3.h" -not -path "*/c++/*" -print -quit 2>/dev/null || true)
+if [[ -z "$z3_c_header" ]]; then
+  echo "Error: could not find z3.h in Bazel build output."
+  exit 1
+fi
+z3_c_include_dir=$(dirname "$z3_c_header")
 
 # Locate googletest include path.
 gtest_header=$(find -L "$output_base/external" \
@@ -41,7 +50,7 @@ for f in $files; do
   entries+="
   {
     \"directory\": \"$(pwd)\",
-    \"command\": \"clang++ -std=c++20 -xc++ -I. -isystem $z3_include_dir -isystem $gtest_include_dir -c $abs_path\",
+    \"command\": \"clang++ -std=c++20 -xc++ -I. -isystem $z3_cpp_include_dir -isystem $z3_c_include_dir -isystem $gtest_include_dir -c $abs_path\",
     \"file\": \"$abs_path\"
   }"
 done
