@@ -12,17 +12,19 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Activate CI-specific Bazel config
-        run: |
-          echo "build --config=ci" > ci.bazelrc
-          echo "build:ci --remote_header=x-buildbuddy-api-key=${{ secrets.BUILDBUDDY_API_KEY }}" >> ci.bazelrc
-
       - name: Format Check
         uses: devcontainers/ci@v0.3
         with:
           cacheFrom: ghcr.io/qobilidop/z3wire-dev
           push: never
           runCmd: ./tools/format.sh --check
+
+      - name: Generate compile_commands.json
+        uses: devcontainers/ci@v0.3
+        with:
+          cacheFrom: ghcr.io/qobilidop/z3wire-dev
+          push: never
+          runCmd: cmake -B build
 
       - name: Lint Check
         uses: devcontainers/ci@v0.3

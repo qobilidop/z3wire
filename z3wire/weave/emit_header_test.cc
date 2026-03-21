@@ -150,7 +150,7 @@ TEST(EmitHeaderTest, ToProtoBody) {
               HasSubstr("proto.set_val(static_cast<uint32_t>(val.value()));"));
   // Reserved field should not appear in ToProto
   auto to_proto_pos = output.find("ToProto");
-  auto brace_pos = output.find("}", to_proto_pos);
+  auto brace_pos = output.find('}', to_proto_pos);
   std::string to_proto_body =
       output.substr(to_proto_pos, brace_pos - to_proto_pos);
   EXPECT_THAT(to_proto_body, Not(HasSubstr("pad")));

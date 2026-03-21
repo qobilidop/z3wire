@@ -22,4 +22,4 @@ Checks: >
 
 WarningsAsErrors: '*'
 
-HeaderFilterRegex: 'z3wire/.*\.h$'
+HeaderFilterRegex: 'z3wire/.*(?<!\.pb)\.h$'

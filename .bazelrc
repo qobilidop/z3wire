@@ -1,5 +1,6 @@
-# Require C++20.
+# Require C++20 (including for tools built in exec configuration).
 build --cxxopt=-std=c++20
+build --host_cxxopt=-std=c++20
 
 # Set up disk cache for faster local rebuilds.
 build --disk_cache=.bazel-disk-cache

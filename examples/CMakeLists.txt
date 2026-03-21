@@ -12,3 +12,13 @@ target_link_libraries(packet_gen PRIVATE z3wire_sym_bit_vec)
 
 add_executable(midpoint_overflow midpoint_overflow.cc)
 target_link_libraries(midpoint_overflow PRIVATE z3wire_sym_bit_vec)
+
+# Usage examples (also embedded in docs).
+add_executable(usage_types usage/types.cc)
+target_link_libraries(usage_types PRIVATE z3wire_sym_bit_vec)
+
+add_executable(usage_operations usage/operations.cc)
+target_link_libraries(usage_operations PRIVATE z3wire_sym_bit_vec)
+
+add_executable(usage_type_conversions usage/type_conversions.cc)
+target_link_libraries(usage_type_conversions PRIVATE z3wire_sym_bit_vec)

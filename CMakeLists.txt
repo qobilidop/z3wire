@@ -3,6 +3,7 @@ project(z3wire LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Locate the pre-built Z3 installed in the dev container (see Dockerfile).
 find_path(Z3_INCLUDE_DIR NAMES z3++.h REQUIRED)

@@ -55,6 +55,10 @@ if(BUILD_TESTING)
     add_executable(sym_bit_vec_test sym_bit_vec_test.cc)
     target_link_libraries(sym_bit_vec_test PRIVATE z3wire_sym_bit_vec GTest::gtest_main)
     add_test(NAME sym_bit_vec_test COMMAND sym_bit_vec_test)
+
+    add_executable(check_test check_test.cc)
+    target_link_libraries(check_test PRIVATE z3wire_sym_bit_vec GTest::gtest_main)
+    add_test(NAME check_test COMMAND check_test)
 endif()
 
 add_subdirectory(weave)

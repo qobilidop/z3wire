@@ -136,7 +136,6 @@ std::string FromConcreteExpr(const ResolvedField& field,
                              const std::string& accessor) {
   switch (field.kind) {
     case ResolvedField::kBool:
-      return absl::StrFormat("z3w::to_symbolic(%s, ctx)", accessor);
     case ResolvedField::kBitVec:
     case ResolvedField::kEnumRef:
       return absl::StrFormat("z3w::to_symbolic(%s, ctx)", accessor);
@@ -250,7 +249,9 @@ void EmitToProtoImpl(std::string& out, const ResolvedStruct& s) {
                   "Concrete::ToProto() const {\n");
   absl::StrAppend(&out, "  ", s.name, "Proto proto;\n");
   for (const auto& f : s.fields) {
-    if (f.reserved) continue;
+    if (f.reserved) {
+      continue;
+    }
     if (f.count >= 1) {
       absl::StrAppend(&out, "  for (size_t i = 0; i < ", f.count, "; ++i) {\n");
       std::string expr = ToProtoExpr(f, absl::StrCat(f.name, "[i]"));
@@ -279,7 +280,9 @@ void EmitFromProtoImpl(std::string& out, const ResolvedStruct& s) {
                   "Concrete::FromProto(const ", s.name, "Proto& proto) {\n");
   absl::StrAppend(&out, "  ", s.name, "Concrete result{};\n");
   for (const auto& f : s.fields) {
-    if (f.reserved) continue;
+    if (f.reserved) {
+      continue;
+    }
     if (f.count >= 1) {
       absl::StrAppend(&out, "  for (size_t i = 0; i < ", f.count, "; ++i) {\n");
       std::string expr =
@@ -420,7 +423,9 @@ std::string EmitHeader(const ResolvedModule& module,
         break;
       }
     }
-    if (has_arrays) break;
+    if (has_arrays) {
+      break;
+    }
   }
   if (has_arrays) {
     absl::StrAppend(&out, "#include <array>\n");

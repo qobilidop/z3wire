@@ -17,9 +17,9 @@ struct ResolvedField {
   int count;          // 0 = scalar, >= 1 = array
   int element_width;  // Width of a single element
   bool reserved;
-  enum Kind { kBool, kBitVec, kEnumRef, kStructRef };
+  enum Kind : uint8_t { kBool, kBitVec, kEnumRef, kStructRef };
   Kind kind;
-  enum Signedness { kUnsigned, kSigned };
+  enum Signedness : uint8_t { kUnsigned, kSigned };
   Signedness signedness = kUnsigned;
   std::string enum_name;
   std::string struct_name;
@@ -41,7 +41,7 @@ struct ResolvedStruct {
   std::string name;
   std::string desc;
   int total_width;
-  enum PackOrder { kLsbFirst, kMsbFirst };
+  enum PackOrder : uint8_t { kLsbFirst, kMsbFirst };
   PackOrder field_pack_order;
   std::vector<ResolvedField> fields;
 };

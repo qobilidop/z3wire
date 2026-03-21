@@ -74,7 +74,10 @@ To check without modifying (used in CI):
 
 ### Lint
 
+Requires a CMake configure first (for `compile_commands.json`):
+
 ```sh
+./dev.sh cmake -B build
 ./dev.sh ./tools/lint.sh
 ```
 
@@ -109,11 +112,6 @@ To check without modifying (used in CI):
     `is_symbolic_v`), following `std::` conventions rather than Google's
     `PascalCase`.
 
-### Python
-
-- Follow
-  [Google Python Style Guide](https://google.github.io/styleguide/pyguide.html).
-
 ### Bazel
 
 - Follow [BUILD Style Guide](https://bazel.build/build/style-guide).
@@ -134,6 +132,7 @@ Before commit, ALWAYS run the following commands and fix any issues you see:
 ./dev.sh bazel build //...
 ./dev.sh bazel test //...
 
+./dev.sh cmake -B build
 ./dev.sh ./tools/lint.sh
 ./dev.sh ./tools/docs.sh
 
