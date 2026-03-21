@@ -1,4 +1,4 @@
-#include "z3wire/weave/emit_header.h"
+#include "z3wire_weave/emit_header.h"
 
 #include <stdexcept>
 #include <string>
@@ -7,9 +7,9 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
-#include "z3wire/weave/resolver.h"
+#include "z3wire_weave/resolver.h"
 
-namespace z3wire::weave {
+namespace z3wire_weave {
 
 namespace {
 
@@ -512,4 +512,4 @@ std::string EmitHeader(const ResolvedModule& module,
   return out;
 }
 
-}  // namespace z3wire::weave
+}  // namespace z3wire_weave

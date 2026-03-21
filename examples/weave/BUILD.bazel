@@ -12,8 +12,8 @@ genrule(
         "status_register.h",
         "status_register.proto",
     ],
-    cmd = "$(location //z3wire/weave) --input $(location status_register.rdl.txtpb) --output_dir $(RULEDIR)",
-    tools = ["//z3wire/weave"],
+    cmd = "$(location //z3wire_weave:weave) --input $(location status_register.rdl.txtpb) --output_dir $(RULEDIR)",
+    tools = ["//z3wire_weave:weave"],
 )
 
 sh_test(

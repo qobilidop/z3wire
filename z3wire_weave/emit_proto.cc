@@ -1,12 +1,12 @@
-#include "z3wire/weave/emit_proto.h"
+#include "z3wire_weave/emit_proto.h"
 
 #include <stdexcept>
 #include <string>
 
 #include "absl/strings/str_cat.h"
-#include "z3wire/weave/resolver.h"
+#include "z3wire_weave/resolver.h"
 
-namespace z3wire::weave {
+namespace z3wire_weave {
 
 namespace {
 
@@ -69,4 +69,4 @@ std::string EmitProto(const ResolvedModule& module) {
   return out;
 }
 
-}  // namespace z3wire::weave
+}  // namespace z3wire_weave

@@ -5,9 +5,9 @@
 #include <string>
 #include <vector>
 
-#include "z3wire/weave/rdl.pb.h"
+#include "z3wire_weave/rdl.pb.h"
 
-namespace z3wire::weave {
+namespace z3wire_weave {
 
 struct ResolvedField {
   std::string name;
@@ -57,6 +57,6 @@ struct ResolvedModule {
 // Throws std::invalid_argument on validation errors.
 ResolvedModule Resolve(const z3wire_rdl::Module& module);
 
-}  // namespace z3wire::weave
+}  // namespace z3wire_weave
 
 #endif  // Z3WIRE_WEAVE_RESOLVER_H_

@@ -1,4 +1,4 @@
-#include "z3wire/weave/resolver.h"
+#include "z3wire_weave/resolver.h"
 
 #include <algorithm>
 #include <cstdint>
@@ -10,9 +10,9 @@
 #include <vector>
 
 #include "absl/strings/str_format.h"
-#include "z3wire/weave/rdl.pb.h"
+#include "z3wire_weave/rdl.pb.h"
 
-namespace z3wire::weave {
+namespace z3wire_weave {
 namespace {
 
 const std::set<std::string> kReservedNames = {
@@ -295,4 +295,4 @@ ResolvedModule Resolve(const z3wire_rdl::Module& module) {
   };
 }
 
-}  // namespace z3wire::weave
+}  // namespace z3wire_weave

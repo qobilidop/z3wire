@@ -8,10 +8,10 @@
 #include <string>
 
 #include "google/protobuf/text_format.h"
-#include "z3wire/weave/emit_header.h"
-#include "z3wire/weave/emit_proto.h"
-#include "z3wire/weave/rdl.pb.h"
-#include "z3wire/weave/resolver.h"
+#include "z3wire_weave/emit_header.h"
+#include "z3wire_weave/emit_proto.h"
+#include "z3wire_weave/rdl.pb.h"
+#include "z3wire_weave/resolver.h"
 
 namespace {
 
@@ -60,7 +60,7 @@ int main(int argc, char* argv[]) {
   }
 
   // Resolve.
-  z3wire::weave::ResolvedModule resolved = z3wire::weave::Resolve(module);
+  z3wire_weave::ResolvedModule resolved = z3wire_weave::Resolve(module);
 
   // Create output directory.
   std::filesystem::create_directories(args.output_dir);
@@ -68,7 +68,7 @@ int main(int argc, char* argv[]) {
   std::string prefix = resolved.file_prefix;
 
   // Generate proto.
-  std::string proto_output = z3wire::weave::EmitProto(resolved);
+  std::string proto_output = z3wire_weave::EmitProto(resolved);
   std::string proto_path = args.output_dir + "/" + prefix + ".proto";
   std::ofstream proto_file(proto_path);
   proto_file << proto_output;
@@ -77,7 +77,7 @@ int main(int argc, char* argv[]) {
 
   // Generate header.
   std::string header_output =
-      z3wire::weave::EmitHeader(resolved, prefix + ".pb.h");
+      z3wire_weave::EmitHeader(resolved, prefix + ".pb.h");
   std::string header_path = args.output_dir + "/" + prefix + ".h";
   std::ofstream header_file(header_path);
   header_file << header_output;
