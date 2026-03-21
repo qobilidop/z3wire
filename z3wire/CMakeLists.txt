@@ -60,5 +60,3 @@ if(BUILD_TESTING)
     target_link_libraries(check_test PRIVATE z3wire_sym_bit_vec GTest::gtest_main)
     add_test(NAME check_test COMMAND check_test)
 endif()
-
-add_subdirectory(weave)

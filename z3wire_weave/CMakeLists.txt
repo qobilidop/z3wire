@@ -1,7 +1,10 @@
+find_package(absl CONFIG REQUIRED)
+find_package(protobuf CONFIG REQUIRED)
+
 # --- Proto library ---
 # protobuf_generate puts rdl.pb.h into CMAKE_CURRENT_BINARY_DIR
-# (i.e., build/z3wire/weave/). Source files include "z3wire/weave/rdl.pb.h",
-# so expose PROJECT_BINARY_DIR so the z3wire/weave/ prefix resolves.
+# (i.e., build/z3wire_weave/). Source files include "z3wire_weave/rdl.pb.h",
+# so expose PROJECT_BINARY_DIR so the z3wire_weave/ prefix resolves.
 add_library(z3wire_rdl_proto STATIC)
 target_link_libraries(z3wire_rdl_proto PUBLIC protobuf::libprotobuf)
 target_include_directories(z3wire_rdl_proto PUBLIC
