@@ -6,8 +6,11 @@
   "remoteUser": "dev",
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
   "workspaceFolder": "/workspace",
+  // Mounted Docker volumes persist across container restarts.
   "mounts": [
+    // Mount the Bazel cache as a Docker volume to speed up builds in the container.
     "source=bazel-cache,target=/home/dev/.cache/bazel,type=volume"
   ],
+  // Forward port 8000 for local MkDocs serving.
   "forwardPorts": [8000]
 }

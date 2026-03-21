@@ -12,10 +12,10 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Configure remote cache
+      - name: Activate CI-specific Bazel config
         run: |
-          echo "build --config=remote" > ci.bazelrc
-          echo "build --remote_header=x-buildbuddy-api-key=${{ secrets.BUILDBUDDY_API_KEY }}" >> ci.bazelrc
+          echo "build --config=ci" > ci.bazelrc
+          echo "build:ci --remote_header=x-buildbuddy-api-key=${{ secrets.BUILDBUDDY_API_KEY }}" >> ci.bazelrc
 
       - name: Build
         uses: devcontainers/ci@v0.3

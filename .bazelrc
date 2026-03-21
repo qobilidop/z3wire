@@ -1,12 +1,21 @@
-# C++20 for concepts, constexpr improvements, etc.
+# Require C++20.
 build --cxxopt=-std=c++20
 
-# Disk cache for faster rebuilds (especially Z3).
-build --disk_cache=/workspace/.bazel-disk-cache
+# Set up disk cache for faster local rebuilds.
+build --disk_cache=.bazel-disk-cache
 
-# BuildBuddy remote cache (activated by ci.bazelrc, written in CI).
-build:remote --remote_cache=grpcs://remote.buildbuddy.io
-build:remote --remote_cache_compression
-build:remote --bes_results_url=https://app.buildbuddy.io/invocation/
-build:remote --bes_backend=grpcs://remote.buildbuddy.io
+# Activate CI-specific config using ci.bazelrc, which is written when in CI.
 try-import %workspace%/ci.bazelrc
+
+# Set up BuildBuddy for remote cache in CI.
+# https://www.buildbuddy.io/docs/quickstart/
+# https://app.buildbuddy.io/docs/setup
+build:ci --bes_results_url=https://app.buildbuddy.io/invocation/
+build:ci --bes_backend=grpcs://remote.buildbuddy.io
+common:ci --remote_cache=grpcs://remote.buildbuddy.io
+common:ci --remote_cache_compression
+
+# Configure BuildBuddy metadata.
+# https://www.buildbuddy.io/docs/guide-metadata/
+build:ci --build_metadata=REPO_URL=https://github.com/qobilidop/z3wire.git
+build:ci --build_metadata=VISIBILITY=PUBLIC

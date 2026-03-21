@@ -17,8 +17,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     unzip \
     && rm -rf /var/lib/apt/lists/*
 
-# Install pre-built Z3 for the CMake build. Bazel manages its own Z3 via
-# MODULE.bazel; keep Z3_VERSION here in sync with the version pinned there.
+# Pre-built Z3 for CMake. Keep version in sync with MODULE.bazel.
 ARG Z3_VERSION=4.15.2
 RUN ARCH=$(uname -m) && \
     if [ "$ARCH" = "x86_64" ]; then \
@@ -37,9 +36,7 @@ RUN ARCH=$(uname -m) && \
     ldconfig && \
     rm -rf /tmp/z3.zip /tmp/z3
 
-# Install GoogleTest for the CMake build. Bazel manages its own copy via
-# MODULE.bazel; keep GOOGLETEST_VERSION here in sync with the version pinned
-# there.
+# GoogleTest for CMake. Keep version in sync with MODULE.bazel.
 ARG GOOGLETEST_VERSION=v1.17.0
 RUN git clone --depth 1 --branch ${GOOGLETEST_VERSION} \
       https://github.com/google/googletest.git /tmp/googletest && \
@@ -49,8 +46,7 @@ RUN git clone --depth 1 --branch ${GOOGLETEST_VERSION} \
     cmake --install /tmp/googletest/build && \
     rm -rf /tmp/googletest
 
-# Install Abseil for the CMake build. Bazel manages its own copy via
-# MODULE.bazel; keep ABSEIL_VERSION here in sync with the version pinned there.
+# Abseil for CMake. Must be installed before Protobuf. Keep version in sync with MODULE.bazel.
 ARG ABSEIL_VERSION=20260107.1
 RUN git clone --depth 1 --branch ${ABSEIL_VERSION} \
       https://github.com/abseil/abseil-cpp.git /tmp/abseil && \
@@ -61,9 +57,7 @@ RUN git clone --depth 1 --branch ${ABSEIL_VERSION} \
     cmake --install /tmp/abseil/build && \
     rm -rf /tmp/abseil
 
-# Install Protobuf for the CMake build. Bazel manages its own copy via
-# MODULE.bazel; keep PROTOBUF_VERSION here in sync with the version pinned
-# there.
+# Protobuf for CMake. Keep version in sync with MODULE.bazel.
 ARG PROTOBUF_VERSION=v34.0
 RUN git clone --depth 1 --branch ${PROTOBUF_VERSION} \
       https://github.com/protocolbuffers/protobuf.git /tmp/protobuf && \
@@ -75,42 +69,42 @@ RUN git clone --depth 1 --branch ${PROTOBUF_VERSION} \
     cmake --install /tmp/protobuf/build && \
     rm -rf /tmp/protobuf
 
-# Install Bazelisk as "bazel"
+# Bazelisk as "bazel".
 ARG BAZELISK_VERSION=v1.28.1
 RUN ARCH=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/') && \
     curl -fSL "https://github.com/bazelbuild/bazelisk/releases/download/${BAZELISK_VERSION}/bazelisk-linux-${ARCH}" \
     -o /usr/local/bin/bazel && chmod +x /usr/local/bin/bazel
 
-# Install Buildifier for Bazel file formatting.
+# Buildifier for Bazel file formatting.
 ARG BUILDIFIER_VERSION=v8.5.1
 RUN ARCH=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/') && \
     curl -fSL "https://github.com/bazelbuild/buildtools/releases/download/${BUILDIFIER_VERSION}/buildifier-linux-${ARCH}" \
     -o /usr/local/bin/buildifier && chmod +x /usr/local/bin/buildifier
 
-# Install shfmt for shell script formatting.
+# shfmt for shell script formatting.
 ARG SHFMT_VERSION=v3.13.0
 RUN ARCH=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/') && \
     curl -fSL "https://github.com/mvdan/sh/releases/download/${SHFMT_VERSION}/shfmt_${SHFMT_VERSION}_linux_${ARCH}" \
     -o /usr/local/bin/shfmt && chmod +x /usr/local/bin/shfmt
 
-# Install dprint for Markdown, JSON, YAML, and TOML formatting.
+# dprint for Markdown, JSON, YAML, and TOML formatting.
 ARG DPRINT_VERSION=0.53.0
-RUN ARCH=$(uname -m | sed 's/x86_64/x86_64/;s/aarch64/aarch64/') && \
+RUN ARCH=$(uname -m) && \
     curl -fSL "https://github.com/dprint/dprint/releases/download/${DPRINT_VERSION}/dprint-${ARCH}-unknown-linux-gnu.zip" \
     -o /tmp/dprint.zip && \
     unzip -q /tmp/dprint.zip -d /tmp/dprint && \
     cp /tmp/dprint/dprint /usr/local/bin/dprint && chmod +x /usr/local/bin/dprint && \
     rm -rf /tmp/dprint.zip /tmp/dprint
 
-# Install Python packages for MkDocs.
+# MkDocs and plugins for documentation.
 RUN pip3 install --break-system-packages \
     mkdocs-include-markdown-plugin \
     mkdocs-material
 
-# Non-root user (good practice for Bazel sandboxing).
+# Non-root user (Bazel discourages running as root).
 RUN useradd -m -s /bin/bash dev && \
     mkdir -p /home/dev/.cache/bazel && chown -R dev:dev /home/dev/.cache && \
     git config --system --add safe.directory /workspace
 
-# Default to clang for Bazel's C++ toolchain auto-detection.
+# Default to clang for Bazel's C++ toolchain detection.
 ENV CC=clang
