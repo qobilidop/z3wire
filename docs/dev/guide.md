@@ -74,11 +74,7 @@ To check without modifying (used in CI):
 
 ### Lint
 
-Requires a CMake build first (for `compile_commands.json` and generated
-headers):
-
 ```sh
-./dev.sh cmake -B build && ./dev.sh cmake --build build
 ./dev.sh ./tools/lint.sh
 ```
 
@@ -133,7 +129,6 @@ Before commit, ALWAYS run the following commands and fix any issues you see:
 ./dev.sh bazel build //...
 ./dev.sh bazel test //...
 
-./dev.sh cmake -B build && ./dev.sh cmake --build build
 ./dev.sh ./tools/lint.sh
 ./dev.sh ./tools/docs.sh
 

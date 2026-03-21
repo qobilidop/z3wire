@@ -6,12 +6,9 @@ cd "$(git rev-parse --show-toplevel)"
 
 # --- C++ ---
 
-# Use compile_commands.json from a CMake build.
-if [[ ! -f build/compile_commands.json ]]; then
-  echo "Error: build/compile_commands.json not found."
-  echo "Run 'cmake -B build && cmake --build build' first."
-  exit 1
-fi
+# Generate compile_commands.json and build the proto target (needed for rdl.pb.h).
+cmake -B build >/dev/null 2>&1
+cmake --build build --target z3wire_rdl_proto >/dev/null 2>&1
 cp build/compile_commands.json compile_commands.json
 
 files=$(find z3wire examples -name '*.h' -o -name '*.cc' |

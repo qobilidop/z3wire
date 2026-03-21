@@ -19,13 +19,6 @@ jobs:
           push: never
           runCmd: ./tools/format.sh --check
 
-      - name: CMake build (generates compile_commands.json and proto headers)
-        uses: devcontainers/ci@v0.3
-        with:
-          cacheFrom: ghcr.io/qobilidop/z3wire-dev
-          push: never
-          runCmd: cmake -B build && cmake --build build
-
       - name: Lint Check
         uses: devcontainers/ci@v0.3
         with:
