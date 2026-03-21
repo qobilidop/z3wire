@@ -380,7 +380,7 @@ To go from Symbolic to Proto, chain: `sym.ToConcrete(model).ToProto()`.
 ### Directory layout
 
 ```
-z3wire/weave/
+z3wire_weave/
   rdl.proto              # RDL schema definition
   weave_main.cc          # CLI entry point
   resolver.h             # Validates refs, computes widths and bit offsets
