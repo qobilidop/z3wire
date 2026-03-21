@@ -7,11 +7,11 @@ cd "$(git rev-parse --show-toplevel)"
 # --- C++ ---
 
 # Generate compile_commands.json and build the proto target (needed for rdl.pb.h).
-cmake -B build >/dev/null 2>&1
+cmake -B build -DZ3WIRE_BUILD_WEAVE=ON >/dev/null 2>&1
 cmake --build build --target z3wire_rdl_proto >/dev/null 2>&1
 cp build/compile_commands.json compile_commands.json
 
-files=$(find z3wire examples -name '*.h' -o -name '*.cc' |
+files=$(find z3wire z3wire_weave examples -name '*.h' -o -name '*.cc' |
   grep -v '\.expected\.' |
   grep -v 'examples/weave/status_register_test\.cc' |
   grep -v 'examples/weave/status_register_verification\.cc')
