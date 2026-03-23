@@ -14,7 +14,7 @@ symbolic in mixed expressions (see
 | Arithmetic            | `+`, `-`, unary `-`              |
 | Shifting              | `shl`, `shr`                     |
 | Rotation              | `rotl`, `rotr`                   |
-| Bit manipulation      | `extract`, `concat`              |
+| Bit manipulation      | `extract`, `replace`, `concat`   |
 | Conditional selection | `ite`                            |
 
 All examples on this page assume a `z3::context ctx` is in scope.
@@ -404,6 +404,49 @@ z3w::SymUInt<8> byte = z3w::extract<8>(src, offset);
 ```
 
 Offsets beyond the source width yield zero bits (zero-extension semantics).
+
+### Static replacement
+
+Typing rules:
+
+| Source            | Replacement field | Low bit offset | Syntax                | Result type   | Compile-time checks |
+| :---------------- | :---------------- | :------------- | :-------------------- | :------------ | :------------------ |
+| `SymUInt<WS> src` | `SymUInt<WF> f`   | `size_t LO`    | `replace<LO>(src, f)` | `SymUInt<WS>` | `WS >= LO+WF`       |
+| `SymSInt<WS> src` | `SymUInt<WF> f`   | `size_t LO`    | `replace<LO>(src, f)` | `SymSInt<WS>` | `WS >= LO+WF`       |
+
+Examples:
+
+```cpp
+z3w::SymUInt<32> u32(ctx, "u32");
+z3w::SymSInt<32> s32(ctx, "s32");
+z3w::SymUInt<8> field(ctx, "field");
+
+z3w::SymUInt<32> r1 = z3w::replace<13>(u32, field);
+z3w::SymSInt<32> r2 = z3w::replace<13>(s32, field);
+```
+
+### Symbolic-offset replacement
+
+Typing rules:
+
+| Source            | Replacement field | Low bit offset   | Syntax                | Result type   | Compile-time checks |
+| :---------------- | :---------------- | :--------------- | :-------------------- | :------------ | :------------------ |
+| `SymUInt<WS> src` | `SymUInt<WF> f`   | `SymUInt<WL> lo` | `replace(src, f, lo)` | `SymUInt<WS>` | `WS >= WF`          |
+| `SymSInt<WS> src` | `SymUInt<WF> f`   | `SymUInt<WL> lo` | `replace(src, f, lo)` | `SymSInt<WS>` | `WS >= WF`          |
+
+Examples:
+
+```cpp
+z3w::SymUInt<32> u32(ctx, "u32");
+z3w::SymSInt<32> s32(ctx, "s32");
+z3w::SymUInt<8> field(ctx, "field");
+z3w::SymUInt<5> lo(ctx, "lo");
+
+z3w::SymUInt<32> r1 = z3w::replace(u32, field, lo);
+z3w::SymSInt<32> r2 = z3w::replace(s32, field, lo);
+```
+
+Replacement bits beyond the source width won't take any effect.
 
 ### Concatenation
 

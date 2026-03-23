@@ -184,6 +184,27 @@ void demo_symbolic_extraction() {
   z3w::SymUInt<8> byte = z3w::extract<8>(src, offset);
 }
 
+void demo_static_replacement() {
+  z3::context ctx;
+  z3w::SymUInt<32> u32(ctx, "u32");
+  z3w::SymSInt<32> s32(ctx, "s32");
+  z3w::SymUInt<8> field(ctx, "field");
+
+  z3w::SymUInt<32> r1 = z3w::replace<13>(u32, field);
+  z3w::SymSInt<32> r3 = z3w::replace<13>(s32, field);
+}
+
+void demo_symbolic_replacement() {
+  z3::context ctx;
+  z3w::SymUInt<32> u32(ctx, "u32");
+  z3w::SymSInt<32> s32(ctx, "s32");
+  z3w::SymUInt<8> field(ctx, "field");
+  z3w::SymUInt<5> offset(ctx, "offset");
+
+  z3w::SymUInt<32> r2 = z3w::replace(u32, field, offset);
+  z3w::SymSInt<32> r4 = z3w::replace(s32, field, offset);
+}
+
 void demo_concat() {
   z3::context ctx;
   z3w::SymBool b(ctx, "b");
@@ -225,6 +246,8 @@ int main() {
   demo_rotr();
   demo_static_extraction();
   demo_symbolic_extraction();
+  demo_static_replacement();
+  demo_symbolic_replacement();
   demo_concat();
   demo_ite();
   return 0;

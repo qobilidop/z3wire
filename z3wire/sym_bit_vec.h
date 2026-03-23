@@ -530,6 +530,58 @@ SymUInt<TargetWidth> extract(const SymBitVec<W, S>& val,
   return SymUInt<TargetWidth>(shifted.extract(TargetWidth - 1, 0));
 }
 
+// --- Bit replacement (replace) ---
+
+// Static replacement: replace<LO>(src, field) -> SymBitVec<WS, S>.
+// Replaces bits [LO+WF-1 : LO] in src with field.
+template <size_t LO, size_t WS, bool S, size_t WF>
+SymBitVec<WS, S> replace(const SymBitVec<WS, S>& src,
+                         const SymUInt<WF>& field) {
+  static_assert(WS >= LO + WF, "replace: field doesn't fit at given offset.");
+
+  constexpr size_t kHigh = LO + WF;  // one past the top bit of field
+
+  z3::expr result = field.expr();
+
+  // Prepend high bits if any.
+  if constexpr (kHigh < WS) {
+    result = z3::concat(src.expr().extract(WS - 1, kHigh), result);
+  }
+
+  // Append low bits if any.
+  if constexpr (LO > 0) {
+    result = z3::concat(result, src.expr().extract(LO - 1, 0));
+  }
+
+  return SymBitVec<WS, S>(result);
+}
+
+// Symbolic-offset replacement: replace(src, field, lo) -> SymBitVec<WS, S>.
+// Replaces WF bits starting at symbolic offset lo.
+// Replacement bits beyond the source width have no effect.
+template <size_t WS, bool S, size_t WF, size_t WL>
+SymBitVec<WS, S> replace(const SymBitVec<WS, S>& src, const SymUInt<WF>& field,
+                         const SymUInt<WL>& lo) {
+  static_assert(WS >= WF, "replace: field wider than source.");
+
+  auto& ctx = src.expr().ctx();
+
+  // Zero-extend field and offset to source width.
+  z3::expr field_wide = z3::zext(field.expr(), WS - WF);
+  z3::expr lo_wide = z3::zext(lo.expr(), WS - WL);
+
+  // Create WF-bit mask of all ones, extend to WS.
+  z3::expr mask = z3::zext(~ctx.bv_val(0, WF), WS - WF);
+
+  // Shift field and mask to position.
+  z3::expr field_shifted = z3::shl(field_wide, lo_wide);
+  z3::expr mask_shifted = z3::shl(mask, lo_wide);
+
+  // Clear target bits and insert field.
+  z3::expr result = (src.expr() & ~mask_shifted) | field_shifted;
+  return SymBitVec<WS, S>(result);
+}
+
 // --- Concatenation ---
 
 namespace internal {
