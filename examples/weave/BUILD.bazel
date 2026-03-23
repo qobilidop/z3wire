@@ -12,7 +12,7 @@ genrule(
         "status_register.h",
         "status_register.proto",
     ],
-    cmd = "$(location //z3wire_weave:weave) --input $(location status_register.rdl.txtpb) --output_dir $(RULEDIR)",
+    cmd = "$(location //z3wire_weave:weave) --input $(location status_register.rdl.txtpb) --output_dir $(RULEDIR) --include_prefix examples/weave",
     tools = ["//z3wire_weave:weave"],
 )
 

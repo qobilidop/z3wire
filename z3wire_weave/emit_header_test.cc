@@ -278,6 +278,23 @@ TEST(EmitHeaderTest, MsbFirstPack) {
   EXPECT_THAT(output, HasSubstr("field pack order: MSB first"));
 }
 
+TEST(EmitHeaderTest, ProtoIncludeUsesGivenPath) {
+  auto module = MakeModule();
+  auto* s = module.add_structs();
+  s->set_name("Reg");
+  {
+    auto* f = s->add_fields();
+    f->set_name("flag");
+    f->mutable_type()->mutable_bool_();
+  }
+
+  auto resolved = Resolve(module);
+  std::string output = EmitHeader(resolved, "some/path/test.pb.h");
+
+  EXPECT_THAT(output, HasSubstr("#include \"some/path/test.pb.h\""));
+  EXPECT_THAT(output, Not(HasSubstr("#include \"test.pb.h\"")));
+}
+
 TEST(EmitHeaderTest, FullExample) {
   auto module = MakeModule("example");
   module.set_file_prefix("status_register");

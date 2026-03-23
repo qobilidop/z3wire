@@ -18,6 +18,7 @@ namespace {
 struct Args {
   std::string input;
   std::string output_dir;
+  std::string include_prefix;
 };
 
 Args ParseArgs(int argc, char* argv[]) {
@@ -28,10 +29,13 @@ Args ParseArgs(int argc, char* argv[]) {
       args.input = argv[++i];
     } else if (arg == "--output_dir" && i + 1 < argc) {
       args.output_dir = argv[++i];
+    } else if (arg == "--include_prefix" && i + 1 < argc) {
+      args.include_prefix = argv[++i];
     }
   }
   if (args.input.empty() || args.output_dir.empty()) {
-    std::cerr << "Usage: weave --input <path> --output_dir <path>\n";
+    std::cerr
+        << "Usage: weave --input <path> --output_dir <path> [--include_prefix <path>]\n";
     std::exit(1);
   }
   return args;
@@ -76,8 +80,11 @@ int main(int argc, char* argv[]) {
   std::cout << "Generated " << proto_path << "\n";
 
   // Generate header.
+  std::string proto_header = args.include_prefix.empty()
+                                 ? prefix + ".pb.h"
+                                 : args.include_prefix + "/" + prefix + ".pb.h";
   std::string header_output =
-      z3wire_weave::EmitHeader(resolved, prefix + ".pb.h");
+      z3wire_weave::EmitHeader(resolved, proto_header);
   std::string header_path = args.output_dir + "/" + prefix + ".h";
   std::ofstream header_file(header_path);
   header_file << header_output;
