@@ -189,25 +189,40 @@ concept mixed_operands = (is_symbolic_v<L> && is_concrete_v<R>) ||
                          (is_concrete_v<L> && is_symbolic_v<R>);
 
 // --- Bit-growth arithmetic ---
-// Result width = max(W1, W2) + 1. Operands are extended to the result width
-// before the operation.
+// Result width follows CIRCT hwarith typing rules. Operands are extended to the
+// result width before the operation.
 
-// Addition: result width = max(W1, W2) + 1.
-// Result is signed if either operand is signed.
+// Compute result width for bit-growth arithmetic (CIRCT hwarith rules).
+// Same signedness: max(W1, W2) + 1.
+// Mixed signedness (ui<A> op si<B>): A+2 if A >= B, else B+1.
+template <size_t W1, bool S1, size_t W2, bool S2>
+constexpr size_t arith_result_width() {
+  if constexpr (S1 == S2) {
+    return std::max(W1, W2) + 1;
+  } else if constexpr (!S1 && S2) {
+    // unsigned lhs, signed rhs
+    return (W1 >= W2) ? W1 + 2 : W2 + 1;
+  } else {
+    // signed lhs, unsigned rhs: same as swapped
+    return (W2 >= W1) ? W2 + 2 : W1 + 1;
+  }
+}
+
+// Addition: result is signed if either operand is signed.
 template <size_t W1, bool S1, size_t W2, bool S2>
 auto operator+(const SymBitVec<W1, S1>& lhs, const SymBitVec<W2, S2>& rhs) {
-  constexpr size_t kResultWidth = std::max(W1, W2) + 1;
+  constexpr size_t kResultWidth = arith_result_width<W1, S1, W2, S2>();
   constexpr bool kResultSigned = S1 || S2;
   auto lhs_ext = internal::extend<kResultWidth, W1, S1>(lhs);
   auto rhs_ext = internal::extend<kResultWidth, W2, S2>(rhs);
   return SymBitVec<kResultWidth, kResultSigned>(lhs_ext + rhs_ext);
 }
 
-// Subtraction: result width = max(W1, W2) + 1.
-// Result is always signed (subtraction can produce negative results).
+// Subtraction: result is always signed (subtraction can produce negative
+// results).
 template <size_t W1, bool S1, size_t W2, bool S2>
 auto operator-(const SymBitVec<W1, S1>& lhs, const SymBitVec<W2, S2>& rhs) {
-  constexpr size_t kResultWidth = std::max(W1, W2) + 1;
+  constexpr size_t kResultWidth = arith_result_width<W1, S1, W2, S2>();
   auto lhs_ext = internal::extend<kResultWidth, W1, S1>(lhs);
   auto rhs_ext = internal::extend<kResultWidth, W2, S2>(rhs);
   return SymBitVec<kResultWidth, true>(lhs_ext - rhs_ext);
@@ -507,12 +522,6 @@ SymUInt<TargetWidth> extract(const SymBitVec<W, S>& val,
                           : start_idx.expr();
   auto shifted = z3::lshr(wide_val, wide_idx);
   return SymUInt<TargetWidth>(shifted.extract(TargetWidth - 1, 0));
-}
-
-// Single-bit extraction: bit<N>(val) -> SymUInt<1>.
-template <size_t N, size_t W, bool S>
-SymUInt<1> bit(const SymBitVec<W, S>& val) {
-  return extract<N, N>(val);
 }
 
 // --- Concatenation ---

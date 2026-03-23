@@ -6,320 +6,454 @@ symbolic in mixed expressions (see
 
 ## Overview
 
-| Category         | Operations                       | Operand rules               |
-| :--------------- | :------------------------------- | :-------------------------- |
-| Logical          | `&&`, `\|\|`, `^`, `!`           | `SymBool` only              |
-| Bitwise          | `&`, `\|`, `^`, `~`              | Same width and signedness   |
-| Comparison       | `==`, `!=`, `<`, `<=`, `>`, `>=` | Mixed allowed, auto-extends |
-| Arithmetic       | `+`, `-`, unary `-`              | Mixed allowed, auto-extends |
-| Shifting         | `shl`, `shr`                     | Any widths, `shl` widens    |
-| Rotation         | `rotl`, `rotr`                   | Any widths, preserves type  |
-| Bit manipulation | `bit`, `extract`, `concat`       | Any widths                  |
-| Mux              | `ite`                            | Same type                   |
+| Category              | Operations                       |
+| :-------------------- | :------------------------------- |
+| Logical               | `!`, `&&`, `\|\|`, `^`           |
+| Bitwise               | `~`, `&`, `\|`, `^`              |
+| Comparison            | `==`, `!=`, `<`, `<=`, `>`, `>=` |
+| Arithmetic            | `+`, `-`, unary `-`              |
+| Shifting              | `shl`, `shr`                     |
+| Rotation              | `rotl`, `rotr`                   |
+| Bit manipulation      | `extract`, `concat`              |
+| Conditional selection | `ite`                            |
 
 All examples on this page assume a `z3::context ctx` is in scope.
 
 ## Logical
 
-Standard logical operations on `SymBool`:
+Logical operations for `SymBool`.
+
+Unary operator typing rule:
+
+| Operation | Operand     | Syntax | Result type |
+| :-------- | :---------- | :----- | :---------- |
+| NOT       | `SymBool a` | `!a`   | `SymBool`   |
+
+Binary operator typing rules:
+
+| Operation | LHS         | RHS         | Syntax     | Result type |
+| :-------- | :---------- | :---------- | :--------- | :---------- |
+| AND       | `SymBool a` | `SymBool b` | `a && b`   | `SymBool`   |
+| OR        | `SymBool a` | `SymBool b` | `a \|\| b` | `SymBool`   |
+| XOR       | `SymBool a` | `SymBool b` | `a ^ b`    | `SymBool`   |
+
+Examples:
 
 ```cpp
 z3w::SymBool a(ctx, "a");
 z3w::SymBool b(ctx, "b");
 
-z3w::SymBool c = a && b;   // AND
-z3w::SymBool d = a || b;   // OR
-z3w::SymBool e = a ^ b;    // XOR
-z3w::SymBool f = !a;       // NOT
+z3w::SymBool r1 = !a;
+z3w::SymBool r2 = a && b;
+z3w::SymBool r3 = a || b;
+z3w::SymBool r4 = a ^ b;
 ```
 
 ## Bitwise
 
-Bitwise operations on bit-vectors. Operands must have the **exact same width and
-signedness**; mismatches are compile errors.
+Bitwise operations for `SymUInt` and `SymSInt`. The `SymSInt` versions are
+purely for convenience. The operations work on the underlying bits regardless of
+the signedness.
+
+Unary operator typing rules:
+
+| Operation | Operand        | Syntax | Result type  |
+| :-------- | :------------- | :----- | :----------- |
+| NOT       | `SymUInt<W> a` | `~a`   | `SymUInt<W>` |
+| NOT       | `SymSInt<W> a` | `~a`   | `SymSInt<W>` |
+
+Binary operator typing rules (operand types must be exactly the same):
+
+| Operation | LHS            | RHS            | Syntax   | Result type  |
+| :-------- | :------------- | :------------- | :------- | :----------- |
+| AND       | `SymUInt<W> a` | `SymUInt<W> b` | `a & b`  | `SymUInt<W>` |
+| AND       | `SymSInt<W> a` | `SymSInt<W> b` | `a & b`  | `SymSInt<W>` |
+| OR        | `SymUInt<W> a` | `SymUInt<W> b` | `a \| b` | `SymUInt<W>` |
+| OR        | `SymSInt<W> a` | `SymSInt<W> b` | `a \| b` | `SymSInt<W>` |
+| XOR       | `SymUInt<W> a` | `SymUInt<W> b` | `a ^ b`  | `SymUInt<W>` |
+| XOR       | `SymSInt<W> a` | `SymSInt<W> b` | `a ^ b`  | `SymSInt<W>` |
+
+Examples:
 
 ```cpp
-z3w::SymUInt<8> a(ctx, "a");
-z3w::SymUInt<8> b(ctx, "b");
+z3w::SymUInt<8> u8(ctx, "u8");
+z3w::SymSInt<8> s8(ctx, "s8");
 
-auto c = a & b;   // AND
-auto d = a | b;   // OR
-auto e = a ^ b;   // XOR
-auto f = ~a;       // NOT
+z3w::SymUInt<8> r1 = ~u8;
+z3w::SymSInt<8> r2 = ~s8;
+
+z3w::SymUInt<8> r3 = u8 & u8;
+z3w::SymSInt<8> r4 = s8 & s8;
+
+z3w::SymUInt<8> r5 = u8 | u8;
+z3w::SymSInt<8> r6 = s8 | s8;
+
+z3w::SymUInt<8> r7 = u8 ^ u8;
+z3w::SymSInt<8> r8 = s8 ^ s8;
 ```
 
 ## Comparison
 
-Comparison operations on bit-vectors. Mixed widths and signedness are allowed;
-operands are automatically extended to a common type. Returns `SymBool`.
+### Boolean comparison
 
-### Equality
+Comparison operations for `SymBool`.
+
+Typing rules:
+
+| Operation    | LHS         | RHS         | Syntax   | Result type |
+| :----------- | :---------- | :---------- | :------- | :---------- |
+| Equal to     | `SymBool a` | `SymBool b` | `a == b` | `SymBool`   |
+| Not equal to | `SymBool a` | `SymBool b` | `a != b` | `SymBool`   |
+
+Examples:
 
 ```cpp
-z3w::SymUInt<8> a(ctx, "a");
-z3w::SymUInt<8> b(ctx, "b");
+z3w::SymBool a(ctx, "a");
+z3w::SymBool b(ctx, "b");
+
 z3w::SymBool eq = (a == b);
 z3w::SymBool ne = (a != b);
-
-// Mixed widths:
-z3w::SymUInt<16> c(ctx, "c");
-z3w::SymBool eq2 = (a == c);  // a is zero-extended to 16 bits first
 ```
 
-Also works for `SymBool` operands.
+### Integer comparison
 
-### Ordered comparison
+Comparison operations for `SymUInt` and `SymSInt`. Operand signednesses and bit
+widths don't need to match. We are comparing the mathematical values the
+operands represent, not their underlying bits.
 
-Automatically dispatches to unsigned or signed comparison based on the common
-type (signed if either operand is signed).
+Typing rules:
+
+- Both LHS and RHS could be either `SymUInt` or `SymSInt`. Only one combination
+  is shown below for brevity.
+
+| Operation                | LHS            | RHS            | Syntax   | Result type |
+| :----------------------- | :------------- | :------------- | :------- | :---------- |
+| Equal to                 | `SymUInt<A> a` | `SymSInt<B> b` | `a == b` | `SymBool`   |
+| Not equal to             | `SymUInt<A> a` | `SymSInt<B> b` | `a != b` | `SymBool`   |
+| Greater than             | `SymUInt<A> a` | `SymSInt<B> b` | `a > b`  | `SymBool`   |
+| Greater than or equal to | `SymUInt<A> a` | `SymSInt<B> b` | `a >= b` | `SymBool`   |
+| Less than                | `SymUInt<A> a` | `SymSInt<B> b` | `a < b`  | `SymBool`   |
+| Less than or equal to    | `SymUInt<A> a` | `SymSInt<B> b` | `a <= b` | `SymBool`   |
+
+Examples:
 
 ```cpp
-z3w::SymUInt<8> a(ctx, "a");
-z3w::SymUInt<8> b(ctx, "b");
-z3w::SymBool less = (a < b);   // Unsigned comparison
+z3w::SymUInt<7> a(ctx, "a");
+z3w::SymSInt<9> b(ctx, "b");
 
-z3w::SymSInt<8> x(ctx, "x");
-z3w::SymSInt<8> y(ctx, "y");
-z3w::SymBool less_s = (x < y);  // Signed comparison
-
-// Mixed signedness:
-z3w::SymBool less_m = (a < x);  // Common type: SymSInt<9>
+z3w::SymBool eq = (a == b);
+z3w::SymBool ne = (a != b);
+z3w::SymBool gt = (a > b);
+z3w::SymBool ge = (a >= b);
+z3w::SymBool lt = (a < b);
+z3w::SymBool le = (a <= b);
 ```
 
 ## Arithmetic
 
-Arithmetic operations on bit-vectors. Addition and subtraction automatically
-widen the result type to prevent silent overflow. Mixed widths and signedness
-are allowed; operands are automatically extended to a common type.
+Arithmetic operations for `SymUInt` and `SymSInt` with bit-growth semantics.
+Result types are automatically derived at compile time to be the minimal type
+that could hold all possible results losslessly.
 
-### Addition (`+`)
+### Addition
 
-Result width = `max(W1, W2) + 1`. Result is signed if either operand is signed.
+Syntax: `a + b`
 
-```cpp
-z3w::SymUInt<8> a(ctx, "a");
-z3w::SymUInt<8> b(ctx, "b");
-auto sum = a + b;       // SymUInt<9>
-auto total = sum + a;   // SymUInt<10>
+Typing rules (same as CIRCT
+[`hwarith.add`](https://circt.llvm.org/docs/Dialects/HWArith/#hwarithadd-circthwarithaddop)):
 
-// Mixed widths:
-z3w::SymUInt<16> c(ctx, "c");
-auto sum2 = a + c;      // SymUInt<17>, a is zero-extended first
-```
+| LHS            | RHS            | Result type                 |
+| :------------- | :------------- | :-------------------------- |
+| `SymUInt<A> a` | `SymUInt<B> b` | `SymUInt<max(A,B)+1>`       |
+| `SymSInt<A> a` | `SymSInt<B> b` | `SymSInt<max(A,B)+1>`       |
+| `SymUInt<A> a` | `SymSInt<B> b` | `SymSInt<A+2>`, if `A >= B` |
+|                |                | `SymSInt<B+1>`, if `A < B`  |
+| `SymSInt<A> a` | `SymUInt<B> b` | Same type as `b + a`        |
 
-### Subtraction (`-`)
-
-Result width = `max(W1, W2) + 1`. Result is always signed (subtraction can
-produce negative values).
+Examples:
 
 ```cpp
-z3w::SymUInt<8> a(ctx, "a");
-z3w::SymUInt<8> b(ctx, "b");
-auto diff = a - b;  // SymSInt<9>
+z3w::SymUInt<7> u7(ctx, "u7");
+z3w::SymUInt<9> u9(ctx, "u9");
+z3w::SymSInt<7> s7(ctx, "s7");
+z3w::SymSInt<9> s9(ctx, "s9");
+
+z3w::SymUInt<10> r1 = u7 + u9;
+z3w::SymSInt<10> r2 = s7 + s9;
+
+z3w::SymSInt<11> r3 = u9 + s7;
+z3w::SymSInt<10> r4 = u7 + s9;
+
+z3w::SymSInt<11> r5 = s7 + u9;
+z3w::SymSInt<10> r6 = s9 + u7;
 ```
 
-### Unary negate (`-`)
+### Subtraction
 
-Result width = `W + 1`. Result is always signed. Consistent with subtraction
-(`-x` is equivalent to `0 - x`).
+Syntax: `a - b`
+
+Typing rules (same as CIRCT
+[`hwarith.sub`](https://circt.llvm.org/docs/Dialects/HWArith/#hwarithsub-circthwarithsubop)):
+
+| LHS            | RHS            | Result type                 |
+| :------------- | :------------- | :-------------------------- |
+| `SymUInt<A> a` | `SymUInt<B> b` | `SymSInt<max(A,B)+1>`       |
+| `SymSInt<A> a` | `SymSInt<B> b` | `SymSInt<max(A,B)+1>`       |
+| `SymUInt<A> a` | `SymSInt<B> b` | `SymSInt<A+2>`, if `A >= B` |
+|                |                | `SymSInt<B+1>`, if `A < B`  |
+| `SymSInt<A> a` | `SymUInt<B> b` | Same type as `b - a`        |
+
+Examples:
 
 ```cpp
-z3w::SymUInt<8> a(ctx, "a");
-auto neg = -a;  // SymSInt<9>
+z3w::SymUInt<7> u7(ctx, "u7");
+z3w::SymUInt<9> u9(ctx, "u9");
+z3w::SymSInt<7> s7(ctx, "s7");
+z3w::SymSInt<9> s9(ctx, "s9");
+
+z3w::SymSInt<10> r1 = u7 - u9;
+z3w::SymSInt<10> r2 = s7 - s9;
+
+z3w::SymSInt<11> r3 = u9 - s7;
+z3w::SymSInt<10> r4 = u7 - s9;
+
+z3w::SymSInt<11> r5 = s7 - u9;
+z3w::SymSInt<10> r6 = s9 - u7;
 ```
 
-!!! tip
+### Arithmetic negation
 
-    To truncate the result to a fixed width, use `unsafe_cast`:
+Syntax: `-a`
 
-    ```cpp
-    auto reg = z3w::unsafe_cast<z3w::SymUInt<8>>(a + b);  // Truncate to 8 bits
-    ```
+Typing rules:
+
+| Operand        | Result type    |
+| :------------- | :------------- |
+| `SymUInt<A> a` | `SymSInt<A+1>` |
+| `SymSInt<A> a` | `SymSInt<A+1>` |
+
+Examples:
+
+```cpp
+z3w::SymUInt<8> u8(ctx, "u8");
+z3w::SymSInt<8> s8(ctx, "s8");
+
+z3w::SymSInt<9> r1 = -u8;
+z3w::SymSInt<9> r2 = -s8;
+```
 
 ## Shifting
 
-Shift operations on bit-vectors. `shl` (left shift) always widens the result to
-guarantee no bits are lost. `shr` (right shift) preserves the result width.
+`shl` always widens the result to guarantee no bits are lost and always returns
+`SymUInt` regardless of input signedness. `shr` preserves the result width and
+signedness.
 
-### `shl` - Left shift
+### Left shift
 
-Returns `SymUInt` regardless of input signedness.
+Left shift for `SymUInt` and `SymSInt` with constant or symbolic amount.
 
-**Constant shift** - result width = `W + N`:
+Typing rules:
 
-```cpp
-z3w::SymUInt<8> a(ctx, "a");
-auto r = z3w::shl<3>(a);  // SymUInt<11>
-```
+| Value to shift | Shift amount   | Syntax      | Result type        |
+| :------------- | :------------- | :---------- | :----------------- |
+| `SymUInt<W> a` | `size_t N`     | `shl<N>(a)` | `SymUInt<W+N>`     |
+| `SymUInt<W> a` | `SymUInt<K> n` | `shl(a, n)` | `SymUInt<W+2^K-1>` |
+| `SymSInt<W> a` | `size_t N`     | `shl<N>(a)` | `SymUInt<W+N>`     |
+| `SymSInt<W> a` | `SymUInt<K> n` | `shl(a, n)` | `SymUInt<W+2^K-1>` |
 
-**Symbolic shift** - result width = `W + 2^K - 1`, where `K` is the shift amount
-width:
-
-```cpp
-z3w::SymUInt<8> a(ctx, "a");
-z3w::SymUInt<3> n(ctx, "n");    // Can shift by 0..7
-auto r = z3w::shl(a, n);        // SymUInt<15> (8 + 2^3 - 1)
-```
-
-### `shr` - Right shift
-
-Preserves sign for signed types (arithmetic shift), zero-fills for unsigned
-types (logical shift). Result width stays the same.
-
-**Constant shift**:
+Examples:
 
 ```cpp
-z3w::SymUInt<8> a(ctx, "a");
-auto r = z3w::shr<3>(a);  // SymUInt<8>
-```
-
-**Symbolic shift**:
-
-```cpp
-z3w::SymUInt<8> a(ctx, "a");
+z3w::SymUInt<8> u8(ctx, "u8");
+z3w::SymSInt<8> s8(ctx, "s8");
 z3w::SymUInt<3> n(ctx, "n");
-auto r = z3w::shr(a, n);   // SymUInt<8>
 
-z3w::SymSInt<8> x(ctx, "x");
-auto r2 = z3w::shr(x, n);  // SymSInt<8>, sign bit preserved
+z3w::SymUInt<11> r1 = z3w::shl<3>(u8);
+z3w::SymUInt<15> r2 = z3w::shl(u8, n);
+z3w::SymUInt<11> r3 = z3w::shl<3>(s8);
+z3w::SymUInt<15> r4 = z3w::shl(s8, n);
 ```
 
-### Composability
+### Arithmetic right shift
 
-`shl`/`shr` compose with casting and signedness reinterpretation to cover common
-shift patterns:
+Arithmetic right shift for `SymUInt` and `SymSInt` with constant or symbolic
+amount.
 
-| Goal                          | Expression                              |
-| :---------------------------- | :-------------------------------------- |
-| Raw left shift (fixed width)  | `unsafe_cast<SymUInt<W>>(shl<N>(val))`  |
-| Checked left shift (verify)   | `checked_cast<SymUInt<W>>(shl<N>(val))` |
-| Logical right shift on signed | `shr(as_unsigned(val), amt)`            |
+Typing rules:
+
+| Value to shift | Shift amount   | Syntax      | Result type  |
+| :------------- | :------------- | :---------- | :----------- |
+| `SymUInt<W> a` | `size_t N`     | `shr<N>(a)` | `SymUInt<W>` |
+| `SymUInt<W> a` | `SymUInt<K> n` | `shr(a, n)` | `SymUInt<W>` |
+| `SymSInt<W> a` | `size_t N`     | `shr<N>(a)` | `SymSInt<W>` |
+| `SymSInt<W> a` | `SymUInt<K> n` | `shr(a, n)` | `SymSInt<W>` |
+
+Examples:
+
+```cpp
+z3w::SymUInt<8> u8(ctx, "u8");
+z3w::SymSInt<8> s8(ctx, "s8");
+z3w::SymUInt<3> n(ctx, "n");
+
+z3w::SymUInt<8> r1 = z3w::shr<3>(u8);
+z3w::SymUInt<8> r2 = z3w::shr(u8, n);
+z3w::SymSInt<8> r3 = z3w::shr<3>(s8);
+z3w::SymSInt<8> r4 = z3w::shr(s8, n);
+```
+
+### Logical right shift
+
+Simply do:
+
+- `shr<N>(as_unsigned(a))`
+- `shr(as_unsigned(a), n)`
 
 ## Rotation
 
 Bit rotation (circular shift). The result preserves the input type and width.
+Rotation amounts wrap modulo the bit width.
 
-### `rotl` - Left rotation
+### Left rotation
 
-**Constant rotation:**
+Typing rules:
+
+| Value to rotate | Rotation amount | Syntax       | Result type  |
+| :-------------- | :-------------- | :----------- | :----------- |
+| `SymUInt<W> a`  | `size_t N`      | `rotl<N>(a)` | `SymUInt<W>` |
+| `SymUInt<W> a`  | `SymUInt<K> n`  | `rotl(a, n)` | `SymUInt<W>` |
+| `SymSInt<W> a`  | `size_t N`      | `rotl<N>(a)` | `SymSInt<W>` |
+| `SymSInt<W> a`  | `SymUInt<K> n`  | `rotl(a, n)` | `SymSInt<W>` |
+
+Examples:
 
 ```cpp
-z3w::SymUInt<8> x(ctx, "x");
-auto r = z3w::rotl<3>(x);  // SymUInt<8>
-```
-
-**Symbolic rotation:**
-
-```cpp
-z3w::SymUInt<8> x(ctx, "x");
+z3w::SymUInt<8> u8(ctx, "u8");
+z3w::SymSInt<8> s8(ctx, "s8");
 z3w::SymUInt<3> n(ctx, "n");
-auto r = z3w::rotl(x, n);  // SymUInt<8>
+
+z3w::SymUInt<8> r1 = z3w::rotl<3>(u8);
+z3w::SymUInt<8> r2 = z3w::rotl(u8, n);
+z3w::SymSInt<8> r3 = z3w::rotl<3>(s8);
+z3w::SymSInt<8> r4 = z3w::rotl(s8, n);
 ```
 
-### `rotr` - Right rotation
+### Right rotation
 
-**Constant rotation:**
+Typing rules:
+
+| Value to rotate | Rotation amount | Syntax       | Result type  |
+| :-------------- | :-------------- | :----------- | :----------- |
+| `SymUInt<W> a`  | `size_t N`      | `rotr<N>(a)` | `SymUInt<W>` |
+| `SymUInt<W> a`  | `SymUInt<K> n`  | `rotr(a, n)` | `SymUInt<W>` |
+| `SymSInt<W> a`  | `size_t N`      | `rotr<N>(a)` | `SymSInt<W>` |
+| `SymSInt<W> a`  | `SymUInt<K> n`  | `rotr(a, n)` | `SymSInt<W>` |
+
+Examples:
 
 ```cpp
-z3w::SymUInt<8> x(ctx, "x");
-auto r = z3w::rotr<3>(x);  // SymUInt<8>
-```
-
-**Symbolic rotation:**
-
-```cpp
-z3w::SymUInt<8> x(ctx, "x");
+z3w::SymUInt<8> u8(ctx, "u8");
+z3w::SymSInt<8> s8(ctx, "s8");
 z3w::SymUInt<3> n(ctx, "n");
-auto r = z3w::rotr(x, n);  // SymUInt<8>
-```
 
-Rotation amounts wrap modulo the bit width, so `rotl<W>(x) == x`.
+z3w::SymUInt<8> r1 = z3w::rotr<3>(u8);
+z3w::SymUInt<8> r2 = z3w::rotr(u8, n);
+z3w::SymSInt<8> r3 = z3w::rotr<3>(s8);
+z3w::SymSInt<8> r4 = z3w::rotr(s8, n);
+```
 
 ## Bit manipulation
 
-Bit-level operations: extraction and concatenation.
+All results are `SymUInt` regardless of input signedness.
 
-### Single-bit extraction
+### Static extraction
 
-Shorthand for extracting a single bit:
+Typing rules:
+
+| Source           | High offset | Low offset | Syntax              | Result type      | Compile-time checks |
+| :--------------- | :---------- | :--------- | :------------------ | :--------------- | :------------------ |
+| `SymUInt<W> src` | `size_t H`  | `size_t L` | `extract<H,L>(src)` | `SymUInt<H-L+1>` | `W > H && H >= L`   |
+| `SymSInt<W> src` | `size_t H`  | `size_t L` | `extract<H,L>(src)` | `SymUInt<H-L+1>` | `W > H && H >= L`   |
+
+Examples:
 
 ```cpp
-z3w::SymUInt<32> x(ctx, "x");
-auto sign = z3w::bit<31>(x);  // SymUInt<1>
-auto lsb  = z3w::bit<0>(x);   // SymUInt<1>
+z3w::SymUInt<32> src(ctx, "src");
+
+z3w::SymUInt<8> hi = z3w::extract<31, 24>(src);
+z3w::SymUInt<4> lo = z3w::extract<3, 0>(src);
+z3w::SymUInt<1> bit5 = z3w::extract<5, 5>(src);
 ```
 
-Equivalent to `z3w::extract<N, N>(val)`.
+### Symbolic-offset extraction
 
-### Extract (bit slicing)
+Typing rules:
 
-**Static extract** - compile-time bounds, checked at compile time (`High >= Low`
-and `High < W`):
+| Source            | Target width | Bit offset      | Syntax                | Result type   | Compile-time checks |
+| :---------------- | :----------- | :-------------- | :-------------------- | :------------ | :------------------ |
+| `SymUInt<WS> src` | `size_t WT`  | `SymUInt<WI> i` | `extract<WT>(src, i)` | `SymUInt<WT>` | `WS >= WT`          |
+| `SymSInt<WS> src` | `size_t WT`  | `SymUInt<WI> i` | `extract<WT>(src, i)` | `SymUInt<WT>` | `WS >= WT`          |
 
-```cpp
-z3w::SymUInt<32> x(ctx, "x");
-auto hi   = z3w::extract<31, 24>(x);  // SymUInt<8>
-auto lo   = z3w::extract<3, 0>(x);    // SymUInt<4>
-auto bit5 = z3w::extract<5, 5>(x);    // SymUInt<1>
-```
-
-!!! note
-
-    The result is always `SymUInt` (unsigned). Extracted bits have no inherent
-    signedness.
-
-**Symbolic-offset extract** - fixed number of bits starting at a symbolic
-position:
+Examples:
 
 ```cpp
-z3w::SymUInt<32> x(ctx, "x");
+z3w::SymUInt<32> src(ctx, "src");
 z3w::SymUInt<5> offset(ctx, "offset");
 
-auto nibble = z3w::extract<4>(x, offset);  // SymUInt<4>
-auto byte   = z3w::extract<8>(x, offset);  // SymUInt<8>
+z3w::SymUInt<4> nibble = z3w::extract<4>(src, offset);
+z3w::SymUInt<8> byte = z3w::extract<8>(src, offset);
 ```
 
-Offsets beyond the source width yield zero bits (zero-extension semantics). The
-index can be wider than the source bit-vector.
+Offsets beyond the source width yield zero bits (zero-extension semantics).
 
 ### Concatenation
 
-Glue bit-vectors together. The result width is `W1 + W2`, always returned as
-`SymUInt`.
+Concatenate a variadic number of `SymUInt` or `SymSInt` inputs into a single
+`SymUInt`. The field packing order is always from MSB to LSB.
+
+Syntax: `concat(a, b, ...)`
+
+Typing rules:
+
+- Result type is always `SymUInt<W>`, where `W` is the sum of inputs' bit
+  widths.
+
+Examples:
 
 ```cpp
 z3w::SymUInt<16> hi(ctx, "hi");
 z3w::SymUInt<16> lo(ctx, "lo");
-auto full = z3w::concat(hi, lo);  // SymUInt<32>
-```
 
-Supports variadic arguments:
+z3w::SymUInt<32> r1 = z3w::concat(hi, lo);
 
-```cpp
 z3w::SymUInt<4> a(ctx, "a");
 z3w::SymUInt<4> b(ctx, "b");
-z3w::SymUInt<8> c(ctx, "c");
-auto packed = z3w::concat(a, b, c);  // SymUInt<16>
+z3w::SymSInt<8> c(ctx, "c");
+z3w::SymUInt<16> r2 = z3w::concat(a, b, c);
 ```
 
-## Mux
+## Conditional selection
 
-Symbolic If-Then-Else. Both branches must be the exact same type.
+Symbolic if-then-else. Selects between two values based on a `SymBool`
+condition.
+
+Syntax: `ite(sel, a, b)`
+
+Typing rules (choice types must be exactly the same):
+
+| Condition     | Choice A       | Choice B       | Result type  |
+| :------------ | :------------- | :------------- | :----------- |
+| `SymBool sel` | `SymUInt<W> a` | `SymUInt<W> b` | `SymUInt<W>` |
+| `SymBool sel` | `SymSInt<W> a` | `SymSInt<W> b` | `SymSInt<W>` |
+
+Examples:
 
 ```cpp
-z3w::SymUInt<8> a(ctx, "a");
-z3w::SymUInt<8> b(ctx, "b");
 z3w::SymBool sel(ctx, "sel");
+z3w::SymUInt<8> a2(ctx, "a2");
+z3w::SymUInt<8> b2(ctx, "b2");
+z3w::SymSInt<8> a3(ctx, "a3");
+z3w::SymSInt<8> b3(ctx, "b3");
 
-auto result = z3w::ite(sel, a, b);  // SymUInt<8>
-```
-
-Works with concrete values in mixed expressions:
-
-```cpp
-z3w::SymBool cond(ctx, "cond");
-auto a = z3w::UInt<8>::Literal<42>();
-auto b = z3w::UInt<8>::Literal<99>();
-
-auto result = z3w::ite(cond, a, b);  // Promotes both to symbolic
+z3w::SymUInt<8> r2 = z3w::ite(sel, a2, b2);
+z3w::SymSInt<8> r3 = z3w::ite(sel, a3, b3);
 ```

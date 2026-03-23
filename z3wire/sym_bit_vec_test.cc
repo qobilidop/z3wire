@@ -232,8 +232,8 @@ TEST_F(SymBitVecTest, AdditionMixedSignedness) {
   SymSInt<8> b(ctx_, "b");
   auto sum = a + b;
 
-  // Result is signed when either operand is signed.
-  static_assert(decltype(sum)::kWidth == 9);
+  // CIRCT hwarith rule: ui<8> + si<8> -> si<10> (A+2 since A >= B).
+  static_assert(decltype(sum)::kWidth == 10);
   static_assert(decltype(sum)::kIsSigned);
 }
 
@@ -1083,21 +1083,6 @@ TEST_F(SymBitVecTest, NegateConsistentWithBinarySub) {
   // -a should equal 0 - a for all values.
   z3::solver s(ctx_);
   s.add(neg.expr() != zero_minus_a.expr());
-  EXPECT_EQ(s.check(), z3::unsat);
-}
-
-// --- Single-bit extraction ---
-
-TEST_F(SymBitVecTest, BitExtract) {
-  SymUInt<8> a(ctx_, "a");
-  auto b5 = bit<5>(a);
-
-  static_assert(decltype(b5)::kWidth == 1);
-
-  // 0xA5 = 10100101, bit 5 = 1.
-  z3::solver s(ctx_);
-  s.add(a.expr() == ctx_.bv_val(0xA5, 8));
-  s.add(b5.expr() != ctx_.bv_val(1, 1));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 

@@ -71,7 +71,7 @@ wires. The table below lists every category, its operations, and their status.
 | Arithmetic       | Add, subtract, negate               | Done                      |
 | Comparison       | Equality, ordered                   | Done                      |
 | Shifting         | Left shift (shl), right shift (shr) | Done                      |
-| Bit manipulation | Extract, single-bit extract, concat | Done                      |
+| Bit manipulation | Extract, concat                     | Done                      |
 | Bit field        | Field equality constraint           | Done                      |
 | Mux              | If-then-else                        | Done                      |
 | Type conversion  | Cast (3-tier), SymBool/SymUInt\<1>  | Done                      |

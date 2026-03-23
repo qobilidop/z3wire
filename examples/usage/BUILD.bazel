@@ -24,7 +24,6 @@ cc_binary(
         "-Wno-unused-result",
     ],
     deps = [
-        "//z3wire:bit_vec",
         "//z3wire:sym_bit_vec",
         "//z3wire:sym_bool",
     ],
