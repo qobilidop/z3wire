@@ -11,8 +11,6 @@ Future directions for Z3Wire.
     Signedness-aware type system makes the API design interesting: signed vs
     unsigned division can be selected by operand types rather than separate
     function names.
-- **Rotate** (`rotate_left`, `rotate_right`) — Useful in crypto and hardware
-    modeling. Constant and dynamic amount variants.
 - **Repeat** — Replicate a bit pattern N times. Useful for mask generation.
 - **Reduction operators** (`reduce_and`, `reduce_or`, `reduce_xor`) — Collapse
     all bits to a single `SymBool`. Low priority: `reduce_and` and `reduce_or`
@@ -44,6 +42,10 @@ Future directions for Z3Wire.
     zeros. Switch to `map<uint32, RegType>` so only non-default entries are
     serialized. The C++ struct side stays as `std::array` (dense); the map is
     purely a serialization optimization.
+- **Multi-file wire specs** — Support `include` directives so one wire spec can
+    reference types from another. Requires dependency resolution in the
+    resolver, cross-file `#include` generation, include search paths (`-I`
+    flag), and a proper Bazel rule to handle transitive deps.
 
 ## Ergonomics
 
