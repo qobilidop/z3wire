@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include "z3wire_weave/rdl.pb.h"
+#include "z3wire_weave/wire_spec.pb.h"
 
 namespace z3wire_weave {
 
@@ -53,9 +53,9 @@ struct ResolvedModule {
   std::vector<ResolvedStruct> structs;
 };
 
-// Resolves an RDL module: validates and computes layouts.
+// Resolves a wire spec: validates and computes layouts.
 // Throws std::invalid_argument on validation errors.
-ResolvedModule Resolve(const z3wire_rdl::Module& module);
+ResolvedModule Resolve(const z3wire_weave::WireSpec& module);
 
 }  // namespace z3wire_weave
 

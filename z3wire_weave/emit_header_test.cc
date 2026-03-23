@@ -4,7 +4,7 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "z3wire_weave/rdl.pb.h"
+#include "z3wire_weave/wire_spec.pb.h"
 #include "z3wire_weave/resolver.h"
 
 namespace z3wire_weave {
@@ -14,11 +14,11 @@ using ::testing::HasSubstr;
 using ::testing::Not;
 
 // Helper to create a module with common defaults.
-z3wire_rdl::Module MakeModule(const std::string& ns = "test") {
-  z3wire_rdl::Module m;
+z3wire_weave::WireSpec MakeModule(const std::string& ns = "test") {
+  z3wire_weave::WireSpec m;
   m.set_file_prefix("test");
   m.set_namespace_(ns);
-  m.set_field_pack_order(z3wire_rdl::FIELD_PACK_ORDER_LSB_FIRST);
+  m.set_field_pack_order(z3wire_weave::FIELD_PACK_ORDER_LSB_FIRST);
   return m;
 }
 
@@ -69,7 +69,7 @@ TEST(EmitHeaderTest, ConcreteStruct) {
     f->set_name("val");
     f->mutable_type()->mutable_bitvec()->set_width(4);
     f->mutable_type()->mutable_bitvec()->set_signedness(
-        z3wire_rdl::SIGNEDNESS_SIGNED);
+        z3wire_weave::SIGNEDNESS_SIGNED);
   }
   {
     auto* f = s->add_fields();
@@ -252,7 +252,7 @@ TEST(EmitHeaderTest, ArrayInPack) {
 
 TEST(EmitHeaderTest, MsbFirstPack) {
   auto module = MakeModule();
-  module.set_field_pack_order(z3wire_rdl::FIELD_PACK_ORDER_MSB_FIRST);
+  module.set_field_pack_order(z3wire_weave::FIELD_PACK_ORDER_MSB_FIRST);
 
   auto* s = module.add_structs();
   s->set_name("Reg");
@@ -338,7 +338,7 @@ TEST(EmitHeaderTest, FullExample) {
       f->set_name("severity");
       f->mutable_type()->mutable_bitvec()->set_width(2);
       f->mutable_type()->mutable_bitvec()->set_signedness(
-          z3wire_rdl::SIGNEDNESS_SIGNED);
+          z3wire_weave::SIGNEDNESS_SIGNED);
     }
     {
       auto* f = s->add_fields();

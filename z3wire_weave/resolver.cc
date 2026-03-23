@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "absl/strings/str_format.h"
-#include "z3wire_weave/rdl.pb.h"
+#include "z3wire_weave/wire_spec.pb.h"
 
 namespace z3wire_weave {
 namespace {
@@ -19,7 +19,7 @@ const std::set<std::string> kReservedNames = {
     "Create", "Pack", "ToConcrete", "FromConcrete", "ToProto", "FromProto",
 };
 
-std::vector<ResolvedEnum> ResolveEnums(const z3wire_rdl::Module& module) {
+std::vector<ResolvedEnum> ResolveEnums(const z3wire_weave::WireSpec& module) {
   std::vector<ResolvedEnum> resolved;
   for (const auto& enum_def : module.enums()) {
     uint64_t max_val = (1ULL << enum_def.width()) - 1;
@@ -51,15 +51,15 @@ std::vector<ResolvedEnum> ResolveEnums(const z3wire_rdl::Module& module) {
 }
 
 int FieldElementWidth(
-    const z3wire_rdl::FieldType& field_type,
+    const z3wire_weave::FieldType& field_type,
     const std::unordered_map<std::string, ResolvedEnum>& enum_map,
     const std::unordered_map<std::string, ResolvedStruct>& struct_map) {
   switch (field_type.kind_case()) {
-    case z3wire_rdl::FieldType::kBool:
+    case z3wire_weave::FieldType::kBool:
       return 1;
-    case z3wire_rdl::FieldType::kBitvec:
+    case z3wire_weave::FieldType::kBitvec:
       return static_cast<int>(field_type.bitvec().width());
-    case z3wire_rdl::FieldType::kEnumRef: {
+    case z3wire_weave::FieldType::kEnumRef: {
       auto it = enum_map.find(field_type.enum_ref());
       if (it == enum_map.end()) {
         throw std::invalid_argument(
@@ -67,7 +67,7 @@ int FieldElementWidth(
       }
       return it->second.width;
     }
-    case z3wire_rdl::FieldType::kStructRef: {
+    case z3wire_weave::FieldType::kStructRef: {
       auto it = struct_map.find(field_type.struct_ref());
       return it->second.total_width;
     }
@@ -77,24 +77,24 @@ int FieldElementWidth(
 }
 
 ResolvedStruct::PackOrder ResolvePackOrder(
-    const z3wire_rdl::Module& module, const z3wire_rdl::Struct& struct_def) {
+    const z3wire_weave::WireSpec& module, const z3wire_weave::Struct& struct_def) {
   auto order = struct_def.field_pack_order();
-  if (order == z3wire_rdl::FIELD_PACK_ORDER_UNSPECIFIED) {
+  if (order == z3wire_weave::FIELD_PACK_ORDER_UNSPECIFIED) {
     order = module.field_pack_order();
   }
-  if (order == z3wire_rdl::FIELD_PACK_ORDER_UNSPECIFIED) {
+  if (order == z3wire_weave::FIELD_PACK_ORDER_UNSPECIFIED) {
     throw std::invalid_argument(absl::StrFormat(
         "Struct '%s': field_pack_order not specified at struct or module level",
         struct_def.name()));
   }
-  if (order == z3wire_rdl::FIELD_PACK_ORDER_LSB_FIRST) {
+  if (order == z3wire_weave::FIELD_PACK_ORDER_LSB_FIRST) {
     return ResolvedStruct::kLsbFirst;
   }
   return ResolvedStruct::kMsbFirst;
 }
 
 struct FieldInfo {
-  const z3wire_rdl::Field* field;
+  const z3wire_weave::Field* field;
   ResolvedField::Kind kind;
   int element_width;
   int count;
@@ -103,16 +103,16 @@ struct FieldInfo {
 };
 
 bool AllDepsResolved(
-    const z3wire_rdl::Struct& struct_def,
+    const z3wire_weave::Struct& struct_def,
     const std::unordered_map<std::string, ResolvedStruct>& struct_map) {
   return std::ranges::all_of(struct_def.fields(), [&](const auto& f) {
-    return f.type().kind_case() != z3wire_rdl::FieldType::kStructRef ||
+    return f.type().kind_case() != z3wire_weave::FieldType::kStructRef ||
            struct_map.contains(f.type().struct_ref());
   });
 }
 
 void ValidateFieldNames(
-    const z3wire_rdl::Struct& struct_def,
+    const z3wire_weave::Struct& struct_def,
     const std::unordered_map<std::string, ResolvedEnum>& enum_map) {
   for (const auto& f : struct_def.fields()) {
     if (kReservedNames.contains(f.name())) {
@@ -121,7 +121,7 @@ void ValidateFieldNames(
                           "(collides with generated method)",
                           struct_def.name(), f.name()));
     }
-    if (f.type().kind_case() == z3wire_rdl::FieldType::kEnumRef &&
+    if (f.type().kind_case() == z3wire_weave::FieldType::kEnumRef &&
         !enum_map.contains(f.type().enum_ref())) {
       throw std::invalid_argument(
           absl::StrFormat("Struct '%s', field '%s': unknown enum_ref '%s'",
@@ -131,15 +131,15 @@ void ValidateFieldNames(
 }
 
 ResolvedField::Kind ResolveFieldKind(
-    z3wire_rdl::FieldType::KindCase kind_case) {
+    z3wire_weave::FieldType::KindCase kind_case) {
   switch (kind_case) {
-    case z3wire_rdl::FieldType::kBool:
+    case z3wire_weave::FieldType::kBool:
       return ResolvedField::kBool;
-    case z3wire_rdl::FieldType::kBitvec:
+    case z3wire_weave::FieldType::kBitvec:
       return ResolvedField::kBitVec;
-    case z3wire_rdl::FieldType::kEnumRef:
+    case z3wire_weave::FieldType::kEnumRef:
       return ResolvedField::kEnumRef;
-    case z3wire_rdl::FieldType::kStructRef:
+    case z3wire_weave::FieldType::kStructRef:
       return ResolvedField::kStructRef;
     default:
       return ResolvedField::kBitVec;
@@ -147,7 +147,7 @@ ResolvedField::Kind ResolveFieldKind(
 }
 
 std::vector<FieldInfo> ComputeFieldInfos(
-    const z3wire_rdl::Struct& struct_def,
+    const z3wire_weave::Struct& struct_def,
     const std::unordered_map<std::string, ResolvedEnum>& enum_map,
     const std::unordered_map<std::string, ResolvedStruct>& struct_map) {
   std::vector<FieldInfo> field_infos;
@@ -158,8 +158,8 @@ std::vector<FieldInfo> ComputeFieldInfos(
     auto kind = ResolveFieldKind(f.type().kind_case());
 
     auto signedness = ResolvedField::kUnsigned;
-    if (f.type().kind_case() == z3wire_rdl::FieldType::kBitvec &&
-        f.type().bitvec().signedness() == z3wire_rdl::SIGNEDNESS_SIGNED) {
+    if (f.type().kind_case() == z3wire_weave::FieldType::kBitvec &&
+        f.type().bitvec().signedness() == z3wire_weave::SIGNEDNESS_SIGNED) {
       signedness = ResolvedField::kSigned;
     }
 
@@ -210,13 +210,13 @@ std::vector<ResolvedField> AssignOffsets(
 }
 
 std::vector<ResolvedStruct> ResolveStructs(
-    const z3wire_rdl::Module& module,
+    const z3wire_weave::WireSpec& module,
     const std::unordered_map<std::string, ResolvedEnum>& enum_map) {
   std::unordered_map<std::string, ResolvedStruct> struct_map;
   std::vector<ResolvedStruct> resolved;
 
   // Topological sort via retry loop.
-  std::vector<z3wire_rdl::Struct> pending(module.structs().begin(),
+  std::vector<z3wire_weave::Struct> pending(module.structs().begin(),
                                           module.structs().end());
   int max_iterations =
       static_cast<int>(pending.size()) * static_cast<int>(pending.size()) + 1;
@@ -277,9 +277,9 @@ std::vector<ResolvedStruct> ResolveStructs(
 
 }  // namespace
 
-ResolvedModule Resolve(const z3wire_rdl::Module& module) {
+ResolvedModule Resolve(const z3wire_weave::WireSpec& module) {
   if (module.file_prefix().empty()) {
-    throw std::invalid_argument("Module must specify file_prefix");
+    throw std::invalid_argument("WireSpec must specify file_prefix");
   }
   auto enums = ResolveEnums(module);
   std::unordered_map<std::string, ResolvedEnum> enum_map;

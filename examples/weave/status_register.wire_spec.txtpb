@@ -1,4 +1,4 @@
-# status_register.rdl.txtpb
+# status_register.wire_spec.txtpb
 
 file_prefix: "status_register"
 namespace: "example"

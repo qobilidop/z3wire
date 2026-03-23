@@ -7,12 +7,12 @@ load("@rules_shell//shell:sh_test.bzl", "sh_test")
 
 genrule(
     name = "status_register_gen",
-    srcs = ["status_register.rdl.txtpb"],
+    srcs = ["status_register.wire_spec.txtpb"],
     outs = [
         "status_register.h",
         "status_register.proto",
     ],
-    cmd = "$(location //z3wire_weave:weave) --input $(location status_register.rdl.txtpb) --output_dir $(RULEDIR) --include_prefix examples/weave",
+    cmd = "$(location //z3wire_weave:weave) --input $(location status_register.wire_spec.txtpb) --output_dir $(RULEDIR) --include_prefix examples/weave",
     tools = ["//z3wire_weave:weave"],
 )
 

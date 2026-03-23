@@ -1,4 +1,4 @@
-// Weave: generate C++ and proto files from Z3Wire RDL descriptions.
+// Weave: generate C++ and proto files from Z3Wire wire spec descriptions.
 
 #include <cstdlib>
 #include <filesystem>
@@ -10,7 +10,7 @@
 #include "google/protobuf/text_format.h"
 #include "z3wire_weave/emit_header.h"
 #include "z3wire_weave/emit_proto.h"
-#include "z3wire_weave/rdl.pb.h"
+#include "z3wire_weave/wire_spec.pb.h"
 #include "z3wire_weave/resolver.h"
 
 namespace {
@@ -57,7 +57,7 @@ int main(int argc, char* argv[]) {
   std::string text = ss.str();
 
   // Parse textproto.
-  z3wire_rdl::Module module;
+  z3wire_weave::WireSpec module;
   if (!google::protobuf::TextFormat::ParseFromString(text, &module)) {
     std::cerr << "Error: failed to parse " << args.input << "\n";
     return 1;

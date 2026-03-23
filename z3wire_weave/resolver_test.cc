@@ -3,17 +3,17 @@
 #include <stdexcept>
 
 #include "gtest/gtest.h"
-#include "z3wire_weave/rdl.pb.h"
+#include "z3wire_weave/wire_spec.pb.h"
 
 namespace z3wire_weave {
 namespace {
 
 // Helper to create a module with common defaults.
-z3wire_rdl::Module MakeModule() {
-  z3wire_rdl::Module m;
+z3wire_weave::WireSpec MakeModule() {
+  z3wire_weave::WireSpec m;
   m.set_file_prefix("test");
   m.set_namespace_("test");
-  m.set_field_pack_order(z3wire_rdl::FIELD_PACK_ORDER_LSB_FIRST);
+  m.set_field_pack_order(z3wire_weave::FIELD_PACK_ORDER_LSB_FIRST);
   return m;
 }
 
@@ -130,7 +130,7 @@ TEST(ResolverTest, WidthMismatch) {
 }
 
 TEST(ResolverTest, MissingFieldPackOrder) {
-  z3wire_rdl::Module module;
+  z3wire_weave::WireSpec module;
   module.set_file_prefix("test");
   module.set_namespace_("test");
   // No field_pack_order set.
@@ -144,9 +144,9 @@ TEST(ResolverTest, MissingFieldPackOrder) {
 }
 
 TEST(ResolverTest, MissingFilePrefix) {
-  z3wire_rdl::Module module;
+  z3wire_weave::WireSpec module;
   module.set_namespace_("test");
-  module.set_field_pack_order(z3wire_rdl::FIELD_PACK_ORDER_LSB_FIRST);
+  module.set_field_pack_order(z3wire_weave::FIELD_PACK_ORDER_LSB_FIRST);
 
   EXPECT_THROW(Resolve(module), std::invalid_argument);
 }
@@ -170,7 +170,7 @@ TEST(ResolverTest, CircularStructDependency) {
 
 TEST(ResolverTest, MsbFirstOffsets) {
   auto module = MakeModule();
-  module.set_field_pack_order(z3wire_rdl::FIELD_PACK_ORDER_MSB_FIRST);
+  module.set_field_pack_order(z3wire_weave::FIELD_PACK_ORDER_MSB_FIRST);
   auto* s = module.add_structs();
   s->set_name("S");
   s->set_width(8);
@@ -214,10 +214,10 @@ TEST(ResolverTest, ReservedFieldNameCollision) {
 }
 
 TEST(ResolverTest, FullExample) {
-  z3wire_rdl::Module module;
+  z3wire_weave::WireSpec module;
   module.set_file_prefix("status_register");
   module.set_namespace_("example");
-  module.set_field_pack_order(z3wire_rdl::FIELD_PACK_ORDER_LSB_FIRST);
+  module.set_field_pack_order(z3wire_weave::FIELD_PACK_ORDER_LSB_FIRST);
 
   // Enum: OpMode
   auto* e = module.add_enums();
@@ -249,7 +249,7 @@ TEST(ResolverTest, FullExample) {
     f->set_name("severity");
     auto* bv = f->mutable_type()->mutable_bitvec();
     bv->set_width(2);
-    bv->set_signedness(z3wire_rdl::SIGNEDNESS_SIGNED);
+    bv->set_signedness(z3wire_weave::SIGNEDNESS_SIGNED);
   }
   {
     auto* f = ei->add_fields();

@@ -1,5 +1,5 @@
 syntax = "proto3";
-package z3wire_rdl;
+package z3wire_weave;
 
 enum FieldPackOrder {
   FIELD_PACK_ORDER_UNSPECIFIED = 0;
@@ -12,7 +12,7 @@ enum Signedness {
   SIGNEDNESS_SIGNED = 1;
 }
 
-message Module {
+message WireSpec {
   string file_prefix = 1;
   string namespace = 2;
   FieldPackOrder field_pack_order = 3;

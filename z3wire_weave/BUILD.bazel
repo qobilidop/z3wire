@@ -5,13 +5,13 @@ load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 
 proto_library(
-    name = "rdl_proto",
-    srcs = ["rdl.proto"],
+    name = "wire_spec_proto",
+    srcs = ["wire_spec.proto"],
 )
 
 cc_proto_library(
-    name = "rdl_cc_proto",
-    deps = [":rdl_proto"],
+    name = "wire_spec_cc_proto",
+    deps = [":wire_spec_proto"],
 )
 
 cc_library(
@@ -19,7 +19,7 @@ cc_library(
     srcs = ["resolver.cc"],
     hdrs = ["resolver.h"],
     deps = [
-        ":rdl_cc_proto",
+        ":wire_spec_cc_proto",
         "@abseil-cpp//absl/strings:str_format",
     ],
 )
@@ -68,8 +68,8 @@ cc_test(
     srcs = ["emit_header_test.cc"],
     deps = [
         ":emit_header",
-        ":rdl_cc_proto",
         ":resolver",
+        ":wire_spec_cc_proto",
         "@googletest//:gtest_main",
     ],
 )
@@ -81,8 +81,8 @@ cc_binary(
     deps = [
         ":emit_header",
         ":emit_proto",
-        ":rdl_cc_proto",
         ":resolver",
+        ":wire_spec_cc_proto",
         "@protobuf",
     ],
 )

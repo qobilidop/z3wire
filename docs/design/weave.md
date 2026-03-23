@@ -28,30 +28,26 @@ Weave covers **fixed-layout bit structures** — the kind found in hardware
 registers, protocol headers, and control/status words. It does not cover:
 
 - Variable-length fields or dynamic arrays.
-- Address maps or register files (SystemRDL `addrmap` / `regfile`).
+- Address maps or register files (e.g. SystemRDL `addrmap` / `regfile`).
 - Access properties (`sw`, `hw`, `reset`) — these describe register behavior,
     not bit layout.
 
-## Source-of-truth format: Z3Wire RDL
-
-RDL (Register Description Language) is a term borrowed from
-[SystemRDL](https://www.accellera.org/activities/working-groups/systemrdl), the
-Accellera industry standard for register descriptions. Z3Wire RDL is a much
-simpler format tailored to Z3Wire's use cases.
+## Source-of-truth format: wire spec
 
 The source-of-truth is defined using Protocol Buffers:
 
-- **`rdl.proto`** defines the schema (what an RDL description looks like).
+- **`wire_spec.proto`** defines the schema (what a wire spec description looks
+    like).
 - **`.txtpb` files** are human-readable instances conforming to that schema.
 
-This approach avoids writing a custom parser — protobuf handles parsing and
+This approach avoids writing a custom parser - protobuf handles parsing and
 validation. Users get a familiar, well-tooled format.
 
-### Schema (`rdl.proto`)
+### Schema (`wire_spec.proto`)
 
 ```protobuf
 syntax = "proto3";
-package z3wire_rdl;
+package z3wire_weave;
 
 enum FieldPackOrder {
   FIELD_PACK_ORDER_UNSPECIFIED = 0;
@@ -64,7 +60,7 @@ enum Signedness {
   SIGNEDNESS_SIGNED = 1;
 }
 
-message Module {
+message WireSpec {
   string file_prefix = 1;
   string namespace = 2;
   FieldPackOrder field_pack_order = 3;
@@ -120,7 +116,7 @@ message BitVecType {
 
 ### Key schema concepts
 
-- **Module**: Top-level container. Sets the `file_prefix` (output filename
+- **WireSpec**: Top-level container. Sets the `file_prefix` (output filename
     prefix), C++ `namespace`, and a default `field_pack_order` inherited by all
     structs.
 - **Struct**: A named collection of fields occupying a contiguous bit range. Can
@@ -144,7 +140,7 @@ message BitVecType {
 ### Example input
 
 ```textproto
-# status_register.rdl.txtpb
+# status_register.wire_spec.txtpb
 
 file_prefix: "status_register"
 namespace: "example"
@@ -306,8 +302,8 @@ as weave-generated code is a separate codebase with its own conventions.
 #### Enum constants
 
 Enums are generated as structs with `static constexpr` members using Z3Wire
-concrete types. Names are emitted as-is from the RDL — no transformation. Users
-write target-language names directly (e.g., `kIdle` not `IDLE`).
+concrete types. Names are emitted as-is from the wire spec - no transformation.
+Users write target-language names directly (e.g., `kIdle` not `IDLE`).
 
 #### Concrete structs
 
@@ -381,7 +377,7 @@ To go from Symbolic to Proto, chain: `sym.ToConcrete(model).ToProto()`.
 
 ```
 z3wire_weave/
-  rdl.proto              # RDL schema definition
+  wire_spec.proto        # Wire spec schema definition
   weave_main.cc          # CLI entry point
   resolver.h             # Validates refs, computes widths and bit offsets
   resolver.cc
@@ -391,24 +387,24 @@ z3wire_weave/
   emit_proto.cc
   BUILD.bazel
 examples/weave/
-  status_register.rdl.txtpb  # Example RDL instance
+  status_register.wire_spec.txtpb  # Example wire spec instance
   BUILD.bazel
 ```
 
 ### CLI
 
 ```bash
-weave --input status_register.rdl.txtpb --output_dir gen/
+weave --input status_register.wire_spec.txtpb --output_dir gen/
 ```
 
 Produces `gen/status_register.h` and `gen/status_register.proto` (filenames
-derived from the `file_prefix` field in the Module, not the input filename).
+derived from the `file_prefix` field in the WireSpec, not the input filename).
 
 ### Implementation
 
 - **Language**: C++. Single language toolchain, simpler packaging.
 - **Parsing**: Protobuf's C++ TextFormat API parses and validates `.txtpb` files
-    against `rdl.proto`. No custom parser.
+    against `wire_spec.proto`. No custom parser.
 - **Resolution**: `resolver.cc` validates all references, detects circular
     struct dependencies, computes per-field bit offsets, and validates total
     widths.
