@@ -566,19 +566,29 @@ SymBitVec<WS, S> replace(const SymBitVec<WS, S>& src, const SymUInt<WF>& field,
 
   auto& ctx = src.expr().ctx();
 
-  // Zero-extend field and offset to source width.
-  z3::expr field_wide = z3::zext(field.expr(), WS - WF);
-  z3::expr lo_wide = z3::zext(lo.expr(), WS - WL);
+  // Match widths for the shift. When WL > WS, zero-extend the source and mask
+  // so that large offsets correctly shift field bits out rather than wrapping.
+  constexpr size_t ShiftW = std::max(WS, WL);
 
-  // Create WF-bit mask of all ones, extend to WS.
-  z3::expr mask = z3::zext(~ctx.bv_val(0, WF), WS - WF);
+  z3::expr wide_src =
+      (ShiftW > WS) ? z3::zext(src.expr(), ShiftW - WS) : src.expr();
+  z3::expr wide_field = z3::zext(field.expr(), ShiftW - WF);
+  z3::expr wide_lo =
+      (ShiftW > WL) ? z3::zext(lo.expr(), ShiftW - WL) : lo.expr();
+
+  // Create WF-bit mask of all ones, extend to ShiftW.
+  z3::expr mask = z3::zext(~ctx.bv_val(0, WF), ShiftW - WF);
 
   // Shift field and mask to position.
-  z3::expr field_shifted = z3::shl(field_wide, lo_wide);
-  z3::expr mask_shifted = z3::shl(mask, lo_wide);
+  z3::expr field_shifted = z3::shl(wide_field, wide_lo);
+  z3::expr mask_shifted = z3::shl(mask, wide_lo);
 
   // Clear target bits and insert field.
-  z3::expr result = (src.expr() & ~mask_shifted) | field_shifted;
+  z3::expr wide_result = (wide_src & ~mask_shifted) | field_shifted;
+
+  // Truncate back to source width.
+  z3::expr result =
+      (ShiftW > WS) ? wide_result.extract(WS - 1, 0) : wide_result;
   return SymBitVec<WS, S>(result);
 }
 

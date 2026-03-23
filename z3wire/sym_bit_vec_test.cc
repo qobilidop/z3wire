@@ -569,6 +569,36 @@ TEST_F(SymBitVecTest, SymbolicReplacePreservesSignedness) {
   static_assert(decltype(result)::kIsSigned);
 }
 
+TEST_F(SymBitVecTest, SymbolicReplaceWideOffset) {
+  // Offset wider than source: WL (16) > WS (8).
+  SymUInt<8> src(ctx_, "src");
+  SymUInt<4> field(ctx_, "field");
+  SymUInt<16> lo(ctx_, "lo");
+  auto result = replace(src, field, lo);
+
+  static_assert(decltype(result)::kWidth == 8);
+
+  // In-range offset: src=0xAB, field=0xF, lo=4 -> 0xFB.
+  {
+    z3::solver s(ctx_);
+    s.add(src.expr() == ctx_.bv_val(0xAB, 8));
+    s.add(field.expr() == ctx_.bv_val(0xF, 4));
+    s.add(lo.expr() == ctx_.bv_val(4, 16));
+    s.add(result.expr() != ctx_.bv_val(0xFB, 8));
+    EXPECT_EQ(s.check(), z3::unsat);
+  }
+
+  // Out-of-range offset: replacing at offset 100 should leave src unchanged.
+  {
+    z3::solver s(ctx_);
+    s.add(src.expr() == ctx_.bv_val(0xAB, 8));
+    s.add(field.expr() == ctx_.bv_val(0xF, 4));
+    s.add(lo.expr() == ctx_.bv_val(100, 16));
+    s.add(result.expr() != ctx_.bv_val(0xAB, 8));
+    EXPECT_EQ(s.check(), z3::unsat);
+  }
+}
+
 // --- concat ---
 
 TEST_F(SymBitVecTest, Concat) {
