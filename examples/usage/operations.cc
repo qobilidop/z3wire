@@ -191,7 +191,7 @@ void demo_static_replacement() {
   z3w::SymUInt<8> field(ctx, "field");
 
   z3w::SymUInt<32> r1 = z3w::replace<13>(u32, field);
-  z3w::SymSInt<32> r3 = z3w::replace<13>(s32, field);
+  z3w::SymSInt<32> r2 = z3w::replace<13>(s32, field);
 }
 
 void demo_symbolic_replacement() {
@@ -199,10 +199,10 @@ void demo_symbolic_replacement() {
   z3w::SymUInt<32> u32(ctx, "u32");
   z3w::SymSInt<32> s32(ctx, "s32");
   z3w::SymUInt<8> field(ctx, "field");
-  z3w::SymUInt<5> offset(ctx, "offset");
+  z3w::SymUInt<5> lo(ctx, "lo");
 
-  z3w::SymUInt<32> r2 = z3w::replace(u32, field, offset);
-  z3w::SymSInt<32> r4 = z3w::replace(s32, field, offset);
+  z3w::SymUInt<32> r1 = z3w::replace(u32, field, lo);
+  z3w::SymSInt<32> r2 = z3w::replace(s32, field, lo);
 }
 
 void demo_concat() {
