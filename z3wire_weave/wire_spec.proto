@@ -16,11 +16,11 @@ message WireSpec {
   string file_prefix = 1;
   string namespace = 2;
   FieldPackOrder field_pack_order = 3;
-  repeated EnumDef enums = 4;
+  repeated Enum enums = 4;
   repeated Struct structs = 5;
 }
 
-message EnumDef {
+message Enum {
   string name = 1;
   string desc = 2;
   uint32 width = 3;

@@ -64,11 +64,11 @@ message WireSpec {
   string file_prefix = 1;
   string namespace = 2;
   FieldPackOrder field_pack_order = 3;
-  repeated EnumDef enums = 4;
+  repeated Enum enums = 4;
   repeated Struct structs = 5;
 }
 
-message EnumDef {
+message Enum {
   string name = 1;
   string desc = 2;
   uint32 width = 3;
@@ -124,12 +124,12 @@ message BitVecType {
     validates that fields sum to exactly that width.
 - **Field**: A named bit range within a struct. Types include `bool` (1 bit),
     `bitvec` (unsigned or signed, arbitrary width), `enum_ref` (reference to an
-    `EnumDef`), and `struct_ref` (inline nested struct). Setting `count >= 1`
-    makes it a fixed-size array (`std::array<T, N>` in C++); `count = 0`
-    (default) means scalar. Zero-length arrays are not supported. Setting
+    `Enum`), and `struct_ref` (inline nested struct). Setting `count >= 1` makes
+    it a fixed-size array (`std::array<T, N>` in C++); `count = 0` (default)
+    means scalar. Zero-length arrays are not supported. Setting
     `reserved = true` marks a field as padding — it is included in the C++
     structs (for correct bit layout) but omitted from the generated proto.
-- **EnumDef**: Named constants with explicit bit-pattern values and a declared
+- **Enum**: Named constants with explicit bit-pattern values and a declared
     width.
 - **FieldPackOrder**: Controls the direction fields are packed into the bit
     range. `FIELD_PACK_ORDER_LSB_FIRST` packs starting from bit 0 (hardware
@@ -420,7 +420,7 @@ Weave validates:
 
 - All `enum_ref` and `struct_ref` names resolve to defined types.
 - Enum values fit within the declared width.
-- Enum values are unique within an `EnumDef`.
+- Enum values are unique within an `Enum`.
 - No circular struct references.
 - `field_pack_order` is resolved (at module or struct level).
 - If `Struct.width` is set, fields sum to exactly that width.
