@@ -83,6 +83,8 @@ cc_binary(
         ":emit_proto",
         ":resolver",
         ":wire_spec_cc_proto",
+        "@abseil-cpp//absl/flags:flag",
+        "@abseil-cpp//absl/flags:parse",
         "@protobuf",
     ],
 )
