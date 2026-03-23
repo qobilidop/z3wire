@@ -98,6 +98,7 @@ RUN ARCH=$(uname -m) && \
 
 # MkDocs and plugins for documentation.
 RUN pip3 install --break-system-packages \
+    mdformat-mkdocs \
     mkdocs-include-markdown-plugin \
     mkdocs-material
 

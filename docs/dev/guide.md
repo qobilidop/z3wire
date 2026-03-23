@@ -12,8 +12,8 @@ CI.
 - [Docker](https://www.docker.com/)
 - [Dev Container CLI](https://github.com/devcontainers/cli)
 - (Optional) An IDE with dev container support, e.g.
-  [VS Code](https://code.visualstudio.com/) with the
-  [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+    [VS Code](https://code.visualstudio.com/) with the
+    [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
 - All other dependencies are installed in the dev container.
 
 ### Dev container setup
@@ -97,17 +97,17 @@ To check without modifying (used in CI):
 ### C++
 
 - Follow
-  [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html).
+    [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html).
 - Follow Google Abseil [C++ Tips of the Week](https://abseil.io/tips/).
 - **Naming deviations:**
-  - Free functions and member methods use `snake_case` (e.g., `to_symbolic`,
-    `safe_cast`, `shl`, `value()`, `expr()`), not `PascalCase`. This aligns with
-    Z3 and other SMT/hardware libraries in the ecosystem, and reads more
-    naturally for hardware primitives. Static factory methods use `PascalCase`
-    (e.g., `Literal`, `Checked`, `True`, `False`).
-  - Type traits use `snake_case` with a `_v` helper (e.g., `is_concrete`,
-    `is_symbolic_v`), following `std::` conventions rather than Google's
-    `PascalCase`.
+    - Free functions and member methods use `snake_case` (e.g., `to_symbolic`,
+        `safe_cast`, `shl`, `value()`, `expr()`), not `PascalCase`. This aligns
+        with Z3 and other SMT/hardware libraries in the ecosystem, and reads more
+        naturally for hardware primitives. Static factory methods use `PascalCase`
+        (e.g., `Literal`, `Checked`, `True`, `False`).
+    - Type traits use `snake_case` with a `_v` helper (e.g., `is_concrete`,
+        `is_symbolic_v`), following `std::` conventions rather than Google's
+        `PascalCase`.
 
 ### Bazel
 
@@ -116,7 +116,7 @@ To check without modifying (used in CI):
 ## Doc style
 
 - Follow
-  [Google Markdown Style Guide](https://google.github.io/styleguide/docguide/style.html).
+    [Google Markdown Style Guide](https://google.github.io/styleguide/docguide/style.html).
 - For titles, use Title Case.
 - For non-title section headings, use Sentence case.
 - Use plain hyphens (-) instead of em dashes.
@@ -141,8 +141,8 @@ Before commit, ALWAYS run the following commands and fix any issues you see:
 - Keep the subject line under 72 characters.
 - Explain why the change is being made.
 - Describe what has changed at a high level. Don't repeat what's obvious in the
-  change itself.
+    change itself.
 - Prefer one commit per logical change. Don't split into too many tiny commits
-  when they form a single unit of work.
+    when they form a single unit of work.
 - For agents: credit yourself (e.g. using `Co-authored-by:`) for commits you
-  made.
+    made.

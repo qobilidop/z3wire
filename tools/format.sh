@@ -28,7 +28,12 @@ if [[ "${1:-}" == "--check" ]]; then
     fail=1
   fi
 
-  # --- Markdown, JSON, YAML, TOML ---
+  # --- Docs Markdown (mdformat) ---
+  if ! mdformat --check docs/ 2>&1; then
+    fail=1
+  fi
+
+  # --- Non-docs Markdown, JSON, YAML, TOML (dprint) ---
   if ! dprint check 2>&1; then
     fail=1
   fi
@@ -43,6 +48,7 @@ else
   echo "$cpp_files" | xargs --no-run-if-empty clang-format -i
   echo "$bzl_files" | xargs --no-run-if-empty buildifier
   echo "$sh_files" | xargs --no-run-if-empty shfmt -w
+  mdformat docs/
   dprint fmt
   echo "Formatted all files."
 fi
