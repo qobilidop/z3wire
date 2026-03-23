@@ -440,6 +440,7 @@ Typing rules (choice types must be exactly the same):
 
 | Condition     | Choice A       | Choice B       | Result type  |
 | :------------ | :------------- | :------------- | :----------- |
+| `SymBool sel` | `SymBool a`    | `SymBool b`    | `SymBool`    |
 | `SymBool sel` | `SymUInt<W> a` | `SymUInt<W> b` | `SymUInt<W>` |
 | `SymBool sel` | `SymSInt<W> a` | `SymSInt<W> b` | `SymSInt<W>` |
 
@@ -447,11 +448,14 @@ Examples:
 
 ```cpp
 z3w::SymBool sel(ctx, "sel");
+z3w::SymBool a1(ctx, "a1");
+z3w::SymBool b1(ctx, "b1");
 z3w::SymUInt<8> a2(ctx, "a2");
 z3w::SymUInt<8> b2(ctx, "b2");
 z3w::SymSInt<8> a3(ctx, "a3");
 z3w::SymSInt<8> b3(ctx, "b3");
 
+z3w::SymBool r1 = z3w::ite(sel, a1, b1);
 z3w::SymUInt<8> r2 = z3w::ite(sel, a2, b2);
 z3w::SymSInt<8> r3 = z3w::ite(sel, a3, b3);
 ```

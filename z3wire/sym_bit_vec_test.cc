@@ -254,6 +254,20 @@ TEST_F(SymBitVecTest, Ite) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
+TEST_F(SymBitVecTest, IteSymBool) {
+  SymBool sel(ctx_, "sel");
+  SymBool a(ctx_, "a");
+  SymBool b(ctx_, "b");
+  SymBool result = ite(sel, a, b);
+
+  // sel=true -> result=a
+  z3::solver s(ctx_);
+  s.add(sel.expr());
+  s.add(a.expr());
+  s.add(!result.expr());
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
 // --- unsafe_cast ---
 
 TEST_F(SymBitVecTest, CastTruncation) {

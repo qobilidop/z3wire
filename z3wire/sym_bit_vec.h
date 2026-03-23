@@ -408,6 +408,12 @@ SymBitVec<W, S> ite(bool cond, const SymBitVec<W, S>& true_val,
   return cond ? true_val : false_val;
 }
 
+// SymBool choices.
+inline SymBool ite(const SymBool& cond, const SymBool& true_val,
+                   const SymBool& false_val) {
+  return SymBool(z3::ite(cond.expr(), true_val.expr(), false_val.expr()));
+}
+
 // --- Three-tier casting API ---
 
 // unsafe_cast<T>(val): raw hardware cast (truncation, extension, or bitcast).
