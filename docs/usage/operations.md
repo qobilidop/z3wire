@@ -6,16 +6,16 @@ symbolic in mixed expressions (see
 
 ## Overview
 
-| Category              | Operations                       |
-| :-------------------- | :------------------------------- |
-| Logical               | `!`, `&&`, `\|\|`, `^`           |
-| Bitwise               | `~`, `&`, `\|`, `^`              |
-| Comparison            | `==`, `!=`, `<`, `<=`, `>`, `>=` |
-| Arithmetic            | `+`, `-`, unary `-`              |
-| Shifting              | `shl`, `shr`                     |
-| Rotation              | `rotl`, `rotr`                   |
-| Bit manipulation      | `extract`, `replace`, `concat`   |
-| Conditional selection | `ite`                            |
+| Category              | Operations                                |
+| :-------------------- | :---------------------------------------- |
+| Logical               | `!`, `&&`, <code>&#124;&#124;</code>, `^` |
+| Bitwise               | `~`, `&`, <code>&#124;</code>, `^`        |
+| Comparison            | `==`, `!=`, `<`, `<=`, `>`, `>=`          |
+| Arithmetic            | `+`, `-`, unary `-`                       |
+| Shifting              | `shl`, `shr`                              |
+| Rotation              | `rotl`, `rotr`                            |
+| Bit manipulation      | `extract`, `replace`, `concat`            |
+| Conditional selection | `ite`                                     |
 
 All examples on this page assume a `z3::context ctx` is in scope.
 
@@ -31,11 +31,11 @@ Unary operator typing rule:
 
 Binary operator typing rules:
 
-| Operation | LHS         | RHS         | Syntax     | Result type |
-| :-------- | :---------- | :---------- | :--------- | :---------- |
-| AND       | `SymBool a` | `SymBool b` | `a && b`   | `SymBool`   |
-| OR        | `SymBool a` | `SymBool b` | `a \|\| b` | `SymBool`   |
-| XOR       | `SymBool a` | `SymBool b` | `a ^ b`    | `SymBool`   |
+| Operation | LHS         | RHS         | Syntax                        | Result type |
+| :-------- | :---------- | :---------- | :---------------------------- | :---------- |
+| AND       | `SymBool a` | `SymBool b` | `a && b`                      | `SymBool`   |
+| OR        | `SymBool a` | `SymBool b` | <code>a &#124;&#124; b</code> | `SymBool`   |
+| XOR       | `SymBool a` | `SymBool b` | `a ^ b`                       | `SymBool`   |
 
 Examples:
 
@@ -64,14 +64,14 @@ Unary operator typing rules:
 
 Binary operator typing rules (operand types must be exactly the same):
 
-| Operation | LHS            | RHS            | Syntax   | Result type  |
-| :-------- | :------------- | :------------- | :------- | :----------- |
-| AND       | `SymUInt<W> a` | `SymUInt<W> b` | `a & b`  | `SymUInt<W>` |
-| AND       | `SymSInt<W> a` | `SymSInt<W> b` | `a & b`  | `SymSInt<W>` |
-| OR        | `SymUInt<W> a` | `SymUInt<W> b` | `a \| b` | `SymUInt<W>` |
-| OR        | `SymSInt<W> a` | `SymSInt<W> b` | `a \| b` | `SymSInt<W>` |
-| XOR       | `SymUInt<W> a` | `SymUInt<W> b` | `a ^ b`  | `SymUInt<W>` |
-| XOR       | `SymSInt<W> a` | `SymSInt<W> b` | `a ^ b`  | `SymSInt<W>` |
+| Operation | LHS            | RHS            | Syntax                  | Result type  |
+| :-------- | :------------- | :------------- | :---------------------- | :----------- |
+| AND       | `SymUInt<W> a` | `SymUInt<W> b` | `a & b`                 | `SymUInt<W>` |
+| AND       | `SymSInt<W> a` | `SymSInt<W> b` | `a & b`                 | `SymSInt<W>` |
+| OR        | `SymUInt<W> a` | `SymUInt<W> b` | <code>a &#124; b</code> | `SymUInt<W>` |
+| OR        | `SymSInt<W> a` | `SymSInt<W> b` | <code>a &#124; b</code> | `SymSInt<W>` |
+| XOR       | `SymUInt<W> a` | `SymUInt<W> b` | `a ^ b`                 | `SymUInt<W>` |
+| XOR       | `SymSInt<W> a` | `SymSInt<W> b` | `a ^ b`                 | `SymSInt<W>` |
 
 Examples:
 
