@@ -818,7 +818,7 @@ TEST_F(SymBitVecTest, SymbolicRotl) {
 
 TEST_F(SymBitVecTest, ConcreteRotl) {
   SymUInt<8> a(ctx_, "a");
-  auto n = std::get<0>(UInt<3>::Checked(3));
+  auto n = std::get<0>(UInt<3>::FromValue(3));
   auto result = rotl(a, n);
 
   static_assert((std::is_same_v<decltype(result), SymUInt<8>>));
@@ -867,7 +867,7 @@ TEST_F(SymBitVecTest, SymbolicRotr) {
 
 TEST_F(SymBitVecTest, ConcreteRotr) {
   SymUInt<8> a(ctx_, "a");
-  auto n = std::get<0>(UInt<3>::Checked(3));
+  auto n = std::get<0>(UInt<3>::FromValue(3));
   auto result = rotr(a, n);
 
   static_assert((std::is_same_v<decltype(result), SymUInt<8>>));
@@ -1259,7 +1259,7 @@ TEST_F(SymBitVecTest, WideToSymbolicLargeValue) {
   std::array<uint8_t, 16> bytes{};
   bytes[0] = 0xEF;
   bytes[8] = 0xAB;
-  auto [concrete, truncated] = UInt<128>::Checked(bytes);
+  auto [concrete, truncated] = UInt<128>::FromValue(bytes);
   ASSERT_FALSE(truncated);
 
   auto symbolic = to_symbolic(concrete, ctx_);
@@ -1293,7 +1293,7 @@ TEST_F(SymBitVecTest, WideToConcreteRoundTrip) {
   std::array<uint8_t, 16> bytes{};
   bytes[0] = 0xEF;
   bytes[8] = 0xAB;
-  auto [original, truncated] = UInt<128>::Checked(bytes);
+  auto [original, truncated] = UInt<128>::FromValue(bytes);
   ASSERT_FALSE(truncated);
 
   auto symbolic = to_symbolic(original, ctx_);

@@ -80,41 +80,41 @@ TEST(BitVecTest, LiteralSignedNegative) {
 // --- Checked construction ---
 
 TEST(BitVecTest, CheckedNoTruncation) {
-  auto [val, truncated] = UInt<8>::Checked(200);
+  auto [val, truncated] = UInt<8>::FromValue(200);
   EXPECT_EQ(val.value(), 200);
   EXPECT_FALSE(truncated);
 }
 
 TEST(BitVecTest, CheckedWithTruncation) {
-  auto [val, truncated] = UInt<8>::Checked(300);
+  auto [val, truncated] = UInt<8>::FromValue(300);
   EXPECT_EQ(val.value(), 44);
   EXPECT_TRUE(truncated);
 }
 
 TEST(BitVecTest, CheckedNegativeOnUnsigned) {
-  auto [val, truncated] = UInt<8>::Checked(-1);
+  auto [val, truncated] = UInt<8>::FromValue(-1);
   EXPECT_TRUE(truncated);
 }
 
 TEST(BitVecTest, SignedCheckedNoTruncation) {
-  auto [val, truncated] = SInt<8>::Checked(-128);
+  auto [val, truncated] = SInt<8>::FromValue(-128);
   EXPECT_EQ(val.value(), -128);
   EXPECT_FALSE(truncated);
 }
 
 TEST(BitVecTest, SignedCheckedPositive) {
-  auto [val, truncated] = SInt<8>::Checked(127);
+  auto [val, truncated] = SInt<8>::FromValue(127);
   EXPECT_EQ(val.value(), 127);
   EXPECT_FALSE(truncated);
 }
 
 TEST(BitVecTest, SignedCheckedOverflowNegative) {
-  auto [val, truncated] = SInt<8>::Checked(-200);
+  auto [val, truncated] = SInt<8>::FromValue(-200);
   EXPECT_TRUE(truncated);
 }
 
 TEST(BitVecTest, SignedCheckedOverflowPositive) {
-  auto [val, truncated] = SInt<8>::Checked(200);
+  auto [val, truncated] = SInt<8>::FromValue(200);
   EXPECT_TRUE(truncated);
 }
 
@@ -166,13 +166,13 @@ TEST(BitVecTest, Inequality) {
 // --- W=64 boundary ---
 
 TEST(BitVecTest, Width64Construction) {
-  auto [val, truncated] = UInt<64>::Checked(UINT64_MAX);
+  auto [val, truncated] = UInt<64>::FromValue(UINT64_MAX);
   EXPECT_EQ(val.value(), UINT64_MAX);
   EXPECT_FALSE(truncated);
 }
 
 TEST(BitVecTest, Width1) {
-  auto [val, truncated] = UInt<1>::Checked(3);
+  auto [val, truncated] = UInt<1>::FromValue(3);
   EXPECT_EQ(val.value(), 1);  // 3 & 0x1
   EXPECT_TRUE(truncated);
 }
@@ -237,7 +237,7 @@ TEST(BitVecTest, WideLiteralZero) {
 }
 
 TEST(BitVecTest, WideCheckedFromIntegral) {
-  auto [val, truncated] = UInt<128>::Checked(uint64_t{0xDEADBEEF});
+  auto [val, truncated] = UInt<128>::FromValue(uint64_t{0xDEADBEEF});
   EXPECT_FALSE(truncated);
   auto bytes = val.value();
   EXPECT_EQ(bytes[0], 0xEF);
@@ -251,7 +251,7 @@ TEST(BitVecTest, WideCheckedFromIntegral) {
 }
 
 TEST(BitVecTest, WideCheckedNegativeOnUnsigned) {
-  auto [val, truncated] = UInt<128>::Checked(-1);
+  auto [val, truncated] = UInt<128>::FromValue(-1);
   EXPECT_TRUE(truncated);
 }
 
@@ -259,7 +259,7 @@ TEST(BitVecTest, WideCheckedFromBytesNoTruncation) {
   std::array<uint8_t, 16> bytes{};
   bytes[0] = 0xFF;
   bytes[15] = 0x01;
-  auto [val, truncated] = UInt<128>::Checked(bytes);
+  auto [val, truncated] = UInt<128>::FromValue(bytes);
   EXPECT_FALSE(truncated);
   EXPECT_EQ(val.value(), bytes);
 }
@@ -268,7 +268,7 @@ TEST(BitVecTest, WideCheckedFromBytesWithTruncation) {
   // UInt<100>: 13 bytes, but only 4 bits used in byte[12].
   std::array<uint8_t, 13> bytes{};
   bytes[12] = 0xFF;  // Upper 4 bits are unused → truncation.
-  auto [val, truncated] = UInt<100>::Checked(bytes);
+  auto [val, truncated] = UInt<100>::FromValue(bytes);
   EXPECT_TRUE(truncated);
   auto result = val.value();
   EXPECT_EQ(result[12], 0x0F);  // Upper 4 bits zeroed.
@@ -278,7 +278,7 @@ TEST(BitVecTest, WideCheckedFromBytesExactFit) {
   // UInt<100>: 13 bytes, 4 bits used in byte[12].
   std::array<uint8_t, 13> bytes{};
   bytes[12] = 0x0F;  // Exactly fills the 4 used bits.
-  auto [val, truncated] = UInt<100>::Checked(bytes);
+  auto [val, truncated] = UInt<100>::FromValue(bytes);
   EXPECT_FALSE(truncated);
   EXPECT_EQ(val.value(), bytes);
 }

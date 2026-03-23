@@ -16,8 +16,8 @@ void VerifyRotateRoundtrip(uint64_t raw_val, uint64_t raw_amt) {
   uint64_t amt = (K < 64) ? (raw_amt & ((uint64_t{1} << K) - 1)) : raw_amt;
 
   z3::context ctx;
-  auto sym_val = to_symbolic(std::get<0>(UInt<W>::Checked(val)), ctx);
-  auto sym_amt = to_symbolic(std::get<0>(UInt<K>::Checked(amt)), ctx);
+  auto sym_val = to_symbolic(std::get<0>(UInt<W>::FromValue(val)), ctx);
+  auto sym_amt = to_symbolic(std::get<0>(UInt<K>::FromValue(amt)), ctx);
 
   auto rotated = rotl(sym_val, sym_amt);
   auto roundtripped = rotr(rotated, sym_amt);

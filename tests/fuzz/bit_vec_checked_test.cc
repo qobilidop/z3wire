@@ -16,7 +16,7 @@ namespace {
 // must be idempotent with no truncation.
 template <size_t W, bool S>
 void VerifyCheckedIdempotent(const BitVec<W, S>& val) {
-  auto [rechecked, truncated] = BitVec<W, S>::Checked(val.value());
+  auto [rechecked, truncated] = BitVec<W, S>::FromValue(val.value());
   EXPECT_EQ(val, rechecked);
   EXPECT_FALSE(truncated);
 }
@@ -24,7 +24,7 @@ void VerifyCheckedIdempotent(const BitVec<W, S>& val) {
 #define CHECKED_IDEMPOTENT_FUZZ_TEST(Type, W)                             \
   void Type##W##CheckedIdempotent(Type<W>::ValueType raw) {               \
     /* Checked() masks raw to valid W-bit range. */                       \
-    auto [val, truncated] = Type<W>::Checked(raw);                        \
+    auto [val, truncated] = Type<W>::FromValue(raw);                        \
     VerifyCheckedIdempotent(val);                                         \
   }                                                                       \
   FUZZ_TEST(BitVecChecked, Type##W##CheckedIdempotent)

@@ -179,7 +179,7 @@ TEST(EmitHeaderTest, FromProtoBody) {
                                 "const RegProto& proto) {"));
   EXPECT_THAT(output, HasSubstr("result.flag = z3w::Bool(proto.flag());"));
   EXPECT_THAT(output,
-              HasSubstr("std::get<0>(z3w::UInt<8>::Checked(proto.val()))"));
+              HasSubstr("std::get<0>(z3w::UInt<8>::FromValue(proto.val()))"));
 }
 
 TEST(EmitHeaderTest, PackBody) {

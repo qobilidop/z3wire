@@ -31,7 +31,7 @@ void VerifyRoundtrip(const BitVec<W, S>& original) {
 #define ROUNDTRIP_FUZZ_TEST(Type, W)                                      \
   void Type##W##Roundtrip(Type<W>::ValueType raw) {                       \
     /* Checked() masks raw to valid W-bit range. */                       \
-    auto [val, truncated] = Type<W>::Checked(raw);                        \
+    auto [val, truncated] = Type<W>::FromValue(raw);                        \
     VerifyRoundtrip(val);                                                 \
   }                                                                       \
   FUZZ_TEST(BitVecRoundtrip, Type##W##Roundtrip)

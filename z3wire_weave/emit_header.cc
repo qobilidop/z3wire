@@ -99,7 +99,7 @@ std::string FromProtoExpr(const ResolvedField& field,
     case ResolvedField::kBitVec:
     case ResolvedField::kEnumRef: {
       std::string ctype = ConcreteType(field);
-      return absl::StrFormat("std::get<0>(%s::Checked(%s))", ctype, accessor);
+      return absl::StrFormat("std::get<0>(%s::FromValue(%s))", ctype, accessor);
     }
     case ResolvedField::kStructRef: {
       std::string ctype = ConcreteType(field);
@@ -121,7 +121,7 @@ std::string ToConcreteExpr(const ResolvedField& field,
       std::string ctype = ConcreteType(field);
       std::string pvtype = ProtoValueType(field);
       return absl::StrFormat(
-          "std::get<0>(%s::Checked(static_cast<%s>("
+          "std::get<0>(%s::FromValue(static_cast<%s>("
           "model.eval(%s.expr(), true).get_numeral_int64())))",
           ctype, pvtype, accessor);
     }

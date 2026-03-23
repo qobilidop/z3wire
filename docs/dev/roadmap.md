@@ -69,8 +69,8 @@ Future directions for Z3Wire.
     lightweight helpers (e.g., a named-field factory) once real usage patterns
     emerge.
 
-- **Clamp on truncation in `Checked()`** — When `Checked()` truncates, return
-    the clamped value (min or max of the range) instead of the low-W-bit
+- **Clamp on truncation in `FromValue()`** — When `FromValue()` truncates,
+    return the clamped value (min or max of the range) instead of the low-W-bit
     truncation. Clamping is more meaningful for a data holder type.
 
 ## Quality
@@ -82,7 +82,7 @@ Future directions for Z3Wire.
 - **Fuzz tests** — Property-based tests using Google FuzzTest. Roundtrip
     (`concrete -> symbolic -> concrete`) is done. Ideas for more:
 
-    - **Checked construction idempotency** — `Checked(v.value())` on a valid
+    - **Checked construction idempotency** — `FromValue(v.value())` on a valid
         `BitVec` should return `{v, false}`. No Z3 needed.
     - **Cast roundtrip** — Same-width `unsafe_cast<UInt>(unsafe_cast<SInt>(v))`
         preserves bits.

@@ -61,7 +61,7 @@ class BitVec {
 
   // Runtime checked construction. Returns {result, truncated}.
   template <std::integral T>
-  [[nodiscard]] static std::tuple<BitVec, bool> Checked(T raw) {
+  [[nodiscard]] static std::tuple<BitVec, bool> FromValue(T raw) {
     if constexpr (W > 64) {
       if constexpr (std::is_signed_v<T>) {
         if (raw < 0) {
@@ -92,7 +92,7 @@ class BitVec {
   // were non-zero.
   template <size_t Dummy = W>
     requires(Dummy > 64 && Dummy == W)
-  [[nodiscard]] static std::tuple<BitVec, bool> Checked(
+  [[nodiscard]] static std::tuple<BitVec, bool> FromValue(
       const std::array<uint8_t, kNumBytes>& bytes) {
     BitVec result;
     result.value_ = bytes;

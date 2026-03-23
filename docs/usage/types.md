@@ -100,9 +100,9 @@ auto d = z3w::SInt<8>::Literal<128>();   // Compile error: value doesn't fit
 Runtime checked:
 
 ```cpp
-auto [x, x_truncated] = z3w::UInt<8>::Checked(300);
+auto [x, x_truncated] = z3w::UInt<8>::FromValue(300);
 // x.value() == 44, x_truncated == true
-auto [y, y_truncated] = z3w::UInt<8>::Checked(200);
+auto [y, y_truncated] = z3w::UInt<8>::FromValue(200);
 // y.value() == 200, y_truncated == false
 ```
 
@@ -114,7 +114,7 @@ wide.value();  // std::array<uint8_t, 16>, little-endian
 
 // Construction from byte array:
 std::array<uint8_t, 16> bytes = { /* ... */ };
-auto [w, w_truncated] = z3w::UInt<128>::Checked(bytes);
+auto [w, w_truncated] = z3w::UInt<128>::FromValue(bytes);
 ```
 
 ### Value access

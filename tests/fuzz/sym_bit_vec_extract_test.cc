@@ -31,8 +31,8 @@ void VerifyExtract(uint64_t raw_val, uint64_t raw_offset) {
 
   // Symbolic computation.
   z3::context ctx;
-  auto sym_val = to_symbolic(std::get<0>(UInt<W>::Checked(val)), ctx);
-  auto sym_idx = to_symbolic(std::get<0>(UInt<IdxW>::Checked(offset)), ctx);
+  auto sym_val = to_symbolic(std::get<0>(UInt<W>::FromValue(val)), ctx);
+  auto sym_idx = to_symbolic(std::get<0>(UInt<IdxW>::FromValue(offset)), ctx);
   auto sym_result = extract<TW>(sym_val, sym_idx);
 
   z3::solver solver(ctx);
@@ -120,7 +120,7 @@ void VerifyExtractSigned(uint64_t raw_val, uint64_t raw_offset) {
   // Create signed symbolic value from unsigned bit pattern.
   auto sym_val =
       SymSInt<W>(ctx.bv_val(static_cast<uint64_t>(val), W));
-  auto sym_idx = to_symbolic(std::get<0>(UInt<IdxW>::Checked(offset)), ctx);
+  auto sym_idx = to_symbolic(std::get<0>(UInt<IdxW>::FromValue(offset)), ctx);
   auto sym_result = extract<TW>(sym_val, sym_idx);
 
   z3::solver solver(ctx);

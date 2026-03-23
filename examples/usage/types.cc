@@ -63,9 +63,9 @@ void demo_concrete_construction() {
   // auto b = z3w::UInt<8>::Literal<256>();
   // auto d = z3w::SInt<8>::Literal<128>();
 
-  auto [x, x_truncated] = z3w::UInt<8>::Checked(300);
+  auto [x, x_truncated] = z3w::UInt<8>::FromValue(300);
   // x.value() == 44, x_truncated == true
-  auto [y, y_truncated] = z3w::UInt<8>::Checked(200);
+  auto [y, y_truncated] = z3w::UInt<8>::FromValue(200);
   // y.value() == 200, y_truncated == false
 }
 
