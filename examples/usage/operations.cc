@@ -186,15 +186,12 @@ void demo_symbolic_extraction() {
 
 void demo_concat() {
   z3::context ctx;
-  z3w::SymUInt<16> hi(ctx, "hi");
-  z3w::SymUInt<16> lo(ctx, "lo");
+  z3w::SymBool b(ctx, "b");
+  z3w::SymUInt<7> u7(ctx, "u7");
+  z3w::SymSInt<8> s8(ctx, "s8");
 
-  z3w::SymUInt<32> r1 = z3w::concat(hi, lo);
-
-  z3w::SymUInt<4> a(ctx, "a");
-  z3w::SymUInt<4> b(ctx, "b");
-  z3w::SymSInt<8> c(ctx, "c");
-  z3w::SymUInt<16> r2 = z3w::concat(a, b, c);
+  z3w::SymUInt<8> r1 = z3w::concat(b, u7);
+  z3w::SymUInt<16> r2 = z3w::concat(b, u7, s8);
 }
 
 // --- Conditional selection ---

@@ -526,17 +526,50 @@ SymUInt<TargetWidth> extract(const SymBitVec<W, S>& val,
 
 // --- Concatenation ---
 
-// concat(a, b): result width = W1 + W2, always SymUInt.
-template <size_t W1, bool S1, size_t W2, bool S2>
-SymUInt<W1 + W2> concat(const SymBitVec<W1, S1>& high,
-                        const SymBitVec<W2, S2>& low) {
-  return SymUInt<W1 + W2>(z3::concat(high.expr(), low.expr()));
+namespace internal {
+
+// Normalize a concat argument to a z3::expr bit-vector.
+template <size_t W, bool S>
+z3::expr to_bv_expr(const SymBitVec<W, S>& val) {
+  return val.expr();
+}
+
+inline z3::expr to_bv_expr(const SymBool& b) { return as_uint1(b).expr(); }
+
+// Bit width of a symbolic type.
+template <typename T>
+struct sym_width;
+
+template <size_t W, bool S>
+struct sym_width<SymBitVec<W, S>> {
+  static constexpr size_t value = W;
+};
+
+template <>
+struct sym_width<SymBool> {
+  static constexpr size_t value = 1;
+};
+
+template <typename T>
+inline constexpr size_t sym_width_v = sym_width<T>::value;
+
+}  // namespace internal
+
+// concat(a, b): result width = width(a) + width(b), always SymUInt.
+// Accepts SymBitVec (any signedness) and SymBool operands.
+template <typename A, typename B>
+  requires(is_symbolic_v<A> && is_symbolic_v<B>)
+auto concat(const A& high, const B& low) {
+  constexpr size_t kResultWidth =
+      internal::sym_width_v<A> + internal::sym_width_v<B>;
+  return SymUInt<kResultWidth>(
+      z3::concat(internal::to_bv_expr(high), internal::to_bv_expr(low)));
 }
 
 // Variadic concat.
-template <size_t W1, bool S1, size_t W2, bool S2, typename... Rest>
-auto concat(const SymBitVec<W1, S1>& high, const SymBitVec<W2, S2>& next,
-            const Rest&... rest) {
+template <typename A, typename B, typename... Rest>
+  requires(is_symbolic_v<A> && is_symbolic_v<B>)
+auto concat(const A& high, const B& next, const Rest&... rest) {
   return concat(concat(high, next), rest...);
 }
 

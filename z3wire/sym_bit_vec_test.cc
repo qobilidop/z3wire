@@ -499,6 +499,22 @@ TEST_F(SymBitVecTest, ConcatVariadic) {
   static_assert(decltype(result)::kWidth == 12);
 }
 
+TEST_F(SymBitVecTest, ConcatWithSymBool) {
+  SymBool flag(ctx_, "flag");
+  SymUInt<7> val(ctx_, "val");
+  auto result = concat(flag, val);
+
+  static_assert(decltype(result)::kWidth == 8);
+  static_assert(!decltype(result)::kIsSigned);
+
+  // flag=true (1), val=0x55 (1010101) -> 0xD5 (11010101)
+  z3::solver s(ctx_);
+  s.add(flag.expr());
+  s.add(val.expr() == ctx_.bv_val(0x55, 7));
+  s.add(result.expr() != ctx_.bv_val(0xD5, 8));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
 // --- shl ---
 
 TEST_F(SymBitVecTest, ShlConstant) {

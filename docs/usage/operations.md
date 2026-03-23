@@ -407,28 +407,26 @@ Offsets beyond the source width yield zero bits (zero-extension semantics).
 
 ### Concatenation
 
-Concatenate a variadic number of `SymUInt` or `SymSInt` inputs into a single
-`SymUInt`. The field packing order is always from MSB to LSB.
+Concatenate a variadic number of symbolic inputs (`SymUInt`, `SymSInt`, or
+`SymBool`) into a single `SymUInt`. The field packing order is always from MSB
+to LSB.
 
 Syntax: `concat(a, b, ...)`
 
 Typing rules:
 
 - Result type is always `SymUInt<W>`, where `W` is the sum of inputs' bit
-  widths.
+  widths. `SymBool` counts as 1 bit.
 
 Examples:
 
 ```cpp
-z3w::SymUInt<16> hi(ctx, "hi");
-z3w::SymUInt<16> lo(ctx, "lo");
+z3w::SymBool b(ctx, "b");
+z3w::SymUInt<7> u7(ctx, "u7");
+z3w::SymSInt<8> s8(ctx, "s8");
 
-z3w::SymUInt<32> r1 = z3w::concat(hi, lo);
-
-z3w::SymUInt<4> a(ctx, "a");
-z3w::SymUInt<4> b(ctx, "b");
-z3w::SymSInt<8> c(ctx, "c");
-z3w::SymUInt<16> r2 = z3w::concat(a, b, c);
+z3w::SymUInt<8> r1 = z3w::concat(b, u7);
+z3w::SymUInt<16> r2 = z3w::concat(b, u7, s8);
 ```
 
 ## Conditional selection
