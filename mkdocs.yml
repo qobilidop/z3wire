@@ -48,7 +48,7 @@ nav:
       - Type Conversions: usage/type-conversions.md
       - Operations: usage/operations.md
   - Design:
-      - Principles: design/principles.md
+      - Philosophy: design/philosophy.md
       - Compile-Fail Tests: design/compile-fail-tests.md
   - Development:
       - Guide: dev/guide.md

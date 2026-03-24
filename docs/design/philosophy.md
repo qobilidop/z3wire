@@ -1,4 +1,4 @@
-# Design Principles
+# Design Philosophy
 
 ## Motivation
 
