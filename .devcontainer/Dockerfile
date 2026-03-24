@@ -46,29 +46,6 @@ RUN git clone --depth 1 --branch ${GOOGLETEST_VERSION} \
     cmake --install /tmp/googletest/build && \
     rm -rf /tmp/googletest
 
-# Abseil for CMake. Must be installed before Protobuf. Keep version in sync with MODULE.bazel.
-ARG ABSEIL_VERSION=20260107.1
-RUN git clone --depth 1 --branch ${ABSEIL_VERSION} \
-      https://github.com/abseil/abseil-cpp.git /tmp/abseil && \
-    cmake -S /tmp/abseil -B /tmp/abseil/build \
-      -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20 \
-      -DABSL_PROPAGATE_CXX_STD=ON -DABSL_BUILD_TESTING=OFF && \
-    cmake --build /tmp/abseil/build -j$(nproc) && \
-    cmake --install /tmp/abseil/build && \
-    rm -rf /tmp/abseil
-
-# Protobuf for CMake. Keep version in sync with MODULE.bazel.
-ARG PROTOBUF_VERSION=v34.0
-RUN git clone --depth 1 --branch ${PROTOBUF_VERSION} \
-      https://github.com/protocolbuffers/protobuf.git /tmp/protobuf && \
-    cmake -S /tmp/protobuf -B /tmp/protobuf/build \
-      -DCMAKE_BUILD_TYPE=Release -Dprotobuf_BUILD_TESTS=OFF \
-      -Dprotobuf_ABSL_PROVIDER=package \
-      -DCMAKE_CXX_STANDARD=20 && \
-    cmake --build /tmp/protobuf/build -j$(nproc) && \
-    cmake --install /tmp/protobuf/build && \
-    rm -rf /tmp/protobuf
-
 # Bazelisk as "bazel".
 ARG BAZELISK_VERSION=v1.28.1
 RUN ARCH=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/') && \

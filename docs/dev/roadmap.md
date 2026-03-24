@@ -29,23 +29,6 @@ Future directions for Z3Wire.
 - **vcpkg port** — Submit a port to the vcpkg registry so CMake users can depend
     on Z3Wire via `vcpkg.json`. Z3 already has a vcpkg port, so the dependency
     chain is straightforward.
-- **Publish Weave to PyPI** — Package the Weave codegen tool for `pip install`.
-    Separate from the C++ library since Weave is a development-time tool, not a
-    runtime dependency.
-
-## Weave
-
-- **`Unpack()`** — Construct a symbolic struct from a flat bit-vector using
-    `extract`.
-- **Use `map` for repeated fields in proto** — Register arrays generate
-    `repeated` proto fields today, which serialize every element including
-    zeros. Switch to `map<uint32, RegType>` so only non-default entries are
-    serialized. The C++ struct side stays as `std::array` (dense); the map is
-    purely a serialization optimization.
-- **Multi-file wire specs** — Support `include` directives so one wire spec can
-    reference types from another. Requires dependency resolution in the
-    resolver, cross-file `#include` generation, include search paths (`-I`
-    flag), and a proper Bazel rule to handle transitive deps.
 
 ## Ergonomics
 

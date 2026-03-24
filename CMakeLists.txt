@@ -20,8 +20,3 @@ include(CTest)
 
 add_subdirectory(z3wire)
 add_subdirectory(examples)
-
-option(Z3WIRE_BUILD_WEAVE "Build the Weave code generator" OFF)
-if(Z3WIRE_BUILD_WEAVE)
-    add_subdirectory(z3wire_weave)
-endif()

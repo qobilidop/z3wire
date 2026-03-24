@@ -6,15 +6,11 @@ cd "$(git rev-parse --show-toplevel)"
 
 # --- C++ ---
 
-# Generate compile_commands.json and build the proto target (needed for wire_spec.pb.h).
-cmake -B build -DZ3WIRE_BUILD_WEAVE=ON >/dev/null 2>&1
-cmake --build build --target z3wire_wire_spec_proto >/dev/null 2>&1
+# Generate compile_commands.json.
+cmake -B build >/dev/null 2>&1
 cp build/compile_commands.json compile_commands.json
 
-files=$(find z3wire z3wire_weave examples -name '*.h' -o -name '*.cc' |
-  grep -v '\.expected\.' |
-  grep -v 'examples/weave/status_register_test\.cc' |
-  grep -v 'examples/weave/status_register_verification\.cc')
+files=$(find z3wire examples -name '*.h' -o -name '*.cc')
 
 echo "$files" | xargs --no-run-if-empty clang-tidy -p .
 status=$?
