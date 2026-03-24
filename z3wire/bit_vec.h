@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <span>
 #include <tuple>
 #include <type_traits>
 
@@ -87,25 +88,42 @@ class BitVec {
     }
   }
 
-  // Runtime checked construction from byte array (W > 64 only).
-  // Returns {result, truncated} where truncated indicates unused high bits
-  // were non-zero.
+  // Runtime checked construction from byte span (W > 64 only).
+  // Interprets bytes as little-endian. Shorter spans are zero-padded, longer
+  // spans are truncated. Returns {result, truncated} where truncated indicates
+  // information was lost.
   template <size_t Dummy = W>
     requires(Dummy > 64 && Dummy == W)
   [[nodiscard]] static std::tuple<BitVec, bool> FromValue(
-      const std::array<uint8_t, kNumBytes>& bytes) {
+      std::span<const uint8_t> bytes) {
     BitVec result;
-    result.value_ = bytes;
+    bool truncated = false;
+
+    // Copy bytes that fit.
+    size_t copy_len = std::min(bytes.size(), kNumBytes);
+    for (size_t i = 0; i < copy_len; ++i) {
+      result.value_[i] = bytes[i];
+    }
+
+    // Check extra bytes beyond kNumBytes for truncation.
+    for (size_t i = kNumBytes; i < bytes.size(); ++i) {
+      if (bytes[i] != 0) {
+        truncated = true;
+        break;
+      }
+    }
+
     // Mask unused bits in the high byte.
     constexpr size_t used_bits = W % 8;
     if constexpr (used_bits != 0) {
       constexpr uint8_t mask = (uint8_t{1} << used_bits) - 1;
-      bool truncated = (bytes[kNumBytes - 1] & ~mask) != 0;
+      if (result.value_[kNumBytes - 1] & ~mask) {
+        truncated = true;
+      }
       result.value_[kNumBytes - 1] &= mask;
-      return {result, truncated};
-    } else {
-      return {result, false};
     }
+
+    return {result, truncated};
   }
 
   // Access the stored value.

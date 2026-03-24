@@ -283,6 +283,36 @@ TEST(BitVecTest, WideCheckedFromBytesExactFit) {
   EXPECT_EQ(val.value(), bytes);
 }
 
+TEST(BitVecTest, WideCheckedFromShorterSpan) {
+  // UInt<128>: 16 bytes. Pass only 2 bytes — rest should be zero-padded.
+  std::array<uint8_t, 2> bytes{0xAB, 0xCD};
+  auto [val, truncated] = UInt<128>::FromValue(bytes);
+  EXPECT_FALSE(truncated);
+  auto result = val.value();
+  EXPECT_EQ(result[0], 0xAB);
+  EXPECT_EQ(result[1], 0xCD);
+  for (size_t i = 2; i < 16; ++i) {
+    EXPECT_EQ(result[i], 0);
+  }
+}
+
+TEST(BitVecTest, WideCheckedFromLongerSpanNoTruncation) {
+  // UInt<128>: 16 bytes. Pass 20 bytes with trailing zeros — no truncation.
+  std::array<uint8_t, 20> bytes{};
+  bytes[0] = 0xFF;
+  auto [val, truncated] = UInt<128>::FromValue(bytes);
+  EXPECT_FALSE(truncated);
+  EXPECT_EQ(val.value()[0], 0xFF);
+}
+
+TEST(BitVecTest, WideCheckedFromLongerSpanWithTruncation) {
+  // UInt<128>: 16 bytes. Pass 20 bytes with non-zero extra — truncation.
+  std::array<uint8_t, 20> bytes{};
+  bytes[18] = 0x01;
+  auto [val, truncated] = UInt<128>::FromValue(bytes);
+  EXPECT_TRUE(truncated);
+}
+
 TEST(BitVecTest, WideEquality) {
   auto a = UInt<128>::Literal<42>();
   auto b = UInt<128>::Literal<42>();
