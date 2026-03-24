@@ -92,10 +92,10 @@ class BitVec {
   // Interprets bytes as little-endian. Shorter spans are zero-padded, longer
   // spans are truncated. Returns {result, truncated} where truncated indicates
   // information was lost.
-  template <size_t Dummy = W>
-    requires(Dummy > 64 && Dummy == W)
   [[nodiscard]] static std::tuple<BitVec, bool> FromValue(
-      std::span<const uint8_t> bytes) {
+      std::span<const uint8_t> bytes)
+    requires(W > 64)
+  {
     BitVec result;
     bool truncated = false;
 
