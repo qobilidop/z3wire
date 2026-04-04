@@ -228,6 +228,17 @@ auto operator-(const SymBitVec<W1, S1>& lhs, const SymBitVec<W2, S2>& rhs) {
   return SymBitVec<kResultWidth, true>(lhs_ext - rhs_ext);
 }
 
+// Multiplication: result width = W1 + W2 (full product). Result is signed if
+// either operand is signed.
+template <size_t W1, bool S1, size_t W2, bool S2>
+auto operator*(const SymBitVec<W1, S1>& lhs, const SymBitVec<W2, S2>& rhs) {
+  constexpr size_t kResultWidth = W1 + W2;
+  constexpr bool kResultSigned = S1 || S2;
+  auto lhs_ext = internal::extend<kResultWidth, W1, S1>(lhs);
+  auto rhs_ext = internal::extend<kResultWidth, W2, S2>(rhs);
+  return SymBitVec<kResultWidth, kResultSigned>(lhs_ext * rhs_ext);
+}
+
 // --- Unary negate (bit-growth) ---
 // Result width = W + 1, always signed. Consistent with binary subtraction.
 

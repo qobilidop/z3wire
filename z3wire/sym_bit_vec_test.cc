@@ -237,6 +237,48 @@ TEST_F(SymBitVecTest, AdditionMixedSignedness) {
   static_assert(decltype(sum)::kIsSigned);
 }
 
+// --- Multiplication with bit growth ---
+
+TEST_F(SymBitVecTest, MultiplicationWidens) {
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<8> b(ctx_, "b");
+  auto product = a * b;
+
+  // Result width = 8 + 8 = 16.
+  static_assert(decltype(product)::kWidth == 16);
+  static_assert(!decltype(product)::kIsSigned);
+  EXPECT_EQ(product.expr().get_sort().bv_size(), 16);
+}
+
+TEST_F(SymBitVecTest, MultiplicationDifferentWidths) {
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<4> b(ctx_, "b");
+  auto product = a * b;
+
+  // Result width = 8 + 4 = 12.
+  static_assert(decltype(product)::kWidth == 12);
+  static_assert(!decltype(product)::kIsSigned);
+}
+
+TEST_F(SymBitVecTest, MultiplicationSignedResult) {
+  SymSInt<8> a(ctx_, "a");
+  SymSInt<8> b(ctx_, "b");
+  auto product = a * b;
+
+  static_assert(decltype(product)::kWidth == 16);
+  static_assert(decltype(product)::kIsSigned);
+}
+
+TEST_F(SymBitVecTest, MultiplicationMixedSignedness) {
+  SymUInt<4> a(ctx_, "a");
+  SymSInt<4> b(ctx_, "b");
+  auto product = a * b;
+
+  // ui<4> * si<4> -> si<8>, signed if either is signed.
+  static_assert(decltype(product)::kWidth == 8);
+  static_assert(decltype(product)::kIsSigned);
+}
+
 // --- ite ---
 
 TEST_F(SymBitVecTest, Ite) {
