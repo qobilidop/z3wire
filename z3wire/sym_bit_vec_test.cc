@@ -279,6 +279,46 @@ TEST_F(SymBitVecTest, MultiplicationMixedSignedness) {
   static_assert(decltype(product)::kIsSigned);
 }
 
+TEST_F(SymBitVecTest, MultiplicationCorrectValue) {
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<8> b(ctx_, "b");
+  auto product = a * b;
+
+  // 15 * 15 = 225.
+  z3::solver s(ctx_);
+  s.add(a.expr() == ctx_.bv_val(15, 8));
+  s.add(b.expr() == ctx_.bv_val(15, 8));
+  s.add(product.expr() != ctx_.bv_val(225, 16));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(SymBitVecTest, MultiplicationNoOverflow) {
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<8> b(ctx_, "b");
+  auto product = a * b;
+
+  // 255 * 255 = 65025, which fits in 16 bits.
+  z3::solver s(ctx_);
+  s.add(a.expr() == ctx_.bv_val(255, 8));
+  s.add(b.expr() == ctx_.bv_val(255, 8));
+  s.add(product.expr() != ctx_.bv_val(65025, 16));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(SymBitVecTest, MultiplicationMixedSignednessCorrectValue) {
+  SymUInt<4> a(ctx_, "a");
+  SymSInt<4> b(ctx_, "b");
+  auto product = a * b;
+
+  // ui<4>(15) * si<4>(-2) = -30 in si<8>.
+  z3::solver s(ctx_);
+  s.add(a.expr() == ctx_.bv_val(15, 4));
+  s.add(b.expr() == ctx_.bv_val(14, 4));  // -2 in 4-bit two's complement
+  // -30 in 8-bit two's complement = 256 - 30 = 226.
+  s.add(product.expr() != ctx_.bv_val(226, 8));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
 // --- ite ---
 
 TEST_F(SymBitVecTest, Ite) {
