@@ -318,6 +318,13 @@ auto operator-(const L& lhs, const R& rhs) {
 
 template <typename L, typename R>
   requires mixed_operands<L, R>
+auto operator*(const L& lhs, const R& rhs) {
+  auto& ctx = internal::get_ctx(lhs, rhs);
+  return internal::promote(lhs, ctx) * internal::promote(rhs, ctx);
+}
+
+template <typename L, typename R>
+  requires mixed_operands<L, R>
 auto operator&(const L& lhs, const R& rhs) {
   auto& ctx = internal::get_ctx(lhs, rhs);
   return internal::promote(lhs, ctx) & internal::promote(rhs, ctx);

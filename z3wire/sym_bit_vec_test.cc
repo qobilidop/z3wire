@@ -1095,6 +1095,29 @@ TEST_F(SymBitVecTest, MixedAddDifferentWidths) {
   static_assert(decltype(result)::kWidth == 9);
 }
 
+TEST_F(SymBitVecTest, MixedMulSymbolicTimesConcrete) {
+  SymUInt<8> sym(ctx_, "x");
+  auto conc = UInt<8>::Literal<15>();
+  auto result = sym * conc;
+
+  static_assert(decltype(result)::kWidth == 16);
+  static_assert(is_symbolic_v<decltype(result)>);
+
+  z3::solver s(ctx_);
+  s.add(sym.expr() == ctx_.bv_val(15, 8));
+  s.add(result.expr() != ctx_.bv_val(225, 16));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(SymBitVecTest, MixedMulConcreteTimesSymbolic) {
+  auto conc = UInt<8>::Literal<15>();
+  SymUInt<8> sym(ctx_, "x");
+  auto result = conc * sym;
+
+  static_assert(decltype(result)::kWidth == 16);
+  static_assert(is_symbolic_v<decltype(result)>);
+}
+
 // --- Mixed bitwise ---
 
 TEST_F(SymBitVecTest, MixedBitwiseAnd) {
