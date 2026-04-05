@@ -20,7 +20,6 @@ tests/
   fuzz/              Fuzz tests
 
 docs/                MkDocs documentation source
-  design/            Design rationale and decisions
   usage/             API usage guides
   dev/               Development guides (this directory)
 

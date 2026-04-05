@@ -47,9 +47,6 @@ nav:
       - Types: usage/types.md
       - Type Conversions: usage/type-conversions.md
       - Operations: usage/operations.md
-  - Design:
-      - Philosophy: design/philosophy.md
-      - Compile-Fail Tests: design/compile-fail-tests.md
   - Development:
       - Index: dev/index.md
       - North Star: dev/north_star.md
