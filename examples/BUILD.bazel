@@ -25,6 +25,12 @@ cc_binary(
 )
 
 cc_binary(
+    name = "multiplier",
+    srcs = ["multiplier.cc"],
+    deps = ["//z3wire:sym_bit_vec"],
+)
+
+cc_binary(
     name = "midpoint_overflow",
     srcs = ["midpoint_overflow.cc"],
     deps = ["//z3wire:sym_bit_vec"],

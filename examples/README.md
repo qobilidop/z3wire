@@ -7,6 +7,7 @@ does and how to run it.
 | -------------------------------------------- | ------------------------------------------------------------------------ |
 | [adder.cc](adder.cc)                         | Prove a gate-level ripple-carry adder matches intended semantics         |
 | [barrel_shifter.cc](barrel_shifter.cc)       | Prove a gate-level barrel shifter matches intended semantics             |
+| [multiplier.cc](multiplier.cc)               | Prove a gate-level array multiplier matches intended semantics           |
 | [alu.cc](alu.cc)                             | Model a simple 4-operation ALU and verify its properties                 |
 | [bit_manipulation.cc](bit_manipulation.cc)   | Extract, concat, and shift operations on a 16-bit instruction word       |
 | [midpoint_overflow.cc](midpoint_overflow.cc) | Prove the classic binary search midpoint bug and verify the bit-hack fix |
