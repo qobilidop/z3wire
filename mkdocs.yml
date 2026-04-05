@@ -51,5 +51,11 @@ nav:
       - Philosophy: design/philosophy.md
       - Compile-Fail Tests: design/compile-fail-tests.md
   - Development:
-      - Guide: dev/guide.md
+      - Index: dev/index.md
+      - North Star: dev/north_star.md
       - Roadmap: dev/roadmap.md
+      - Architecture: dev/architecture.md
+      - Setup: dev/setup.md
+      - Commands: dev/commands.md
+      - Style: dev/style.md
+      - Workflow: dev/workflow.md

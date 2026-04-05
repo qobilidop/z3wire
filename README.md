@@ -71,7 +71,7 @@ for the full example.
 ## Getting started
 
 To run the quick example yourself, make sure you have
-[Docker and Dev Container CLI](https://qobilidop.github.io/z3wire/dev/guide/#prerequisites),
+[Docker and Dev Container CLI](https://qobilidop.github.io/z3wire/dev/setup/#prerequisites),
 then:
 
 ```sh

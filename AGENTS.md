@@ -15,6 +15,13 @@
 expect them to persist across sessions. Durable artifacts belong in code, tests,
 or `docs/`.
 
-## Development guide
+## Development docs
 
-@docs/dev/guide.md
+<!-- dprint-ignore -->
+@docs/dev/index.md
+@docs/dev/north_star.md
+@docs/dev/architecture.md
+@docs/dev/commands.md
+@docs/dev/style.md
+@docs/dev/workflow.md
+@docs/dev/roadmap.md

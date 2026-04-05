@@ -1,12 +1,15 @@
 # Roadmap
 
-Future directions for Z3Wire.
+**Current state:** Core type system is complete (SymBool, SymUInt, SymSInt,
+Bool, UInt, SInt). Implemented operations: logical, bitwise, comparison,
+addition, subtraction, unary negation, multiplication, shifting, rotation,
+extract, replace, concat, ite. Three-tier casting and wide concrete types (W >
+64\) are done. See [north_star.md](north_star.md) for what remains.
 
-## Operations
+## What's next
 
-- **Multiply** (`*`) — Fundamental operation supported by all SMT bit-vector
-    libraries. Design question: bit-growth semantics (result width = `W1 + W2`?)
-    vs same-width with overflow detection.
+### Operations
+
 - **Division and remainder** (`/`, `%`) — `udiv`, `sdiv`, `urem`, `srem`.
     Signedness-aware type system makes the API design interesting: signed vs
     unsigned division can be selected by operand types rather than separate
@@ -20,7 +23,7 @@ Future directions for Z3Wire.
     `SymUInt<1>` and `SymBool` (e.g., direct comparison), while respecting the
     "explicit over implicit" principle. Defer until real usage patterns emerge.
 
-## Release and distribution
+### Release and distribution
 
 - **First release (v0.1.0)** — Tag a stable version so users can depend on a
     snapshot rather than tracking `main`.
@@ -30,7 +33,7 @@ Future directions for Z3Wire.
     on Z3Wire via `vcpkg.json`. Z3 already has a vcpkg port, so the dependency
     chain is straightforward.
 
-## Ergonomics
+### Ergonomics
 
 - **Solver interaction usage page** — Document where Z3Wire ends and raw Z3
     begins: `to_symbolic`, `to_concrete`, `.expr()`, and common solver patterns
@@ -58,7 +61,7 @@ Future directions for Z3Wire.
     return the clamped value (min or max of the range) instead of the low-W-bit
     truncation. Clamping is more meaningful for a data holder type.
 
-## Quality
+### Quality
 
 - **Improve test coverage** — Key gaps: signed (`SymSInt`/`SInt`) operations are
     under-tested across the board, W=1 and W=64 boundary cases are sparse, and
