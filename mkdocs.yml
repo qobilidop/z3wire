@@ -48,6 +48,9 @@ nav:
       - Types: usage/types.md
       - Type Conversions: usage/type-conversions.md
       - Operations: usage/operations.md
+  - Design:
+      - design/index.md
+      - Lossless Auto-Promotion: design/lossless-auto-promotion.md
   - Development:
       - dev/index.md
       - North Star: dev/north_star.md
