@@ -1,4 +1,4 @@
-# Bool vs UInt\<1>
+# Bool vs `UInt<1>`
 
 Why `Bool`/`SymBool` and `UInt<1>`/`SymUInt<1>` are separate types with explicit
 conversion, despite having the same number of values.

@@ -51,7 +51,7 @@ nav:
   - Design:
       - design/index.md
       - Concrete Types: design/concrete-types.md
-      - Bool vs UInt<1>: design/bool-vs-uint1.md
+      - "Bool vs UInt<1>": design/bool-vs-uint1.md
       - Lossless Auto-Promotion: design/lossless-auto-promotion.md
       - Three-Tier Casting: design/three-tier-casting.md
       - Mathematical Comparison: design/mathematical-comparison.md

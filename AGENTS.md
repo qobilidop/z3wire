@@ -7,6 +7,10 @@
 expect them to persist across sessions. Durable artifacts belong in code, tests,
 or docs.
 
+## Design docs
+
+@docs/design/index.md
+
 ## Development docs
 
 <!-- dprint-ignore -->
