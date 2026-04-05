@@ -51,6 +51,7 @@ nav:
   - Design:
       - design/index.md
       - Lossless Auto-Promotion: design/lossless-auto-promotion.md
+      - Mathematical Comparison: design/mathematical-comparison.md
   - Development:
       - dev/index.md
       - North Star: dev/north_star.md
