@@ -46,6 +46,7 @@ nav:
   - Getting Started: getting-started.md
   - Examples: https://github.com/qobilidop/z3wire/tree/main/examples
   - Usage:
+      - usage/index.md
       - Types: usage/types.md
       - Type Conversions: usage/type-conversions.md
       - Operations: usage/operations.md
