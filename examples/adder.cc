@@ -1,5 +1,5 @@
-// Prove that a gate-level ripple-carry adder matches Z3Wire's bit-growth
-// arithmetic for all 8-bit inputs.
+// Prove that a gate-level ripple-carry adder matches intended semantics
+// expressed in Z3Wire, for all 8-bit inputs.
 //
 // The hardware implementation builds an 8-bit adder from half adders and full
 // adders using single-bit logic gates - the same structure a Verilog designer
@@ -85,7 +85,7 @@ int main() {
   solver.add((hw_sum != spec_sum || hw_carry != spec_carry).expr());
 
   if (solver.check() == z3::unsat) {
-    std::cout << "Verified: ripple-carry adder matches bit-growth arithmetic "
+    std::cout << "Verified: ripple-carry adder matches intended semantics "
                  "for all 8-bit inputs.\n";
   } else {
     std::cout << "Bug found! Counter-example:\n";
