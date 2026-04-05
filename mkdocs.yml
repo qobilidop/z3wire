@@ -53,6 +53,8 @@ nav:
       - Lossless Auto-Promotion: design/lossless-auto-promotion.md
       - Mathematical Comparison: design/mathematical-comparison.md
       - Bit-Growth Arithmetic: design/bit-growth-arithmetic.md
+      - Bool vs UInt<1>: design/bool-vs-uint1.md
+      - Three-Tier Casting: design/three-tier-casting.md
   - Development:
       - dev/index.md
       - North Star: dev/north_star.md
