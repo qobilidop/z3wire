@@ -43,6 +43,7 @@ markdown_extensions:
 
 nav:
   - Home: index.md
+  - Getting Started: getting-started.md
   - Examples: https://github.com/qobilidop/z3wire/tree/main/examples
   - Usage:
       - Types: usage/types.md
