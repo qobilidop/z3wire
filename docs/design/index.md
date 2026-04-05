@@ -7,3 +7,5 @@ space, the reasoning behind the decisions made, and alternatives considered.
     happen implicitly, which require explicit casts, and why
 - [Mathematical Comparison](mathematical-comparison.md) — why comparisons
     operate on mathematical values rather than requiring matching types
+- [Bit-Growth Arithmetic](bit-growth-arithmetic.md) — why arithmetic and left
+    shift widen their result types instead of wrapping
