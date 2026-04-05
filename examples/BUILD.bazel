@@ -7,18 +7,6 @@ cc_binary(
 )
 
 cc_binary(
-    name = "alu",
-    srcs = ["alu.cc"],
-    deps = ["//z3wire:sym_bit_vec"],
-)
-
-cc_binary(
-    name = "bit_manipulation",
-    srcs = ["bit_manipulation.cc"],
-    deps = ["//z3wire:sym_bit_vec"],
-)
-
-cc_binary(
     name = "packet_gen",
     srcs = ["packet_gen.cc"],
     deps = ["//z3wire:sym_bit_vec"],
