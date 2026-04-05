@@ -14,6 +14,7 @@
 
 #include <z3++.h>
 
+#include "z3wire/bit_vec.h"
 #include "z3wire/sym_bit_vec.h"
 
 // Print a Z3 bit-vector model value as a hex string (no prefix).
@@ -81,24 +82,23 @@ int main() {
     z3::solver solver(ctx);
 
     // Ethernet: EtherType = 0x0800 (IPv4).
-    solver.add((ethertype == z3w::SymUInt<16>::Literal<0x0800>(ctx)).expr());
+    solver.add((ethertype == z3w::UInt<16>::Literal<0x0800>()).expr());
 
     // IPv4 header constraints.
-    solver.add((version == z3w::SymUInt<4>::Literal<4>(ctx)).expr());
-    solver.add((ipv4_ihl == z3w::SymUInt<4>::Literal<5>(ctx)).expr());
-    solver.add((ipv4_dscp_ecn == z3w::SymUInt<8>::Literal<0>(ctx)).expr());
+    solver.add((version == z3w::UInt<4>::Literal<4>()).expr());
+    solver.add((ipv4_ihl == z3w::UInt<4>::Literal<5>()).expr());
+    solver.add((ipv4_dscp_ecn == z3w::UInt<8>::Literal<0>()).expr());
     // Total length = 40 (20-byte header + 20 bytes remaining).
-    solver.add((ipv4_total_len == z3w::SymUInt<16>::Literal<40>(ctx)).expr());
-    solver.add((ipv4_id == z3w::SymUInt<16>::Literal<0>(ctx)).expr());
-    solver.add((ipv4_flags_frag == z3w::SymUInt<16>::Literal<0>(ctx)).expr());
+    solver.add((ipv4_total_len == z3w::UInt<16>::Literal<40>()).expr());
+    solver.add((ipv4_id == z3w::UInt<16>::Literal<0>()).expr());
+    solver.add((ipv4_flags_frag == z3w::UInt<16>::Literal<0>()).expr());
     // Protocol = 253 (experimental/testing, RFC 3692).
-    solver.add((ipv4_protocol == z3w::SymUInt<8>::Literal<253>(ctx)).expr());
-    solver.add((ipv4_checksum == z3w::SymUInt<16>::Literal<0>(ctx)).expr());
+    solver.add((ipv4_protocol == z3w::UInt<8>::Literal<253>()).expr());
+    solver.add((ipv4_checksum == z3w::UInt<16>::Literal<0>()).expr());
 
     // Interesting constraint: dst in 10.0.0.0/8, TTL > 0.
-    solver.add(
-        (ipv4_dst_first_octet == z3w::SymUInt<8>::Literal<10>(ctx)).expr());
-    solver.add((ipv4_ttl > z3w::SymUInt<8>::Literal<0>(ctx)).expr());
+    solver.add((ipv4_dst_first_octet == z3w::UInt<8>::Literal<10>()).expr());
+    solver.add((ipv4_ttl > z3w::UInt<8>::Literal<0>()).expr());
 
     if (solver.check() == z3::sat) {
       auto model = solver.get_model();
@@ -114,17 +114,17 @@ int main() {
     z3::solver solver(ctx);
 
     // Ethernet: EtherType = 0x86DD (IPv6).
-    solver.add((ethertype == z3w::SymUInt<16>::Literal<0x86DD>(ctx)).expr());
+    solver.add((ethertype == z3w::UInt<16>::Literal<0x86DD>()).expr());
 
     // IPv6 header constraints.
-    solver.add((version == z3w::SymUInt<4>::Literal<6>(ctx)).expr());
-    solver.add((ipv6_traffic_flow == z3w::SymUInt<28>::Literal<0>(ctx)).expr());
+    solver.add((version == z3w::UInt<4>::Literal<6>()).expr());
+    solver.add((ipv6_traffic_flow == z3w::UInt<28>::Literal<0>()).expr());
     // Payload length = 0 (header only).
-    solver.add((ipv6_payload_len == z3w::SymUInt<16>::Literal<0>(ctx)).expr());
+    solver.add((ipv6_payload_len == z3w::UInt<16>::Literal<0>()).expr());
     // Next header = 59 (No Next Header).
-    solver.add((ipv6_next_header == z3w::SymUInt<8>::Literal<59>(ctx)).expr());
+    solver.add((ipv6_next_header == z3w::UInt<8>::Literal<59>()).expr());
     // Hop limit > 0.
-    solver.add((ipv6_hop_limit > z3w::SymUInt<8>::Literal<0>(ctx)).expr());
+    solver.add((ipv6_hop_limit > z3w::UInt<8>::Literal<0>()).expr());
 
     if (solver.check() == z3::sat) {
       auto model = solver.get_model();

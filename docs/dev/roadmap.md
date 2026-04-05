@@ -31,9 +31,14 @@
     begins: `to_symbolic`, `to_concrete`, `.expr()`, and common solver patterns
     (assert, check, model extraction).
 
-- **Shorter literal construction** — `SymUInt<2>::Literal<0>(ctx)` is verbose
-    for a common operation. Consider a free-function shorthand (e.g.,
-    `z3w::lit<SymUInt<2>, 0>(ctx)`) or dedicated helpers.
+- **Compare symbolic bit-vectors with native integers** — Allow
+    `ethertype == 0x0800` instead of `ethertype == UInt<16>::Literal<0x0800>()`.
+    The native integer converts losslessly to a `BitVec` at its native width,
+    then the existing auto-widening comparison handles the rest. No lossy
+    conversion occurs at any point. Scoped to comparisons only (`==`, `!=`, `<`,
+    `<=`, `>`, `>=`) since arithmetic and bitwise with raw integers would
+    produce surprising result types. Blocked on a broader review of the
+    auto-promotion strategy.
 
 - **Symbolic struct construction helpers** — Creating structs of symbolic types
     requires threading `z3::context&` through every field. Investigate
