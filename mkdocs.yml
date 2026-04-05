@@ -22,6 +22,7 @@ theme:
         name: Switch to light mode
   features:
     - content.code.copy
+    - navigation.indexes
     - navigation.sections
     - navigation.expand
     - toc.follow
@@ -48,7 +49,7 @@ nav:
       - Type Conversions: usage/type-conversions.md
       - Operations: usage/operations.md
   - Development:
-      - Index: dev/index.md
+      - dev/index.md
       - North Star: dev/north_star.md
       - Roadmap: dev/roadmap.md
       - Architecture: dev/architecture.md

@@ -1,3 +1,6 @@
+# Agent scratch space
+/.agent_scratch/
+
 # Bazel
 /bazel-*
 /.bazel-disk-cache/
@@ -15,6 +18,3 @@ MODULE.bazel.lock
 
 # MkDocs
 /site/
-
-# Superpowers
-/docs/superpowers/

@@ -1,14 +1,6 @@
 # Roadmap
 
-**Current state:** Core type system is complete (SymBool, SymUInt, SymSInt,
-Bool, UInt, SInt). Implemented operations: logical, bitwise, comparison,
-addition, subtraction, unary negation, multiplication, shifting, rotation,
-extract, replace, concat, ite. Three-tier casting and wide concrete types (W >
-64\) are done. See [north_star.md](north_star.md) for what remains.
-
-## What's next
-
-### Operations
+## Operations
 
 - **Division and remainder** (`/`, `%`) — `udiv`, `sdiv`, `urem`, `srem`.
     Signedness-aware type system makes the API design interesting: signed vs

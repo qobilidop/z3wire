@@ -1,13 +1,19 @@
 # Workflow
 
-## Test-driven development
+## Engineering principles
 
-We follow TDD. Write the failing test first, then the minimal implementation to
-make it pass.
+- **TDD** - Write the failing test first, then the minimal implementation to
+    make it pass.
+- **YAGNI** - Don't add features, abstractions, or configurability beyond what's
+    needed now.
+- **DAMP over DRY** - Prefer descriptive, self-contained code (especially in
+    tests) over aggressive deduplication.
+- **Local reasoning** - Each file and function should be understandable on its
+    own.
 
 ## Quality checks
 
-Before commit, ALWAYS run the following commands and fix any issues:
+Before commit, run the following commands and fix any issues:
 
 ```sh
 ./dev.sh bazel build //...
