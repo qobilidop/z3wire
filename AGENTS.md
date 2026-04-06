@@ -2,16 +2,10 @@
 
 ## Scratch space
 
-`.agent_scratch/` is gitignored and available for temporary working documents
-(implementation plans, specs in progress, etc.). These are ephemeral - don't
-expect them to persist across sessions. Durable artifacts belong in code, tests,
-or docs.
+Write all temporary files (plans, specs, drafts) to `.agent_scratch/`. It is
+gitignored. Never write temporary files to `docs/` or other tracked directories.
 
-## Design docs
-
-@docs/design/index.md
-
-## Development docs
+## Must reads
 
 <!-- dprint-ignore -->
 @docs/dev/index.md
@@ -21,3 +15,9 @@ or docs.
 @docs/dev/commands.md
 @docs/dev/style.md
 @docs/dev/workflow.md
+
+## Extra reference
+
+<!-- dprint-ignore -->
+@docs/design/index.md
+@docs/usage/index.md
