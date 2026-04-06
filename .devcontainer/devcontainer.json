@@ -11,6 +11,6 @@
     // Mount the Bazel cache as a Docker volume to speed up builds in the container.
     "source=bazel-cache,target=/home/dev/.cache/bazel,type=volume"
   ],
-  // Forward port 8000 for local MkDocs serving.
+  // Forward port 8000 for local docs serving.
   "forwardPorts": [8000]
 }

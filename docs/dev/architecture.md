@@ -19,7 +19,7 @@ tests/
     defs.bzl         Custom cc_compile_fail_test rule
   fuzz/              Fuzz tests
 
-docs/                MkDocs documentation source
+docs/                Zensical documentation source
   design/            Design decision records
   usage/             API usage guides
   dev/               Development guides (this directory)

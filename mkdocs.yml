@@ -27,9 +27,6 @@ theme:
     - navigation.expand
     - toc.follow
 
-plugins:
-  - include-markdown
-
 markdown_extensions:
   - admonition
   - pymdownx.details
@@ -37,6 +34,7 @@ markdown_extensions:
   - pymdownx.highlight:
       anchor_linenums: true
   - pymdownx.inlinehilite
+  - pymdownx.snippets
   - tables
   - toc:
       permalink: true

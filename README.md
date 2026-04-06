@@ -7,6 +7,7 @@
 [![Docs](https://github.com/qobilidop/z3wire/actions/workflows/docs.yml/badge.svg)](https://qobilidop.github.io/z3wire/)
 
 <!-- docs-start -->
+<!-- --8<-- [start:intro] -->
 
 Type-safe Z3 bit-vectors for hardware verification. C++20 and above.
 
@@ -67,4 +68,5 @@ Width, signedness, and overflow safety are all enforced at compile time.
 Visit [qobilidop.github.io/z3wire](https://qobilidop.github.io/z3wire/) for the
 full documentation.
 
+<!-- --8<-- [end:intro] -->
 <!-- docs-end -->

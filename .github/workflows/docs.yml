@@ -26,7 +26,7 @@ jobs:
         with:
           cacheFrom: ghcr.io/qobilidop/z3wire-dev
           push: never
-          runCmd: mkdocs build --strict
+          runCmd: zensical build
 
       - uses: actions/upload-pages-artifact@v4
         if: github.event_name == 'push'

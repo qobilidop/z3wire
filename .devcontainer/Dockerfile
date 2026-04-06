@@ -73,11 +73,10 @@ RUN ARCH=$(uname -m) && \
     cp /tmp/dprint/dprint /usr/local/bin/dprint && chmod +x /usr/local/bin/dprint && \
     rm -rf /tmp/dprint.zip /tmp/dprint
 
-# MkDocs and plugins for documentation.
-RUN pip3 install --break-system-packages \
+# Zensical for documentation, mdformat for Markdown formatting.
+RUN pip3 install --break-system-packages --ignore-installed \
     mdformat-mkdocs \
-    mkdocs-include-markdown-plugin \
-    mkdocs-material
+    zensical
 
 # Non-root user (Bazel discourages running as root).
 RUN useradd -m -s /bin/bash dev && \
