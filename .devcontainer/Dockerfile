@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libclang-rt-dev \
     make \
     python3 \
-    python3-pip \
+    python3-venv \
     shellcheck \
     unzip \
     && rm -rf /var/lib/apt/lists/*
@@ -73,8 +73,13 @@ RUN ARCH=$(uname -m) && \
     cp /tmp/dprint/dprint /usr/local/bin/dprint && chmod +x /usr/local/bin/dprint && \
     rm -rf /tmp/dprint.zip /tmp/dprint
 
+# uv for Python package management.
+ARG UV_VERSION=0.7.8
+RUN curl -fSL "https://astral.sh/uv/${UV_VERSION}/install.sh" | sh && \
+    mv /root/.local/bin/uv /usr/local/bin/uv
+
 # Zensical for documentation, mdformat for Markdown formatting.
-RUN pip3 install --break-system-packages --ignore-installed \
+RUN uv pip install --system --break-system-packages \
     mdformat-mkdocs \
     zensical
 
