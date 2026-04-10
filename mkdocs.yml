@@ -7,6 +7,8 @@ repo_name: qobilidop/z3wire
 
 theme:
   name: material
+  favicon: assets/z3wire_logo.svg
+  logo: assets/z3wire_logo.svg
   palette:
     - scheme: default
       primary: indigo

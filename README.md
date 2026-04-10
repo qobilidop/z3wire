@@ -1,10 +1,19 @@
-# Z3Wire
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/z3wire_logo_white.svg" width="128">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/z3wire_logo_black.svg" width="128">
+    <img alt="Z3Wire" src="docs/assets/z3wire_logo_black.svg" width="128">
+  </picture>
+</p>
+<p align="center">
+  <a href="https://github.com/qobilidop/z3wire/actions/workflows/devcontainer.yml"><img src="https://github.com/qobilidop/z3wire/actions/workflows/devcontainer.yml/badge.svg" alt="Dev Container"></a>
+  <a href="https://github.com/qobilidop/z3wire/actions/workflows/bazel.yml"><img src="https://github.com/qobilidop/z3wire/actions/workflows/bazel.yml/badge.svg" alt="Bazel"></a>
+  <a href="https://github.com/qobilidop/z3wire/actions/workflows/cmake.yml"><img src="https://github.com/qobilidop/z3wire/actions/workflows/cmake.yml/badge.svg" alt="CMake"></a>
+  <a href="https://github.com/qobilidop/z3wire/actions/workflows/lint.yml"><img src="https://github.com/qobilidop/z3wire/actions/workflows/lint.yml/badge.svg" alt="Lint"></a>
+  <a href="https://qobilidop.github.io/z3wire/"><img src="https://github.com/qobilidop/z3wire/actions/workflows/docs.yml/badge.svg" alt="Docs"></a>
+</p>
 
-[![Dev Container](https://github.com/qobilidop/z3wire/actions/workflows/devcontainer.yml/badge.svg)](https://github.com/qobilidop/z3wire/actions/workflows/devcontainer.yml)
-[![Bazel](https://github.com/qobilidop/z3wire/actions/workflows/bazel.yml/badge.svg)](https://github.com/qobilidop/z3wire/actions/workflows/bazel.yml)
-[![CMake](https://github.com/qobilidop/z3wire/actions/workflows/cmake.yml/badge.svg)](https://github.com/qobilidop/z3wire/actions/workflows/cmake.yml)
-[![Lint](https://github.com/qobilidop/z3wire/actions/workflows/lint.yml/badge.svg)](https://github.com/qobilidop/z3wire/actions/workflows/lint.yml)
-[![Docs](https://github.com/qobilidop/z3wire/actions/workflows/docs.yml/badge.svg)](https://qobilidop.github.io/z3wire/)
+# Z3Wire
 
 <!-- docs-start -->
 <!-- --8<-- [start:intro] -->
