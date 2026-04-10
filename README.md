@@ -18,10 +18,7 @@
 <!-- docs-start -->
 <!-- --8<-- [start:intro] -->
 
-Type-safe Z3 bit-vectors for hardware verification. C++20 and above.
-
-Named for the wires in digital circuits: single bits and fixed-width bundles,
-now type-safe.
+Compile-time safe bit-vectors for Z3.
 
 ## Why Z3Wire?
 

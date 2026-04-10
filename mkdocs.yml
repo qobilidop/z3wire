@@ -1,7 +1,5 @@
 site_name: Z3Wire
-site_description: >-
-  Z3 bit-vectors with compile-time type safety and explicit overflow.
-  For C++20 and above.
+site_description: Compile-time safe bit-vectors for Z3.
 repo_url: https://github.com/qobilidop/z3wire
 repo_name: qobilidop/z3wire
 
