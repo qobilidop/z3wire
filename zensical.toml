@@ -1,6 +1,6 @@
 [project]
 site_name = "Z3Wire"
-site_description = "Compile-time safe bit-vectors for Z3."
+site_description = "Compile-time type-safe bit-vectors for Z3."
 
 repo_url = "https://github.com/qobilidop/z3wire"
 repo_name = "qobilidop/z3wire"

@@ -18,7 +18,7 @@
 <!-- docs-start -->
 <!-- --8<-- [start:intro] -->
 
-Compile-time safe bit-vectors for Z3.
+Compile-time type-safe bit-vectors for Z3.
 
 ## Why Z3Wire?
 
