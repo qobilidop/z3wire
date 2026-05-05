@@ -4,6 +4,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <span>
 #include <type_traits>
 
 #include <gtest/gtest.h>
@@ -117,6 +118,89 @@ TEST(BitVecTest, SignedCheckedOverflowPositive) {
   auto [val, truncated] = SInt<8>::FromValue(200);
   EXPECT_TRUE(truncated);
 }
+
+// --- TryFrom (runtime, returns TryFromResult) ---
+
+TEST(BitVecTest, TryFromUnsignedFits) {
+  auto r = UInt<8>::TryFrom(200);
+  EXPECT_EQ(r.value.value(), 200);
+  EXPECT_FALSE(r.truncated);
+}
+
+TEST(BitVecTest, TryFromUnsignedTruncates) {
+  auto r = UInt<8>::TryFrom(300);
+  EXPECT_EQ(r.value.value(), 44);  // 300 & 0xFF
+  EXPECT_TRUE(r.truncated);
+}
+
+TEST(BitVecTest, TryFromSignedFits) {
+  auto r = SInt<8>::TryFrom(-128);
+  EXPECT_EQ(r.value.value(), -128);
+  EXPECT_FALSE(r.truncated);
+}
+
+TEST(BitVecTest, TryFromSignedTruncates) {
+  auto r = SInt<8>::TryFrom(200);
+  EXPECT_EQ(r.value.value(), -56);  // bits 1100 1000 reinterpreted
+  EXPECT_TRUE(r.truncated);
+}
+
+TEST(BitVecTest, TryFromWideFromInt) {
+  auto r = UInt<128>::TryFrom(uint64_t{0xDEADBEEF});
+  EXPECT_FALSE(r.truncated);
+  EXPECT_EQ(r.value.value()[0], 0xEF);
+  EXPECT_EQ(r.value.value()[1], 0xBE);
+  EXPECT_EQ(r.value.value()[2], 0xAD);
+  EXPECT_EQ(r.value.value()[3], 0xDE);
+}
+
+TEST(BitVecTest, TryFromWideFromBytes) {
+  std::array<uint8_t, 16> bytes = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66,
+                                   0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC,
+                                   0xDD, 0xEE, 0xFF, 0x00};
+  auto r = UInt<128>::TryFrom(std::span<const uint8_t>{bytes});
+  EXPECT_FALSE(r.truncated);
+  EXPECT_EQ(r.value.value()[0], 0x11);
+}
+
+// --- From (runtime, aborts on truncation) ---
+
+TEST(BitVecTest, FromUnsignedFits) {
+  auto v = UInt<8>::From(200);
+  EXPECT_EQ(v.value(), 200);
+}
+
+TEST(BitVecTest, FromSignedFits) {
+  auto v = SInt<8>::From(-128);
+  EXPECT_EQ(v.value(), -128);
+}
+
+TEST(BitVecTest, FromWideFromInt) {
+  auto v = UInt<128>::From(uint64_t{0xDEADBEEF});
+  EXPECT_EQ(v.value()[0], 0xEF);
+}
+
+TEST(BitVecTest, FromWideFromBytes) {
+  std::array<uint8_t, 16> bytes = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66,
+                                   0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC,
+                                   0xDD, 0xEE, 0xFF, 0x00};
+  auto v = UInt<128>::From(std::span<const uint8_t>{bytes});
+  EXPECT_EQ(v.value()[0], 0x11);
+}
+
+// NOLINTBEGIN(readability-function-cognitive-complexity)
+TEST(BitVecDeathTest, FromUnsignedAbortsOnTruncation) {
+  EXPECT_DEATH((void)UInt<8>::From(300), "construction value out of range");
+}
+
+TEST(BitVecDeathTest, FromSignedAbortsOnNegativeForUnsigned) {
+  EXPECT_DEATH((void)UInt<8>::From(-1), "construction value out of range");
+}
+
+TEST(BitVecDeathTest, FromSignedAbortsOnOverflow) {
+  EXPECT_DEATH((void)SInt<8>::From(200), "construction value out of range");
+}
+// NOLINTEND(readability-function-cognitive-complexity)
 
 // --- value() ---
 

@@ -11,6 +11,8 @@
 #include <tuple>
 #include <type_traits>
 
+#include "z3wire/check.h"
+
 namespace z3w {
 
 template <size_t W, bool IsSigned>
@@ -58,6 +60,48 @@ class BitVec {
                     "Literal value does not fit in bit-width.");
       return BitVec(static_cast<uint64_t>(Value));
     }
+  }
+
+  // Result of TryFrom — value plus a flag indicating whether the input was
+  // outside the representable range. On truncation, value holds the two's
+  // complement bit-truncated result (the same bit pattern hardware would
+  // produce on a narrowing store).
+  struct [[nodiscard]] TryFromResult {
+    BitVec value;
+    bool truncated;
+  };
+
+  // Runtime construction with truncation reporting. For W <= 64, accepts any
+  // std::integral type. For W > 64, also accepts a span of bytes
+  // (little-endian, zero-padded if shorter than W bits).
+  template <std::integral T>
+  [[nodiscard]] static TryFromResult TryFrom(T raw) {
+    auto [val, trunc] = FromValue(raw);
+    return {val, trunc};
+  }
+
+  [[nodiscard]] static TryFromResult TryFrom(std::span<const uint8_t> bytes)
+    requires(W > 64)
+  {
+    auto [val, trunc] = FromValue(bytes);
+    return {val, trunc};
+  }
+
+  // Runtime construction; aborts via Z3W_CHECK if the input is out of range.
+  // Use TryFrom to inspect failures instead.
+  template <std::integral T>
+  static BitVec From(T raw) {
+    auto r = TryFrom(raw);
+    Z3W_CHECK(!r.truncated) << "construction value out of range";
+    return r.value;
+  }
+
+  static BitVec From(std::span<const uint8_t> bytes)
+    requires(W > 64)
+  {
+    auto r = TryFrom(bytes);
+    Z3W_CHECK(!r.truncated) << "construction value out of range";
+    return r.value;
   }
 
   // Runtime checked construction. Returns {result, truncated}.
