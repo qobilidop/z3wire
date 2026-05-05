@@ -54,14 +54,20 @@ z3w::SymUInt<8> x(ctx, "x");
 solver.add(x.expr() > 0);  // Pass to Z3 solver directly
 ```
 
-To wrap a raw `z3::expr` back into a Z3Wire type, use `FromExpr`:
+To wrap a raw `z3::expr` back into a Z3Wire type, use `From` (aborts on a
+sort/width mismatch) or `TryFrom` (returns `std::optional`, nullopt on
+mismatch):
 
 ```cpp
 z3::expr raw = /* ... from Z3 API ... */;
 
-// Returns std::optional — nullopt if sort or width doesn't match.
-std::optional<z3w::SymUInt<8>> x = z3w::SymUInt<8>::FromExpr(raw);
-std::optional<z3w::SymBool> b = z3w::SymBool::FromExpr(raw);
+// Aborts on mismatch.
+auto x = z3w::SymUInt<8>::From(raw);
+auto b = z3w::SymBool::From(raw);
+
+// Non-aborting; returns std::nullopt on mismatch.
+std::optional<z3w::SymUInt<8>> opt_x = z3w::SymUInt<8>::TryFrom(raw);
+std::optional<z3w::SymBool> opt_b = z3w::SymBool::TryFrom(raw);
 ```
 
 !!! note
@@ -97,13 +103,15 @@ auto c = z3w::SInt<8>::Literal<127>();   // OK
 auto d = z3w::SInt<8>::Literal<128>();   // Compile error: value doesn't fit
 ```
 
-Runtime checked:
+Runtime construction. Use `From` to abort on truncation, or `TryFrom` to
+inspect:
 
 ```cpp
-auto [x, x_truncated] = z3w::UInt<8>::FromValue(300);
-// x.value() == 44, x_truncated == true
-auto [y, y_truncated] = z3w::UInt<8>::FromValue(200);
-// y.value() == 200, y_truncated == false
+auto x = z3w::UInt<8>::From(200);
+// x.value() == 200
+
+auto r = z3w::UInt<8>::TryFrom(300);
+// r.value.value() == 44, r.truncated == true (300 doesn't fit in 8 bits)
 ```
 
 Wide types (W > 64) store values as a byte array:
@@ -114,7 +122,9 @@ wide.value();  // std::array<uint8_t, 16>, little-endian
 
 // Construction from byte array:
 std::array<uint8_t, 16> bytes = { /* ... */ };
-auto [w, w_truncated] = z3w::UInt<128>::FromValue(bytes);
+auto w = z3w::UInt<128>::TryFrom(std::span<const uint8_t>{bytes});
+// w.value.value() is the constructed bit-vector, w.truncated indicates
+// whether high bytes were dropped.
 ```
 
 ### Value access
