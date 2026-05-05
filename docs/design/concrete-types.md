@@ -55,8 +55,9 @@ wrap to large unsigned values. Concrete types act as a firewall:
     `template <typename T>   Bool(T) = delete` explicitly rejects `int`,
     `double`, pointers, and everything else. In native C++, `bool b = 42`
     compiles silently.
-- **`BitVec`** — `Literal<V>()` range-checks at compile time. `FromValue(raw)`
-    returns a truncation flag at runtime. Neither silently narrows.
+- **`BitVec`** — `Literal<V>()` range-checks at compile time. `From(raw)`
+    aborts on truncation; `TryFrom(raw)` returns a truncation flag at runtime.
+    Neither silently narrows.
 - **No implicit widening** — `UInt<8>` doesn't implicitly convert to `UInt<16>`.
     Widening requires `safe_cast` or an explicit mixed operation.
 
@@ -86,7 +87,7 @@ reflects this:
 
 | What they do        | API                              |
 | ------------------- | -------------------------------- |
-| Hold a typed value  | `Literal<V>()`, `FromValue(raw)` |
+| Hold a typed value  | `Literal<V>()`, `From(raw)`, `TryFrom(raw)` |
 | Report their value  | `value()`                        |
 | Check equality      | `operator==`                     |
 | Promote to symbolic | `to_symbolic(val, ctx)`          |
