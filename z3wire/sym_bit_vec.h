@@ -134,12 +134,16 @@ BitVec<W, S> to_concrete(const SymBitVec<W, S>& symbolic,
           evaluated.extract(hi, lo).simplify().get_numeral_uint());
     }
 
-    return std::get<0>(BitVec<W, S>::FromValue(bytes));
+    return BitVec<W, S>::TryFrom(bytes).value;
   } else {
-    // Always extract as uint64 and let FromValue() handle sign interpretation.
+    // Always extract as uint64 and let TryFrom() handle sign interpretation.
     // get_numeral_int64() throws for W=64 signed values with the MSB set.
-    return std::get<0>(BitVec<W, S>::FromValue(
-        model.eval(symbolic.expr(), true).get_numeral_uint64()));
+    // Discard the truncated flag: Z3 always returns valid W-bit values; for
+    // signed types the uint64 representation can exceed the signed range while
+    // the bit pattern is still correct.
+    return BitVec<W, S>::TryFrom(
+               model.eval(symbolic.expr(), true).get_numeral_uint64())
+        .value;
   }
 }
 

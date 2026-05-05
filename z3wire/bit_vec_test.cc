@@ -78,45 +78,22 @@ TEST(BitVecTest, LiteralSignedNegative) {
   EXPECT_EQ(b.value(), -1);
 }
 
-// --- Checked construction ---
+// --- TryFrom (runtime, checked construction) ---
 
-TEST(BitVecTest, CheckedNoTruncation) {
-  auto [val, truncated] = UInt<8>::FromValue(200);
-  EXPECT_EQ(val.value(), 200);
-  EXPECT_FALSE(truncated);
+TEST(BitVecTest, TryFromUnsignedNegative) {
+  auto r = UInt<8>::TryFrom(-1);
+  EXPECT_TRUE(r.truncated);
 }
 
-TEST(BitVecTest, CheckedWithTruncation) {
-  auto [val, truncated] = UInt<8>::FromValue(300);
-  EXPECT_EQ(val.value(), 44);
-  EXPECT_TRUE(truncated);
+TEST(BitVecTest, TryFromSignedPositive) {
+  auto r = SInt<8>::TryFrom(127);
+  EXPECT_EQ(r.value.value(), 127);
+  EXPECT_FALSE(r.truncated);
 }
 
-TEST(BitVecTest, CheckedNegativeOnUnsigned) {
-  auto [val, truncated] = UInt<8>::FromValue(-1);
-  EXPECT_TRUE(truncated);
-}
-
-TEST(BitVecTest, SignedCheckedNoTruncation) {
-  auto [val, truncated] = SInt<8>::FromValue(-128);
-  EXPECT_EQ(val.value(), -128);
-  EXPECT_FALSE(truncated);
-}
-
-TEST(BitVecTest, SignedCheckedPositive) {
-  auto [val, truncated] = SInt<8>::FromValue(127);
-  EXPECT_EQ(val.value(), 127);
-  EXPECT_FALSE(truncated);
-}
-
-TEST(BitVecTest, SignedCheckedOverflowNegative) {
-  auto [val, truncated] = SInt<8>::FromValue(-200);
-  EXPECT_TRUE(truncated);
-}
-
-TEST(BitVecTest, SignedCheckedOverflowPositive) {
-  auto [val, truncated] = SInt<8>::FromValue(200);
-  EXPECT_TRUE(truncated);
+TEST(BitVecTest, TryFromSignedOverflowNegative) {
+  auto r = SInt<8>::TryFrom(-200);
+  EXPECT_TRUE(r.truncated);
 }
 
 // --- TryFrom (runtime, returns TryFromResult) ---
@@ -249,16 +226,16 @@ TEST(BitVecTest, Inequality) {
 
 // --- W=64 boundary ---
 
-TEST(BitVecTest, Width64Construction) {
-  auto [val, truncated] = UInt<64>::FromValue(UINT64_MAX);
-  EXPECT_EQ(val.value(), UINT64_MAX);
-  EXPECT_FALSE(truncated);
+TEST(BitVecTest, TryFromWidth64MaxValue) {
+  auto r = UInt<64>::TryFrom(UINT64_MAX);
+  EXPECT_EQ(r.value.value(), UINT64_MAX);
+  EXPECT_FALSE(r.truncated);
 }
 
-TEST(BitVecTest, Width1) {
-  auto [val, truncated] = UInt<1>::FromValue(3);
-  EXPECT_EQ(val.value(), 1);  // 3 & 0x1
-  EXPECT_TRUE(truncated);
+TEST(BitVecTest, TryFromWidth1Truncates) {
+  auto r = UInt<1>::TryFrom(3);
+  EXPECT_EQ(r.value.value(), 1);  // 3 & 0x1
+  EXPECT_TRUE(r.truncated);
 }
 
 // --- Same-type equality ---
@@ -320,10 +297,10 @@ TEST(BitVecTest, WideLiteralZero) {
   EXPECT_EQ(a.value(), expected);
 }
 
-TEST(BitVecTest, WideCheckedFromIntegral) {
-  auto [val, truncated] = UInt<128>::FromValue(uint64_t{0xDEADBEEF});
-  EXPECT_FALSE(truncated);
-  auto bytes = val.value();
+TEST(BitVecTest, TryFromWideFromIntDeadbeef) {
+  auto r = UInt<128>::TryFrom(uint64_t{0xDEADBEEF});
+  EXPECT_FALSE(r.truncated);
+  auto bytes = r.value.value();
   EXPECT_EQ(bytes[0], 0xEF);
   EXPECT_EQ(bytes[1], 0xBE);
   EXPECT_EQ(bytes[2], 0xAD);
@@ -334,45 +311,45 @@ TEST(BitVecTest, WideCheckedFromIntegral) {
   EXPECT_EQ(upper_bytes, (std::array<uint8_t, 12>{}));
 }
 
-TEST(BitVecTest, WideCheckedNegativeOnUnsigned) {
-  auto [val, truncated] = UInt<128>::FromValue(-1);
-  EXPECT_TRUE(truncated);
+TEST(BitVecTest, TryFromWideNegativeOnUnsigned) {
+  auto r = UInt<128>::TryFrom(-1);
+  EXPECT_TRUE(r.truncated);
 }
 
-TEST(BitVecTest, WideCheckedFromBytesNoTruncation) {
+TEST(BitVecTest, TryFromWideFromBytesNoTruncation) {
   std::array<uint8_t, 16> bytes{};
   bytes[0] = 0xFF;
   bytes[15] = 0x01;
-  auto [val, truncated] = UInt<128>::FromValue(bytes);
-  EXPECT_FALSE(truncated);
-  EXPECT_EQ(val.value(), bytes);
+  auto r = UInt<128>::TryFrom(bytes);
+  EXPECT_FALSE(r.truncated);
+  EXPECT_EQ(r.value.value(), bytes);
 }
 
-TEST(BitVecTest, WideCheckedFromBytesWithTruncation) {
+TEST(BitVecTest, TryFromWideFromBytesWithTruncation) {
   // UInt<100>: 13 bytes, but only 4 bits used in byte[12].
   std::array<uint8_t, 13> bytes{};
   bytes[12] = 0xFF;  // Upper 4 bits are unused → truncation.
-  auto [val, truncated] = UInt<100>::FromValue(bytes);
-  EXPECT_TRUE(truncated);
-  auto result = val.value();
+  auto r = UInt<100>::TryFrom(bytes);
+  EXPECT_TRUE(r.truncated);
+  auto result = r.value.value();
   EXPECT_EQ(result[12], 0x0F);  // Upper 4 bits zeroed.
 }
 
-TEST(BitVecTest, WideCheckedFromBytesExactFit) {
+TEST(BitVecTest, TryFromWideFromBytesExactFit) {
   // UInt<100>: 13 bytes, 4 bits used in byte[12].
   std::array<uint8_t, 13> bytes{};
   bytes[12] = 0x0F;  // Exactly fills the 4 used bits.
-  auto [val, truncated] = UInt<100>::FromValue(bytes);
-  EXPECT_FALSE(truncated);
-  EXPECT_EQ(val.value(), bytes);
+  auto r = UInt<100>::TryFrom(bytes);
+  EXPECT_FALSE(r.truncated);
+  EXPECT_EQ(r.value.value(), bytes);
 }
 
-TEST(BitVecTest, WideCheckedFromShorterSpan) {
+TEST(BitVecTest, TryFromWideFromShorterSpan) {
   // UInt<128>: 16 bytes. Pass only 2 bytes — rest should be zero-padded.
   std::array<uint8_t, 2> bytes{0xAB, 0xCD};
-  auto [val, truncated] = UInt<128>::FromValue(bytes);
-  EXPECT_FALSE(truncated);
-  auto result = val.value();
+  auto r = UInt<128>::TryFrom(bytes);
+  EXPECT_FALSE(r.truncated);
+  auto result = r.value.value();
   EXPECT_EQ(result[0], 0xAB);
   EXPECT_EQ(result[1], 0xCD);
   for (size_t i = 2; i < 16; ++i) {
@@ -380,21 +357,21 @@ TEST(BitVecTest, WideCheckedFromShorterSpan) {
   }
 }
 
-TEST(BitVecTest, WideCheckedFromLongerSpanNoTruncation) {
+TEST(BitVecTest, TryFromWideFromLongerSpanNoTruncation) {
   // UInt<128>: 16 bytes. Pass 20 bytes with trailing zeros — no truncation.
   std::array<uint8_t, 20> bytes{};
   bytes[0] = 0xFF;
-  auto [val, truncated] = UInt<128>::FromValue(bytes);
-  EXPECT_FALSE(truncated);
-  EXPECT_EQ(val.value()[0], 0xFF);
+  auto r = UInt<128>::TryFrom(bytes);
+  EXPECT_FALSE(r.truncated);
+  EXPECT_EQ(r.value.value()[0], 0xFF);
 }
 
-TEST(BitVecTest, WideCheckedFromLongerSpanWithTruncation) {
+TEST(BitVecTest, TryFromWideFromLongerSpanWithTruncation) {
   // UInt<128>: 16 bytes. Pass 20 bytes with non-zero extra — truncation.
   std::array<uint8_t, 20> bytes{};
   bytes[18] = 0x01;
-  auto [val, truncated] = UInt<128>::FromValue(bytes);
-  EXPECT_TRUE(truncated);
+  auto r = UInt<128>::TryFrom(bytes);
+  EXPECT_TRUE(r.truncated);
 }
 
 TEST(BitVecTest, WideEquality) {
