@@ -15,9 +15,7 @@ namespace {
 // must be idempotent with no truncation.
 template <size_t W, bool S>
 void VerifyCheckedIdempotent(const BitVec<W, S>& val) {
-  auto r = BitVec<W, S>::TryFrom(val.value());
-  auto& rechecked = r.value;
-  auto truncated = r.truncated;
+  auto [rechecked, truncated] = BitVec<W, S>::TryFrom(val.value());
   EXPECT_EQ(val, rechecked);
   EXPECT_FALSE(truncated);
 }
