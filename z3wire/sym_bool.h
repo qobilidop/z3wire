@@ -29,6 +29,20 @@ class SymBool {
         << "Expected Bool sort, got " << expr_->get_sort();
   }
 
+  // Create a SymBool from a raw z3::expr; aborts via Z3W_CHECK if the
+  // expression does not have Bool sort. Use TryFrom for a non-aborting
+  // alternative.
+  static SymBool From(z3::expr expr) { return SymBool(std::move(expr)); }
+
+  // Create a SymBool from a raw z3::expr with validation. Returns nullopt if
+  // the expression does not have Bool sort.
+  static std::optional<SymBool> TryFrom(z3::expr expr) {
+    if (!expr.is_bool()) {
+      return std::nullopt;
+    }
+    return SymBool(std::move(expr));
+  }
+
   // Create a SymBool from a raw z3::expr with validation. Returns nullopt if
   // the expression does not have Bool sort.
   static std::optional<SymBool> FromExpr(z3::expr expr) {

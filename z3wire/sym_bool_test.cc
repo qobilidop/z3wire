@@ -153,5 +153,27 @@ TEST_F(SymBoolTest, FromExprWithBitVecExprReturnsNullopt) {
   EXPECT_FALSE(result.has_value());
 }
 
+TEST_F(SymBoolTest, TryFromWithValidBoolExpr) {
+  auto result = SymBool::TryFrom(ctx_.bool_val(true));
+  ASSERT_TRUE(result.has_value());
+}
+
+TEST_F(SymBoolTest, TryFromWithBitVecExprReturnsNullopt) {
+  auto result = SymBool::TryFrom(ctx_.bv_val(42, 8));
+  EXPECT_FALSE(result.has_value());
+}
+
+TEST_F(SymBoolTest, FromWithValidBoolExpr) {
+  auto v = SymBool::From(ctx_.bool_val(true));
+  EXPECT_TRUE(v.expr().is_bool());
+}
+
+// NOLINTBEGIN(readability-function-cognitive-complexity)
+TEST(SymBoolDeathTest, FromAbortsOnBitVecExpr) {
+  z3::context ctx;
+  EXPECT_DEATH((void)SymBool::From(ctx.bv_val(42, 8)), "Expected Bool sort");
+}
+// NOLINTEND(readability-function-cognitive-complexity)
+
 }  // namespace
 }  // namespace z3w
