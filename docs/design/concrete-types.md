@@ -55,9 +55,9 @@ wrap to large unsigned values. Concrete types act as a firewall:
     `template <typename T>   Bool(T) = delete` explicitly rejects `int`,
     `double`, pointers, and everything else. In native C++, `bool b = 42`
     compiles silently.
-- **`BitVec`** — `Literal<V>()` range-checks at compile time. `From(raw)`
-    aborts on truncation; `TryFrom(raw)` returns a truncation flag at runtime.
-    Neither silently narrows.
+- **`BitVec`** — `Literal<V>()` range-checks at compile time. `From(raw)` aborts
+    on truncation; `TryFrom(raw)` returns a truncation flag at runtime. Neither
+    silently narrows.
 - **No implicit widening** — `UInt<8>` doesn't implicitly convert to `UInt<16>`.
     Widening requires `safe_cast` or an explicit mixed operation.
 
@@ -85,13 +85,13 @@ would just be `uint8_t` arithmetic with extra steps.
 Concrete types are **typed data holders**, not computation types. Their API
 reflects this:
 
-| What they do        | API                              |
-| ------------------- | -------------------------------- |
+| What they do        | API                                         |
+| ------------------- | ------------------------------------------- |
 | Hold a typed value  | `Literal<V>()`, `From(raw)`, `TryFrom(raw)` |
-| Report their value  | `value()`                        |
-| Check equality      | `operator==`                     |
-| Promote to symbolic | `to_symbolic(val, ctx)`          |
-| Print               | `operator<<`                     |
+| Report their value  | `value()`                                   |
+| Check equality      | `operator==`                                |
+| Promote to symbolic | `to_symbolic(val, ctx)`                     |
+| Print               | `operator<<`                                |
 
 This is deliberately minimal. Each concrete type is essentially a compile-time
 checked wrapper around a native integer (or byte array for W > 64).

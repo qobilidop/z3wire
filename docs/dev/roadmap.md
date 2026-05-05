@@ -47,11 +47,11 @@
 
 - **Saturating cast operation** — If callers ever need saturating-narrow
     semantics (clamp value to the representable range instead of
-    bit-truncation), expose it as an explicit `saturating_cast<T>(v)`
-    operation rather than as the silent default of `From*`/`TryFrom*`.
-    Bit-truncation is the right default for a hardware verification
-    library; saturation is a different operation that should be
-    explicitly requested. Defer until a real use case appears.
+    bit-truncation), expose it as an explicit `saturating_cast<T>(v)` operation
+    rather than as the silent default of `From*`/`TryFrom*`. Bit-truncation is
+    the right default for a hardware verification library; saturation is a
+    different operation that should be explicitly requested. Defer until a real
+    use case appears.
 
 ### Quality
 
