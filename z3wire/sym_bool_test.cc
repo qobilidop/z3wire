@@ -142,17 +142,6 @@ TEST(SymBoolDeathTest, ConstructorRejectsNonBoolExpr) {
 }
 // NOLINTEND(readability-function-cognitive-complexity)
 
-TEST_F(SymBoolTest, FromExprWithValidBoolExpr) {
-  auto result = SymBool::FromExpr(ctx_.bool_val(true));
-  ASSERT_TRUE(result.has_value());
-  EXPECT_TRUE(result->expr().is_true());
-}
-
-TEST_F(SymBoolTest, FromExprWithBitVecExprReturnsNullopt) {
-  auto result = SymBool::FromExpr(ctx_.bv_val(42, 8));
-  EXPECT_FALSE(result.has_value());
-}
-
 TEST_F(SymBoolTest, TryFromWithValidBoolExpr) {
   auto result = SymBool::TryFrom(ctx_.bool_val(true));
   ASSERT_TRUE(result.has_value());

@@ -45,7 +45,7 @@ void demo_z3_interop() {
 
   // Returns std::optional — nullopt if sort or width doesn't match.
   std::optional<z3w::SymUInt<8>> a = z3w::SymUInt<8>::TryFrom(raw);
-  std::optional<z3w::SymBool> b = z3w::SymBool::FromExpr(raw);
+  std::optional<z3w::SymBool> b = z3w::SymBool::TryFrom(raw);
 }
 
 // --- Concrete types ---
