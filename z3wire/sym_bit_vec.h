@@ -35,7 +35,7 @@ class SymBitVec {
       : expr_(ctx.bv_const(name.c_str(), W)) {}
 
   // Create a SymBitVec from a raw z3::expr. Aborts if the expression does not
-  // have the correct bit-vector sort and width. Prefer FromExpr for a
+  // have the correct bit-vector sort and width. Prefer TryFrom for a
   // non-aborting alternative.
   explicit SymBitVec(z3::expr expr) : expr_(std::move(expr)) {
     Z3W_CHECK(expr_->get_sort().is_bv() && expr_->get_sort().bv_size() == W)
@@ -51,15 +51,6 @@ class SymBitVec {
   // Create a SymBitVec from a raw z3::expr with validation. Returns nullopt
   // if the expression doesn't have the correct bit-vector sort and width.
   static std::optional<SymBitVec> TryFrom(z3::expr expr) {
-    if (!expr.get_sort().is_bv() || expr.get_sort().bv_size() != W) {
-      return std::nullopt;
-    }
-    return SymBitVec(std::move(expr));
-  }
-
-  // Create a SymBitVec from a raw z3::expr with validation. Returns nullopt if
-  // the expression does not have the correct bit-vector sort and width.
-  static std::optional<SymBitVec> FromExpr(z3::expr expr) {
     if (!expr.get_sort().is_bv() || expr.get_sort().bv_size() != W) {
       return std::nullopt;
     }
