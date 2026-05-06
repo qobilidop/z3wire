@@ -125,10 +125,10 @@ TEST(BitVecTest, TryFromSignedTruncates) {
 TEST(BitVecTest, TryFromWideFromInt) {
   auto r = UInt<128>::TryFrom(uint64_t{0xDEADBEEF});
   EXPECT_FALSE(r.truncated);
-  EXPECT_EQ(r.value.value()[0], 0xEF);
-  EXPECT_EQ(r.value.value()[1], 0xBE);
-  EXPECT_EQ(r.value.value()[2], 0xAD);
-  EXPECT_EQ(r.value.value()[3], 0xDE);
+  EXPECT_EQ(r.value.ToLeBytes()[0], 0xEF);
+  EXPECT_EQ(r.value.ToLeBytes()[1], 0xBE);
+  EXPECT_EQ(r.value.ToLeBytes()[2], 0xAD);
+  EXPECT_EQ(r.value.ToLeBytes()[3], 0xDE);
 }
 
 TEST(BitVecTest, TryFromWideFromBytes) {
@@ -137,7 +137,7 @@ TEST(BitVecTest, TryFromWideFromBytes) {
                                    0xDD, 0xEE, 0xFF, 0x00};
   auto r = UInt<128>::TryFromLeBytes(std::span<const uint8_t>{bytes});
   EXPECT_FALSE(r.truncated);
-  EXPECT_EQ(r.value.value()[0], 0x11);
+  EXPECT_EQ(r.value.ToLeBytes()[0], 0x11);
 }
 
 // --- From (runtime, aborts on truncation) ---
@@ -154,7 +154,7 @@ TEST(BitVecTest, FromSignedFits) {
 
 TEST(BitVecTest, FromWideFromInt) {
   auto v = UInt<128>::From(uint64_t{0xDEADBEEF});
-  EXPECT_EQ(v.value()[0], 0xEF);
+  EXPECT_EQ(v.ToLeBytes()[0], 0xEF);
 }
 
 TEST(BitVecTest, FromWideFromBytes) {
@@ -162,7 +162,7 @@ TEST(BitVecTest, FromWideFromBytes) {
                                    0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC,
                                    0xDD, 0xEE, 0xFF, 0x00};
   auto v = UInt<128>::FromLeBytes(std::span<const uint8_t>{bytes});
-  EXPECT_EQ(v.value()[0], 0x11);
+  EXPECT_EQ(v.ToLeBytes()[0], 0x11);
 }
 
 // NOLINTBEGIN(readability-function-cognitive-complexity)
@@ -279,12 +279,12 @@ TEST(BitVecTest, WideIsConcreteV) { static_assert(is_concrete_v<UInt<128>>); }
 TEST(BitVecTest, WideDefaultConstruction) {
   UInt<128> a;
   std::array<uint8_t, 16> expected{};
-  EXPECT_EQ(a.value(), expected);
+  EXPECT_EQ(a.ToLeBytes(), expected);
 }
 
 TEST(BitVecTest, WideLiteral) {
   auto a = UInt<128>::Literal<42>();
-  auto bytes = a.value();
+  auto bytes = a.ToLeBytes();
   EXPECT_EQ(bytes[0], 42);  // LSB
   for (size_t i = 1; i < bytes.size(); ++i) {
     EXPECT_EQ(bytes[i], 0);
@@ -294,13 +294,13 @@ TEST(BitVecTest, WideLiteral) {
 TEST(BitVecTest, WideLiteralZero) {
   auto a = UInt<128>::Literal<0>();
   std::array<uint8_t, 16> expected{};
-  EXPECT_EQ(a.value(), expected);
+  EXPECT_EQ(a.ToLeBytes(), expected);
 }
 
 TEST(BitVecTest, TryFromWideFromIntDeadbeef) {
   auto r = UInt<128>::TryFrom(uint64_t{0xDEADBEEF});
   EXPECT_FALSE(r.truncated);
-  auto bytes = r.value.value();
+  auto bytes = r.value.ToLeBytes();
   EXPECT_EQ(bytes[0], 0xEF);
   EXPECT_EQ(bytes[1], 0xBE);
   EXPECT_EQ(bytes[2], 0xAD);
@@ -322,7 +322,7 @@ TEST(BitVecTest, TryFromWideFromBytesNoTruncation) {
   bytes[15] = 0x01;
   auto r = UInt<128>::TryFromLeBytes(bytes);
   EXPECT_FALSE(r.truncated);
-  EXPECT_EQ(r.value.value(), bytes);
+  EXPECT_EQ(r.value.ToLeBytes(), bytes);
 }
 
 TEST(BitVecTest, TryFromWideFromBytesWithTruncation) {
@@ -331,7 +331,7 @@ TEST(BitVecTest, TryFromWideFromBytesWithTruncation) {
   bytes[12] = 0xFF;  // Upper 4 bits are unused → truncation.
   auto r = UInt<100>::TryFromLeBytes(bytes);
   EXPECT_TRUE(r.truncated);
-  auto result = r.value.value();
+  auto result = r.value.ToLeBytes();
   EXPECT_EQ(result[12], 0x0F);  // Upper 4 bits zeroed.
 }
 
@@ -341,7 +341,7 @@ TEST(BitVecTest, TryFromWideFromBytesExactFit) {
   bytes[12] = 0x0F;  // Exactly fills the 4 used bits.
   auto r = UInt<100>::TryFromLeBytes(bytes);
   EXPECT_FALSE(r.truncated);
-  EXPECT_EQ(r.value.value(), bytes);
+  EXPECT_EQ(r.value.ToLeBytes(), bytes);
 }
 
 TEST(BitVecTest, TryFromWideFromShorterSpan) {
@@ -349,7 +349,7 @@ TEST(BitVecTest, TryFromWideFromShorterSpan) {
   std::array<uint8_t, 2> bytes{0xAB, 0xCD};
   auto r = UInt<128>::TryFromLeBytes(bytes);
   EXPECT_FALSE(r.truncated);
-  auto result = r.value.value();
+  auto result = r.value.ToLeBytes();
   EXPECT_EQ(result[0], 0xAB);
   EXPECT_EQ(result[1], 0xCD);
   for (size_t i = 2; i < 16; ++i) {
@@ -363,7 +363,7 @@ TEST(BitVecTest, TryFromWideFromLongerSpanNoTruncation) {
   bytes[0] = 0xFF;
   auto r = UInt<128>::TryFromLeBytes(bytes);
   EXPECT_FALSE(r.truncated);
-  EXPECT_EQ(r.value.value()[0], 0xFF);
+  EXPECT_EQ(r.value.ToLeBytes()[0], 0xFF);
 }
 
 TEST(BitVecTest, TryFromWideFromLongerSpanWithTruncation) {
@@ -372,6 +372,15 @@ TEST(BitVecTest, TryFromWideFromLongerSpanWithTruncation) {
   bytes[18] = 0x01;
   auto r = UInt<128>::TryFromLeBytes(bytes);
   EXPECT_TRUE(r.truncated);
+}
+
+TEST(BitVecTest, ToLeBytesWideRoundtrip) {
+  std::array<uint8_t, 16> bytes{};
+  bytes[0] = 0x11;
+  bytes[7] = 0x88;
+  bytes[15] = 0xFF;
+  auto v = UInt<128>::FromLeBytes(bytes);
+  EXPECT_EQ(v.ToLeBytes(), bytes);
 }
 
 TEST(BitVecTest, WideEquality) {

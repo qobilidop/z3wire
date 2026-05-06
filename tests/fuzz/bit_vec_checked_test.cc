@@ -26,7 +26,12 @@ typename BitVec<W, S>::TryFromResult TryFromValue(
 // must be idempotent with no truncation.
 template <size_t W, bool S>
 void VerifyCheckedIdempotent(const BitVec<W, S>& val) {
-  auto result = TryFromValue<W, S>(val.value());
+  typename BitVec<W, S>::TryFromResult result;
+  if constexpr (W > 64) {
+    result = TryFromValue<W, S>(val.ToLeBytes());
+  } else {
+    result = TryFromValue<W, S>(val.value());
+  }
   EXPECT_EQ(val, result.value);
   EXPECT_FALSE(result.truncated);
 }

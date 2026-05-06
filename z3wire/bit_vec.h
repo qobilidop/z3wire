@@ -153,8 +153,21 @@ class BitVec {
     return r.value;
   }
 
-  // Access the stored value.
-  [[nodiscard]] constexpr ValueType value() const { return value_; }
+  // Access the stored value (narrow types only; W <= 64).
+  [[nodiscard]] constexpr ValueType value() const
+    requires(W <= 64)
+  {
+    return value_;
+  }
+
+  // Serialize to little-endian bytes. The value occupies the low-magnitude
+  // end of the array; if W % 8 != 0, the partial top byte's unused high
+  // bits are zero.
+  [[nodiscard]] std::array<uint8_t, kNumBytes> ToLeBytes() const
+    requires(W > 64)
+  {
+    return value_;
+  }
 
  private:
   constexpr explicit BitVec(uint64_t raw) : value_(make_value(raw)) {}
@@ -225,7 +238,11 @@ using SInt = BitVec<W, true>;
 
 template <size_t W, bool S>
 bool operator==(const BitVec<W, S>& lhs, const BitVec<W, S>& rhs) {
-  return lhs.value() == rhs.value();
+  if constexpr (W > 64) {
+    return lhs.ToLeBytes() == rhs.ToLeBytes();
+  } else {
+    return lhs.value() == rhs.value();
+  }
 }
 
 }  // namespace z3w

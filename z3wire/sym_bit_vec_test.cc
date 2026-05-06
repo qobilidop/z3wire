@@ -1386,7 +1386,7 @@ TEST_F(SymBitVecTest, WideToConcrete) {
   ASSERT_EQ(s.check(), z3::sat);
 
   auto concrete = to_concrete(x, s.get_model());
-  auto bytes = concrete.value();
+  auto bytes = concrete.ToLeBytes();
   EXPECT_EQ(bytes[0], 42);
   for (size_t i = 1; i < bytes.size(); ++i) {
     EXPECT_EQ(bytes[i], 0);
@@ -1408,7 +1408,7 @@ TEST_F(SymBitVecTest, WideToConcreteRoundTrip) {
   ASSERT_EQ(s.check(), z3::sat);
 
   auto result = to_concrete(symbolic, s.get_model());
-  EXPECT_EQ(result.value(), original.value());
+  EXPECT_EQ(result.ToLeBytes(), original.ToLeBytes());
 }
 
 // NOLINTBEGIN(readability-function-cognitive-complexity)

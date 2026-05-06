@@ -102,7 +102,7 @@ SymBitVec<W, S> to_symbolic(const BitVec<W, S>& val, z3::context& ctx) {
   if constexpr (W > 64) {
     // Build wide Z3 bit-vector by concatenating 8-bit chunks.
     // Each byte becomes a Z3 bv_val(byte, 8), then we concat MSB-first.
-    auto bytes = val.value();
+    auto bytes = val.ToLeBytes();
     constexpr size_t kNumBytes = (W + 7) / 8;
     constexpr unsigned kTopBits = ((W % 8) == 0) ? 8 : (W % 8);
     // Start with the most significant byte (possibly narrower than 8 bits).
