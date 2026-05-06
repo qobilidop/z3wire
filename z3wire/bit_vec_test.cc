@@ -414,5 +414,112 @@ TEST(BitVecTest, WideSignedEquality) {
   EXPECT_TRUE(a != c);
 }
 
+// --- ToLeBytes (narrow widths W <= 64) ---
+
+TEST(BitVecTest, ToLeBytesNarrowAligned) {
+  // W=32 unsigned: 0xDEADBEEF -> [0xEF, 0xBE, 0xAD, 0xDE]
+  auto v = UInt<32>::From(uint32_t{0xDEADBEEF});
+  auto bytes = v.ToLeBytes();
+  EXPECT_EQ(bytes[0], 0xEF);
+  EXPECT_EQ(bytes[1], 0xBE);
+  EXPECT_EQ(bytes[2], 0xAD);
+  EXPECT_EQ(bytes[3], 0xDE);
+}
+
+TEST(BitVecTest, ToLeBytesNarrowPartialByte) {
+  // W=12 unsigned: 0xABC -> [0xBC, 0x0A] (high nibble of byte 1 is padding).
+  auto v = UInt<12>::From(0xABC);
+  auto bytes = v.ToLeBytes();
+  EXPECT_EQ(bytes.size(), 2U);
+  EXPECT_EQ(bytes[0], 0xBC);
+  EXPECT_EQ(bytes[1], 0x0A);
+}
+
+TEST(BitVecTest, ToLeBytesSignedNegative) {
+  // SInt<12> value -1 -> bit pattern 0xFFF -> [0xFF, 0x0F].
+  auto v = SInt<12>::From(-1);
+  auto bytes = v.ToLeBytes();
+  EXPECT_EQ(bytes[0], 0xFF);
+  EXPECT_EQ(bytes[1], 0x0F);  // Partial-byte padding is zero.
+}
+
+TEST(BitVecTest, ToLeBytesNarrowW8) {
+  // W=8: single byte.
+  auto v = UInt<8>::From(0xAB);
+  auto bytes = v.ToLeBytes();
+  EXPECT_EQ(bytes.size(), 1U);
+  EXPECT_EQ(bytes[0], 0xAB);
+}
+
+TEST(BitVecTest, ToLeBytesNarrowW64) {
+  // W=64: full 8 bytes.
+  auto v = UInt<64>::From(uint64_t{0x0123456789ABCDEF});
+  auto bytes = v.ToLeBytes();
+  EXPECT_EQ(bytes[0], 0xEF);
+  EXPECT_EQ(bytes[7], 0x01);
+}
+
+// --- TryFromLeBytes / FromLeBytes (narrow widths W <= 64) ---
+
+TEST(BitVecTest, TryFromLeBytesNarrowAligned) {
+  std::array<uint8_t, 4> bytes{0xEF, 0xBE, 0xAD, 0xDE};
+  auto r = UInt<32>::TryFromLeBytes(bytes);
+  EXPECT_FALSE(r.truncated);
+  EXPECT_EQ(r.value.value(), 0xDEADBEEFU);
+}
+
+TEST(BitVecTest, TryFromLeBytesNarrowShortInput) {
+  // UInt<32> with 2 bytes input — high bytes implicitly zero.
+  std::array<uint8_t, 2> bytes{0xAB, 0xCD};
+  auto r = UInt<32>::TryFromLeBytes(bytes);
+  EXPECT_FALSE(r.truncated);
+  EXPECT_EQ(r.value.value(), 0xCDABU);
+}
+
+TEST(BitVecTest, TryFromLeBytesNarrowPartialBytePadOK) {
+  // UInt<12> from {0xBC, 0x0A} -> 0xABC (high nibble of byte 1 is zero).
+  std::array<uint8_t, 2> bytes{0xBC, 0x0A};
+  auto r = UInt<12>::TryFromLeBytes(bytes);
+  EXPECT_FALSE(r.truncated);
+  EXPECT_EQ(r.value.value(), 0xABCU);
+}
+
+TEST(BitVecTest, TryFromLeBytesNarrowPartialByteOverflow) {
+  // UInt<12> from {0xBC, 0xFA} - high nibble 0xF is non-zero -> truncated.
+  std::array<uint8_t, 2> bytes{0xBC, 0xFA};
+  auto r = UInt<12>::TryFromLeBytes(bytes);
+  EXPECT_TRUE(r.truncated);
+  EXPECT_EQ(r.value.value(), 0xABCU);  // High nibble masked off.
+}
+
+TEST(BitVecTest, TryFromLeBytesNarrowLongInputZeroExtra) {
+  // UInt<32> with 6 bytes; extras zero -> not truncated.
+  std::array<uint8_t, 6> bytes{0xEF, 0xBE, 0xAD, 0xDE, 0x00, 0x00};
+  auto r = UInt<32>::TryFromLeBytes(bytes);
+  EXPECT_FALSE(r.truncated);
+  EXPECT_EQ(r.value.value(), 0xDEADBEEFU);
+}
+
+TEST(BitVecTest, TryFromLeBytesNarrowLongInputNonzeroExtra) {
+  // UInt<32> with 6 bytes; extras non-zero -> truncated.
+  std::array<uint8_t, 6> bytes{0xEF, 0xBE, 0xAD, 0xDE, 0x01, 0x00};
+  auto r = UInt<32>::TryFromLeBytes(bytes);
+  EXPECT_TRUE(r.truncated);
+}
+
+TEST(BitVecTest, FromLeBytesNarrow) {
+  std::array<uint8_t, 4> bytes{0xEF, 0xBE, 0xAD, 0xDE};
+  auto v = UInt<32>::FromLeBytes(bytes);
+  EXPECT_EQ(v.value(), 0xDEADBEEFU);
+}
+
+// NOLINTBEGIN(readability-function-cognitive-complexity)
+TEST(BitVecDeathTest, FromLeBytesNarrowAbortsOnTruncation) {
+  std::array<uint8_t, 2> bytes{0xBC, 0xFA};
+  EXPECT_DEATH((void)UInt<12>::FromLeBytes(bytes),
+               "construction value out of range");
+}
+// NOLINTEND(readability-function-cognitive-complexity)
+
 }  // namespace
 }  // namespace z3w

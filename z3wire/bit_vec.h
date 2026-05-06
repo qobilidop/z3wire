@@ -101,20 +101,18 @@ class BitVec {
     }
   }
 
-  // Construct from a little-endian byte sequence (W > 64 only). Zero-pads if
-  // shorter than W bits, reports truncation if any bits beyond W were non-zero
-  // (extra bytes beyond kNumBytes, or unused high bits in the partial top byte
+  // Construct from a little-endian byte sequence. Zero-pads if shorter than
+  // W bits, reports truncation if any bits beyond W were non-zero (extra
+  // bytes beyond kNumBytes, or unused high bits in the partial top byte
   // when W % 8 != 0).
   [[nodiscard]] static TryFromResult TryFromLeBytes(
-      std::span<const uint8_t> bytes)
-    requires(W > 64)
-  {
-    BitVec result;
+      std::span<const uint8_t> bytes) {
+    std::array<uint8_t, kNumBytes> raw{};
     bool truncated = false;
 
     size_t copy_len = std::min(bytes.size(), kNumBytes);
     for (size_t i = 0; i < copy_len; ++i) {
-      result.value_[i] = bytes[i];
+      raw[i] = bytes[i];
     }
 
     for (size_t i = kNumBytes; i < bytes.size(); ++i) {
@@ -127,13 +125,23 @@ class BitVec {
     constexpr size_t used_bits = W % 8;
     if constexpr (used_bits != 0) {
       constexpr uint8_t mask = (uint8_t{1} << used_bits) - 1;
-      if (result.value_[kNumBytes - 1] & ~mask) {
+      if (raw[kNumBytes - 1] & ~mask) {
         truncated = true;
       }
-      result.value_[kNumBytes - 1] &= mask;
+      raw[kNumBytes - 1] &= mask;
     }
 
-    return {result, truncated};
+    if constexpr (W > 64) {
+      BitVec result;
+      result.value_ = raw;
+      return {result, truncated};
+    } else {
+      uint64_t bits = 0;
+      for (size_t i = 0; i < kNumBytes; ++i) {
+        bits |= static_cast<uint64_t>(raw[i]) << (i * 8);
+      }
+      return {BitVec(bits), truncated};
+    }
   }
 
   // Runtime construction; aborts via Z3W_CHECK if the input is out of range.
@@ -145,9 +153,7 @@ class BitVec {
     return r.value;
   }
 
-  static BitVec FromLeBytes(std::span<const uint8_t> bytes)
-    requires(W > 64)
-  {
+  static BitVec FromLeBytes(std::span<const uint8_t> bytes) {
     auto r = TryFromLeBytes(bytes);
     Z3W_CHECK(!r.truncated) << "construction value out of range";
     return r.value;
@@ -167,6 +173,25 @@ class BitVec {
     requires(W > 64)
   {
     return value_;
+  }
+
+  [[nodiscard]] std::array<uint8_t, kNumBytes> ToLeBytes() const
+    requires(W <= 64)
+  {
+    std::array<uint8_t, kNumBytes> bytes{};
+    // Cast to unsigned, then mask to W bits to clear sign-extension on signed
+    // narrow types, then write LE bytes.
+    auto raw = static_cast<NarrowUnsigned>(value_);
+    uint64_t masked;
+    if constexpr (W == 64) {
+      masked = static_cast<uint64_t>(raw);
+    } else {
+      masked = static_cast<uint64_t>(raw) & ((uint64_t{1} << W) - 1);
+    }
+    for (size_t i = 0; i < kNumBytes; ++i) {
+      bytes[i] = static_cast<uint8_t>(masked >> (i * 8));
+    }
+    return bytes;
   }
 
  private:
