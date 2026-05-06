@@ -12,6 +12,14 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Restore Bazel disk cache
+        uses: actions/cache@v4
+        with:
+          path: .bazel-disk-cache
+          key: bazel-${{ runner.os }}-${{ hashFiles('.bazelversion', 'MODULE.bazel.lock', '.bazelrc') }}
+          restore-keys: |
+            bazel-${{ runner.os }}-
+
       - name: Activate CI-specific Bazel config
         run: |
           echo "build --config=ci" > ci.bazelrc
