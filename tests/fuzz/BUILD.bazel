@@ -43,3 +43,14 @@ cc_test(
         "@googletest//:gtest",
     ],
 )
+
+cc_test(
+    name = "sym_bit_vec_cast_test",
+    srcs = ["sym_bit_vec_cast_test.cc"],
+    deps = [
+        "//z3wire:sym_bit_vec",
+        "@fuzztest//fuzztest",
+        "@fuzztest//fuzztest:fuzztest_gtest_main",
+        "@googletest//:gtest",
+    ],
+)
