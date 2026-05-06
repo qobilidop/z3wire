@@ -59,14 +59,10 @@
     under-tested across the board, W=1 and W=64 boundary cases are sparse, and
     mixed concrete+symbolic bitwise only tests AND.
 
-- **Fuzz tests** — Property-based tests using Google FuzzTest. Roundtrip
-    (`concrete -> symbolic -> concrete`) is done. Ideas for more:
+- **Fuzz tests** — Property-based tests using Google FuzzTest. Roundtrip,
+    checked-construction idempotency, and same-width cast roundtrip are done.
+    Ideas for more:
 
-    - **Checked construction idempotency** — `TryFrom(v.value())` on a valid
-        `BitVec` should return a `TryFromResult` with `value == v` and
-        `truncated == false`. No Z3 needed.
-    - **Cast roundtrip** — Same-width `unsafe_cast<UInt>(unsafe_cast<SInt>(v))`
-        preserves bits.
     - **Arithmetic properties** — Commutativity (`a + b == b + a`), negation
         (`a + (-a) == 0`), bitwise identity (`a & a == a`). Verified via solver.
     - **Shift properties** — `shl<N>(shr<N>(val))` masks lower bits for unsigned.
