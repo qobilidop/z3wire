@@ -1364,7 +1364,7 @@ TEST_F(SymBitVecTest, WideToSymbolicLargeValue) {
   std::array<uint8_t, 16> bytes{};
   bytes[0] = 0xEF;
   bytes[8] = 0xAB;
-  auto [concrete, truncated] = UInt<128>::TryFrom(bytes);
+  auto [concrete, truncated] = UInt<128>::TryFromLeBytes(bytes);
   ASSERT_FALSE(truncated);
 
   auto symbolic = to_symbolic(concrete, ctx_);
@@ -1398,7 +1398,7 @@ TEST_F(SymBitVecTest, WideToConcreteRoundTrip) {
   std::array<uint8_t, 16> bytes{};
   bytes[0] = 0xEF;
   bytes[8] = 0xAB;
-  auto [original, truncated] = UInt<128>::TryFrom(bytes);
+  auto [original, truncated] = UInt<128>::TryFromLeBytes(bytes);
   ASSERT_FALSE(truncated);
 
   auto symbolic = to_symbolic(original, ctx_);

@@ -10,20 +10,31 @@
 namespace z3w {
 namespace {
 
+// Helper to dispatch TryFrom call based on width.
+template <size_t W, bool S>
+typename BitVec<W, S>::TryFromResult TryFromValue(
+    const typename BitVec<W, S>::ValueType& val) {
+  if constexpr (W > 64) {
+    return BitVec<W, S>::TryFromLeBytes(val);
+  } else {
+    return BitVec<W, S>::TryFrom(val);
+  }
+}
+
 // Property: Checked(v.value()) on a valid BitVec returns {v, false}.
 // A value produced by Checked() is already in range, so re-checking it
 // must be idempotent with no truncation.
 template <size_t W, bool S>
 void VerifyCheckedIdempotent(const BitVec<W, S>& val) {
-  auto [rechecked, truncated] = BitVec<W, S>::TryFrom(val.value());
-  EXPECT_EQ(val, rechecked);
-  EXPECT_FALSE(truncated);
+  auto result = TryFromValue<W, S>(val.value());
+  EXPECT_EQ(val, result.value);
+  EXPECT_FALSE(result.truncated);
 }
 
 #define CHECKED_IDEMPOTENT_FUZZ_TEST(Type, W)                             \
   void Type##W##CheckedIdempotent(Type<W>::ValueType raw) {               \
-    /* TryFrom() masks raw to valid W-bit range. */                       \
-    auto r = Type<W>::TryFrom(raw);                                       \
+    /* TryFromValue() dispatches to TryFrom/TryFromLeBytes based on W. */ \
+    auto r = TryFromValue<W, Type<W>::kIsSigned>(raw);                    \
     VerifyCheckedIdempotent(r.value);                                     \
   }                                                                       \
   FUZZ_TEST(BitVecChecked, Type##W##CheckedIdempotent)

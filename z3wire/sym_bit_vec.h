@@ -139,7 +139,7 @@ BitVec<W, S> to_concrete(const SymBitVec<W, S>& symbolic,
           evaluated.extract(hi, lo).simplify().get_numeral_uint());
     }
 
-    return BitVec<W, S>::TryFrom(bytes).value;
+    return BitVec<W, S>::TryFromLeBytes(bytes).value;
   } else {
     // Always extract as uint64 and let TryFrom() handle sign interpretation.
     // get_numeral_int64() throws for W=64 signed values with the MSB set.

@@ -101,10 +101,12 @@ class BitVec {
     }
   }
 
-  // Byte-span overload (W > 64). Interprets bytes as little-endian, zero-padded
-  // if shorter than W bits, and reports truncation if any bits beyond W were
-  // non-zero.
-  [[nodiscard]] static TryFromResult TryFrom(std::span<const uint8_t> bytes)
+  // Construct from a little-endian byte sequence (W > 64 only). Zero-pads if
+  // shorter than W bits, reports truncation if any bits beyond W were non-zero
+  // (extra bytes beyond kNumBytes, or unused high bits in the partial top byte
+  // when W % 8 != 0).
+  [[nodiscard]] static TryFromResult TryFromLeBytes(
+      std::span<const uint8_t> bytes)
     requires(W > 64)
   {
     BitVec result;
@@ -143,10 +145,10 @@ class BitVec {
     return r.value;
   }
 
-  static BitVec From(std::span<const uint8_t> bytes)
+  static BitVec FromLeBytes(std::span<const uint8_t> bytes)
     requires(W > 64)
   {
-    auto r = TryFrom(bytes);
+    auto r = TryFromLeBytes(bytes);
     Z3W_CHECK(!r.truncated) << "construction value out of range";
     return r.value;
   }

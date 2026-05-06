@@ -135,7 +135,7 @@ TEST(BitVecTest, TryFromWideFromBytes) {
   std::array<uint8_t, 16> bytes = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66,
                                    0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC,
                                    0xDD, 0xEE, 0xFF, 0x00};
-  auto r = UInt<128>::TryFrom(std::span<const uint8_t>{bytes});
+  auto r = UInt<128>::TryFromLeBytes(std::span<const uint8_t>{bytes});
   EXPECT_FALSE(r.truncated);
   EXPECT_EQ(r.value.value()[0], 0x11);
 }
@@ -161,7 +161,7 @@ TEST(BitVecTest, FromWideFromBytes) {
   std::array<uint8_t, 16> bytes = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66,
                                    0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC,
                                    0xDD, 0xEE, 0xFF, 0x00};
-  auto v = UInt<128>::From(std::span<const uint8_t>{bytes});
+  auto v = UInt<128>::FromLeBytes(std::span<const uint8_t>{bytes});
   EXPECT_EQ(v.value()[0], 0x11);
 }
 
@@ -320,7 +320,7 @@ TEST(BitVecTest, TryFromWideFromBytesNoTruncation) {
   std::array<uint8_t, 16> bytes{};
   bytes[0] = 0xFF;
   bytes[15] = 0x01;
-  auto r = UInt<128>::TryFrom(bytes);
+  auto r = UInt<128>::TryFromLeBytes(bytes);
   EXPECT_FALSE(r.truncated);
   EXPECT_EQ(r.value.value(), bytes);
 }
@@ -329,7 +329,7 @@ TEST(BitVecTest, TryFromWideFromBytesWithTruncation) {
   // UInt<100>: 13 bytes, but only 4 bits used in byte[12].
   std::array<uint8_t, 13> bytes{};
   bytes[12] = 0xFF;  // Upper 4 bits are unused → truncation.
-  auto r = UInt<100>::TryFrom(bytes);
+  auto r = UInt<100>::TryFromLeBytes(bytes);
   EXPECT_TRUE(r.truncated);
   auto result = r.value.value();
   EXPECT_EQ(result[12], 0x0F);  // Upper 4 bits zeroed.
@@ -339,7 +339,7 @@ TEST(BitVecTest, TryFromWideFromBytesExactFit) {
   // UInt<100>: 13 bytes, 4 bits used in byte[12].
   std::array<uint8_t, 13> bytes{};
   bytes[12] = 0x0F;  // Exactly fills the 4 used bits.
-  auto r = UInt<100>::TryFrom(bytes);
+  auto r = UInt<100>::TryFromLeBytes(bytes);
   EXPECT_FALSE(r.truncated);
   EXPECT_EQ(r.value.value(), bytes);
 }
@@ -347,7 +347,7 @@ TEST(BitVecTest, TryFromWideFromBytesExactFit) {
 TEST(BitVecTest, TryFromWideFromShorterSpan) {
   // UInt<128>: 16 bytes. Pass only 2 bytes — rest should be zero-padded.
   std::array<uint8_t, 2> bytes{0xAB, 0xCD};
-  auto r = UInt<128>::TryFrom(bytes);
+  auto r = UInt<128>::TryFromLeBytes(bytes);
   EXPECT_FALSE(r.truncated);
   auto result = r.value.value();
   EXPECT_EQ(result[0], 0xAB);
@@ -361,7 +361,7 @@ TEST(BitVecTest, TryFromWideFromLongerSpanNoTruncation) {
   // UInt<128>: 16 bytes. Pass 20 bytes with trailing zeros — no truncation.
   std::array<uint8_t, 20> bytes{};
   bytes[0] = 0xFF;
-  auto r = UInt<128>::TryFrom(bytes);
+  auto r = UInt<128>::TryFromLeBytes(bytes);
   EXPECT_FALSE(r.truncated);
   EXPECT_EQ(r.value.value()[0], 0xFF);
 }
@@ -370,7 +370,7 @@ TEST(BitVecTest, TryFromWideFromLongerSpanWithTruncation) {
   // UInt<128>: 16 bytes. Pass 20 bytes with non-zero extra — truncation.
   std::array<uint8_t, 20> bytes{};
   bytes[18] = 0x01;
-  auto r = UInt<128>::TryFrom(bytes);
+  auto r = UInt<128>::TryFromLeBytes(bytes);
   EXPECT_TRUE(r.truncated);
 }
 
