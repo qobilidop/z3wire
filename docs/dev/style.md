@@ -10,7 +10,7 @@
         `safe_cast`, `shl`, `value()`, `expr()`), not `PascalCase`. This aligns
         with Z3 and other SMT/hardware libraries in the ecosystem, and reads more
         naturally for hardware primitives. Static factory methods use `PascalCase`
-        (e.g., `Literal`, `FromValue`, `True`, `False`).
+        (e.g., `Literal`, `From`, `TryFrom`, `True`, `False`).
     - Type traits use `snake_case` with a `_v` helper (e.g., `is_concrete`,
         `is_symbolic_v`), following `std::` conventions rather than Google's
         `PascalCase`.

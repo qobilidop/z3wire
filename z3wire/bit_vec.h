@@ -8,8 +8,9 @@
 #include <cstdint>
 #include <limits>
 #include <span>
-#include <tuple>
 #include <type_traits>
+
+#include "z3wire/check.h"
 
 namespace z3w {
 
@@ -60,9 +61,21 @@ class BitVec {
     }
   }
 
-  // Runtime checked construction. Returns {result, truncated}.
+  // Result of TryFrom — value plus a flag indicating whether the input was
+  // outside the representable range. On truncation, value holds the two's
+  // complement bit-truncated result (the same bit pattern hardware would
+  // produce on a narrowing store).
+  struct [[nodiscard]] TryFromResult {
+    BitVec value;
+    bool truncated;
+  };
+
+  // Runtime construction with truncation reporting. Accepts any
+  // std::integral type. For W <= 64, returns the two's complement bit-truncated
+  // value (sign-extended for signed types) and reports truncation when the
+  // input was outside the representable range.
   template <std::integral T>
-  [[nodiscard]] static std::tuple<BitVec, bool> FromValue(T raw) {
+  [[nodiscard]] static TryFromResult TryFrom(T raw) {
     if constexpr (W > 64) {
       if constexpr (std::is_signed_v<T>) {
         if (raw < 0) {
@@ -88,24 +101,20 @@ class BitVec {
     }
   }
 
-  // Runtime checked construction from byte span (W > 64 only).
-  // Interprets bytes as little-endian. Shorter spans are zero-padded, longer
-  // spans are truncated. Returns {result, truncated} where truncated indicates
-  // information was lost.
-  [[nodiscard]] static std::tuple<BitVec, bool> FromValue(
-      std::span<const uint8_t> bytes)
+  // Byte-span overload (W > 64). Interprets bytes as little-endian, zero-padded
+  // if shorter than W bits, and reports truncation if any bits beyond W were
+  // non-zero.
+  [[nodiscard]] static TryFromResult TryFrom(std::span<const uint8_t> bytes)
     requires(W > 64)
   {
     BitVec result;
     bool truncated = false;
 
-    // Copy bytes that fit.
     size_t copy_len = std::min(bytes.size(), kNumBytes);
     for (size_t i = 0; i < copy_len; ++i) {
       result.value_[i] = bytes[i];
     }
 
-    // Check extra bytes beyond kNumBytes for truncation.
     for (size_t i = kNumBytes; i < bytes.size(); ++i) {
       if (bytes[i] != 0) {
         truncated = true;
@@ -113,7 +122,6 @@ class BitVec {
       }
     }
 
-    // Mask unused bits in the high byte.
     constexpr size_t used_bits = W % 8;
     if constexpr (used_bits != 0) {
       constexpr uint8_t mask = (uint8_t{1} << used_bits) - 1;
@@ -124,6 +132,23 @@ class BitVec {
     }
 
     return {result, truncated};
+  }
+
+  // Runtime construction; aborts via Z3W_CHECK if the input is out of range.
+  // Use TryFrom to inspect failures instead.
+  template <std::integral T>
+  static BitVec From(T raw) {
+    auto r = TryFrom(raw);
+    Z3W_CHECK(!r.truncated) << "construction value out of range";
+    return r.value;
+  }
+
+  static BitVec From(std::span<const uint8_t> bytes)
+    requires(W > 64)
+  {
+    auto r = TryFrom(bytes);
+    Z3W_CHECK(!r.truncated) << "construction value out of range";
+    return r.value;
   }
 
   // Access the stored value.

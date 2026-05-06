@@ -900,7 +900,7 @@ TEST_F(SymBitVecTest, SymbolicRotl) {
 
 TEST_F(SymBitVecTest, ConcreteRotl) {
   SymUInt<8> a(ctx_, "a");
-  auto n = std::get<0>(UInt<3>::FromValue(3));
+  auto n = UInt<3>::From(3);
   auto result = rotl(a, n);
 
   static_assert((std::is_same_v<decltype(result), SymUInt<8>>));
@@ -949,7 +949,7 @@ TEST_F(SymBitVecTest, SymbolicRotr) {
 
 TEST_F(SymBitVecTest, ConcreteRotr) {
   SymUInt<8> a(ctx_, "a");
-  auto n = std::get<0>(UInt<3>::FromValue(3));
+  auto n = UInt<3>::From(3);
   auto result = rotr(a, n);
 
   static_assert((std::is_same_v<decltype(result), SymUInt<8>>));
@@ -1364,7 +1364,7 @@ TEST_F(SymBitVecTest, WideToSymbolicLargeValue) {
   std::array<uint8_t, 16> bytes{};
   bytes[0] = 0xEF;
   bytes[8] = 0xAB;
-  auto [concrete, truncated] = UInt<128>::FromValue(bytes);
+  auto [concrete, truncated] = UInt<128>::TryFrom(bytes);
   ASSERT_FALSE(truncated);
 
   auto symbolic = to_symbolic(concrete, ctx_);
@@ -1398,7 +1398,7 @@ TEST_F(SymBitVecTest, WideToConcreteRoundTrip) {
   std::array<uint8_t, 16> bytes{};
   bytes[0] = 0xEF;
   bytes[8] = 0xAB;
-  auto [original, truncated] = UInt<128>::FromValue(bytes);
+  auto [original, truncated] = UInt<128>::TryFrom(bytes);
   ASSERT_FALSE(truncated);
 
   auto symbolic = to_symbolic(original, ctx_);
@@ -1425,28 +1425,41 @@ TEST(SymBitVecDeathTest, ConstructorRejectsWrongWidth) {
 }
 // NOLINTEND(readability-function-cognitive-complexity)
 
-class FromExprTest : public ::testing::Test {
+class SymBitVecFromTest : public ::testing::Test {
  protected:
   z3::context ctx_;
 };
 
-TEST_F(FromExprTest, SymBitVecFromExprWithValidExpr) {
-  auto result = SymUInt<8>::FromExpr(ctx_.bv_val(42, 8));
+TEST_F(SymBitVecFromTest, SymBitVecTryFromWithValidExpr) {
+  auto result = SymUInt<8>::TryFrom(ctx_.bv_val(42, 8));
   ASSERT_TRUE(result.has_value());
-  z3::solver s(ctx_);
-  s.add(result->expr() == ctx_.bv_val(42, 8));
-  EXPECT_EQ(s.check(), z3::sat);
 }
 
-TEST_F(FromExprTest, SymBitVecFromExprWithWrongWidth) {
-  auto result = SymUInt<8>::FromExpr(ctx_.bv_val(0, 16));
+TEST_F(SymBitVecFromTest, SymBitVecTryFromWithWrongWidth) {
+  auto result = SymUInt<8>::TryFrom(ctx_.bv_val(0, 16));
   EXPECT_FALSE(result.has_value());
 }
 
-TEST_F(FromExprTest, SymBitVecFromExprWithBoolExpr) {
-  auto result = SymUInt<8>::FromExpr(ctx_.bool_val(true));
+TEST_F(SymBitVecFromTest, SymBitVecTryFromWithBoolExpr) {
+  auto result = SymUInt<8>::TryFrom(ctx_.bool_val(true));
   EXPECT_FALSE(result.has_value());
 }
+
+TEST_F(SymBitVecFromTest, SymBitVecFromWithValidExpr) {
+  auto v = SymUInt<8>::From(ctx_.bv_val(42, 8));
+  EXPECT_TRUE(v.expr().get_sort().is_bv());
+  EXPECT_EQ(v.expr().get_sort().bv_size(), 8);
+}
+
+// NOLINTBEGIN(readability-function-cognitive-complexity)
+TEST_F(SymBitVecFromTest, SymBitVecFromAbortsOnWrongWidth) {
+  EXPECT_DEATH((void)SymUInt<8>::From(ctx_.bv_val(0, 16)), "");
+}
+
+TEST_F(SymBitVecFromTest, SymBitVecFromAbortsOnBoolExpr) {
+  EXPECT_DEATH((void)SymUInt<8>::From(ctx_.bool_val(true)), "");
+}
+// NOLINTEND(readability-function-cognitive-complexity)
 
 }  // namespace
 }  // namespace z3w

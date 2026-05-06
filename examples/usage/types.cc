@@ -44,8 +44,8 @@ void demo_z3_interop() {
   z3::expr raw = ctx.bv_val(42, 8);
 
   // Returns std::optional — nullopt if sort or width doesn't match.
-  std::optional<z3w::SymUInt<8>> a = z3w::SymUInt<8>::FromExpr(raw);
-  std::optional<z3w::SymBool> b = z3w::SymBool::FromExpr(raw);
+  std::optional<z3w::SymUInt<8>> a = z3w::SymUInt<8>::TryFrom(raw);
+  std::optional<z3w::SymBool> b = z3w::SymBool::TryFrom(raw);
 }
 
 // --- Concrete types ---
@@ -63,9 +63,9 @@ void demo_concrete_construction() {
   // auto b = z3w::UInt<8>::Literal<256>();
   // auto d = z3w::SInt<8>::Literal<128>();
 
-  auto [x, x_truncated] = z3w::UInt<8>::FromValue(300);
+  auto [x, x_truncated] = z3w::UInt<8>::TryFrom(300);
   // x.value() == 44, x_truncated == true
-  auto [y, y_truncated] = z3w::UInt<8>::FromValue(200);
+  auto [y, y_truncated] = z3w::UInt<8>::TryFrom(200);
   // y.value() == 200, y_truncated == false
 }
 

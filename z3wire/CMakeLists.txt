@@ -7,6 +7,15 @@ target_include_directories(z3wire_bool INTERFACE
     $<INSTALL_INTERFACE:include>
 )
 
+# Internal check macro (no Z3 dependency).
+add_library(z3wire_check INTERFACE)
+add_library(z3wire::check ALIAS z3wire_check)
+
+target_include_directories(z3wire_check INTERFACE
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
+    $<INSTALL_INTERFACE:include>
+)
+
 # Concrete types (no Z3 dependency).
 add_library(z3wire_bit_vec INTERFACE)
 add_library(z3wire::bit_vec ALIAS z3wire_bit_vec)
@@ -15,6 +24,8 @@ target_include_directories(z3wire_bit_vec INTERFACE
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
     $<INSTALL_INTERFACE:include>
 )
+
+target_link_libraries(z3wire_bit_vec INTERFACE z3wire_check)
 
 # SymBool wrapper.
 add_library(z3wire_sym_bool INTERFACE)

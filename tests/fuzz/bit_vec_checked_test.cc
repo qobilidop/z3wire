@@ -1,7 +1,6 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
-#include <tuple>
 
 #include <gtest/gtest.h>
 
@@ -16,16 +15,16 @@ namespace {
 // must be idempotent with no truncation.
 template <size_t W, bool S>
 void VerifyCheckedIdempotent(const BitVec<W, S>& val) {
-  auto [rechecked, truncated] = BitVec<W, S>::FromValue(val.value());
+  auto [rechecked, truncated] = BitVec<W, S>::TryFrom(val.value());
   EXPECT_EQ(val, rechecked);
   EXPECT_FALSE(truncated);
 }
 
 #define CHECKED_IDEMPOTENT_FUZZ_TEST(Type, W)                             \
   void Type##W##CheckedIdempotent(Type<W>::ValueType raw) {               \
-    /* Checked() masks raw to valid W-bit range. */                       \
-    auto [val, truncated] = Type<W>::FromValue(raw);                        \
-    VerifyCheckedIdempotent(val);                                         \
+    /* TryFrom() masks raw to valid W-bit range. */                       \
+    auto r = Type<W>::TryFrom(raw);                                       \
+    VerifyCheckedIdempotent(r.value);                                     \
   }                                                                       \
   FUZZ_TEST(BitVecChecked, Type##W##CheckedIdempotent)
 

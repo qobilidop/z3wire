@@ -35,7 +35,7 @@ class SymBitVec {
       : expr_(ctx.bv_const(name.c_str(), W)) {}
 
   // Create a SymBitVec from a raw z3::expr. Aborts if the expression does not
-  // have the correct bit-vector sort and width. Prefer FromExpr for a
+  // have the correct bit-vector sort and width. Prefer TryFrom for a
   // non-aborting alternative.
   explicit SymBitVec(z3::expr expr) : expr_(std::move(expr)) {
     Z3W_CHECK(expr_->get_sort().is_bv() && expr_->get_sort().bv_size() == W)
@@ -43,9 +43,14 @@ class SymBitVec {
         << expr_->get_sort();
   }
 
-  // Create a SymBitVec from a raw z3::expr with validation. Returns nullopt if
-  // the expression does not have the correct bit-vector sort and width.
-  static std::optional<SymBitVec> FromExpr(z3::expr expr) {
+  // Create a SymBitVec from a raw z3::expr; aborts via Z3W_CHECK if the
+  // expression doesn't have the correct bit-vector sort and width. Use
+  // TryFrom for a non-aborting alternative.
+  static SymBitVec From(z3::expr expr) { return SymBitVec(std::move(expr)); }
+
+  // Create a SymBitVec from a raw z3::expr with validation. Returns nullopt
+  // if the expression doesn't have the correct bit-vector sort and width.
+  static std::optional<SymBitVec> TryFrom(z3::expr expr) {
     if (!expr.get_sort().is_bv() || expr.get_sort().bv_size() != W) {
       return std::nullopt;
     }
@@ -134,12 +139,16 @@ BitVec<W, S> to_concrete(const SymBitVec<W, S>& symbolic,
           evaluated.extract(hi, lo).simplify().get_numeral_uint());
     }
 
-    return std::get<0>(BitVec<W, S>::FromValue(bytes));
+    return BitVec<W, S>::TryFrom(bytes).value;
   } else {
-    // Always extract as uint64 and let FromValue() handle sign interpretation.
+    // Always extract as uint64 and let TryFrom() handle sign interpretation.
     // get_numeral_int64() throws for W=64 signed values with the MSB set.
-    return std::get<0>(BitVec<W, S>::FromValue(
-        model.eval(symbolic.expr(), true).get_numeral_uint64()));
+    // Discard the truncated flag: Z3 always returns valid W-bit values; for
+    // signed types the uint64 representation can exceed the signed range while
+    // the bit pattern is still correct.
+    return BitVec<W, S>::TryFrom(
+               model.eval(symbolic.expr(), true).get_numeral_uint64())
+        .value;
   }
 }
 

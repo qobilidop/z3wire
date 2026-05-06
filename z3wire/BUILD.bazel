@@ -6,6 +6,7 @@ package(default_visibility = ["//visibility:public"])
 cc_library(
     name = "bit_vec",
     hdrs = ["bit_vec.h"],
+    deps = [":check"],
 )
 
 cc_test(
@@ -35,7 +36,10 @@ cc_test(
 cc_library(
     name = "check",
     hdrs = ["check.h"],
-    visibility = ["//z3wire:__subpackages__"],
+    visibility = [
+        "//z3wire:__pkg__",
+        "//z3wire:__subpackages__",
+    ],
 )
 
 cc_test(

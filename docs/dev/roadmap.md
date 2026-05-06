@@ -45,9 +45,13 @@
     lightweight helpers (e.g., a named-field factory) once real usage patterns
     emerge.
 
-- **Clamp on truncation in `FromValue()`** — When `FromValue()` truncates,
-    return the clamped value (min or max of the range) instead of the low-W-bit
-    truncation. Clamping is more meaningful for a data holder type.
+- **Saturating cast operation** — If callers ever need saturating-narrow
+    semantics (clamp value to the representable range instead of
+    bit-truncation), expose it as an explicit `saturating_cast<T>(v)` operation
+    rather than as the silent default of `From*`/`TryFrom*`. Bit-truncation is
+    the right default for a hardware verification library; saturation is a
+    different operation that should be explicitly requested. Defer until a real
+    use case appears.
 
 ### Quality
 
@@ -58,8 +62,9 @@
 - **Fuzz tests** — Property-based tests using Google FuzzTest. Roundtrip
     (`concrete -> symbolic -> concrete`) is done. Ideas for more:
 
-    - **Checked construction idempotency** — `FromValue(v.value())` on a valid
-        `BitVec` should return `{v, false}`. No Z3 needed.
+    - **Checked construction idempotency** — `TryFrom(v.value())` on a valid
+        `BitVec` should return a `TryFromResult` with `value == v` and
+        `truncated == false`. No Z3 needed.
     - **Cast roundtrip** — Same-width `unsafe_cast<UInt>(unsafe_cast<SInt>(v))`
         preserves bits.
     - **Arithmetic properties** — Commutativity (`a + b == b + a`), negation

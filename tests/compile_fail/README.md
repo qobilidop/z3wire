@@ -50,4 +50,4 @@ template class z3w::SymBitVec<0, false>;
 ## Coverage
 
 One test for each of the ~24 `static_assert` guards plus the SFINAE constraint
-on `Int::FromValue(int64_t)`.
+on `Int::TryFrom(int64_t)`.
