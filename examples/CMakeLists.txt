@@ -13,6 +13,12 @@ target_link_libraries(multiplier PRIVATE z3wire_sym_bit_vec)
 add_executable(midpoint_overflow midpoint_overflow.cc)
 target_link_libraries(midpoint_overflow PRIVATE z3wire_sym_bit_vec)
 
+# Symbolic-execution examples.
+add_executable(symbolic_execution_exact_match_table
+               symbolic_execution/exact_match_table.cc)
+target_link_libraries(symbolic_execution_exact_match_table
+                      PRIVATE z3wire_sym_bit_vec)
+
 # Usage examples (also embedded in docs).
 add_executable(usage_types usage/types.cc)
 target_link_libraries(usage_types PRIVATE z3wire_sym_bit_vec)

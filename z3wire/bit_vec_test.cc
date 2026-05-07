@@ -258,6 +258,13 @@ TEST(BitVecTest, SameTypeEqualitySigned) {
   EXPECT_FALSE(a == c);
 }
 
+TEST(BitVecTest, EqualityIsConstexpr) {
+  static_assert(UInt<8>::Literal<42>() == UInt<8>::Literal<42>());
+  static_assert(!(UInt<8>::Literal<42>() == UInt<8>::Literal<43>()));
+  static_assert(UInt<24>::Literal<0xaabbcc>() == UInt<24>::Literal<0xaabbcc>());
+  static_assert(SInt<16>::Literal<-1>() == SInt<16>::Literal<-1>());
+}
+
 // --- Wide (W > 64) unsigned ---
 
 TEST(BitVecTest, WideValueType) {
