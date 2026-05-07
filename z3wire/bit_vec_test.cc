@@ -521,5 +521,136 @@ TEST(BitVecDeathTest, FromLeBytesNarrowAbortsOnTruncation) {
 }
 // NOLINTEND(readability-function-cognitive-complexity)
 
+// --- ToBeBytes ---
+
+TEST(BitVecTest, ToBeBytesWideAligned) {
+  // W=128: BE is byte-reverse of LE.
+  std::array<uint8_t, 16> le{};
+  le[0] = 0x11;
+  le[15] = 0xFF;
+  auto v = UInt<128>::FromLeBytes(le);
+  auto be = v.ToBeBytes();
+  EXPECT_EQ(be[0], 0xFF);
+  EXPECT_EQ(be[15], 0x11);
+}
+
+TEST(BitVecTest, ToBeBytesNarrowAligned) {
+  // W=32: 0xDEADBEEF -> [0xDE, 0xAD, 0xBE, 0xEF].
+  auto v = UInt<32>::From(uint32_t{0xDEADBEEF});
+  auto bytes = v.ToBeBytes();
+  EXPECT_EQ(bytes[0], 0xDE);
+  EXPECT_EQ(bytes[1], 0xAD);
+  EXPECT_EQ(bytes[2], 0xBE);
+  EXPECT_EQ(bytes[3], 0xEF);
+}
+
+TEST(BitVecTest, ToBeBytesPartialByte) {
+  // W=12: 0xABC -> [0x0A, 0xBC] (partial byte at index 0, padding in high
+  // nibble).
+  auto v = UInt<12>::From(0xABC);
+  auto bytes = v.ToBeBytes();
+  EXPECT_EQ(bytes.size(), 2U);
+  EXPECT_EQ(bytes[0], 0x0A);
+  EXPECT_EQ(bytes[1], 0xBC);
+}
+
+TEST(BitVecTest, ToBeBytesIsLeReversed) {
+  auto v = UInt<128>::From(uint64_t{0x123456789ABCDEF0});
+  auto le = v.ToLeBytes();
+  auto be = v.ToBeBytes();
+  std::reverse(le.begin(), le.end());
+  EXPECT_EQ(le, be);
+}
+
+TEST(BitVecTest, ToBeBytesNarrowW64) {
+  // W=64: 0x0123456789ABCDEF -> BE bytes [0x01, 0x23, ..., 0xEF].
+  auto v = UInt<64>::From(uint64_t{0x0123456789ABCDEF});
+  auto bytes = v.ToBeBytes();
+  EXPECT_EQ(bytes[0], 0x01);
+  EXPECT_EQ(bytes[7], 0xEF);
+}
+
+// --- TryFromBeBytes / FromBeBytes ---
+
+TEST(BitVecTest, TryFromBeBytesNarrowAligned) {
+  // W=32 BE: [0xDE, 0xAD, 0xBE, 0xEF] -> 0xDEADBEEF.
+  std::array<uint8_t, 4> bytes{0xDE, 0xAD, 0xBE, 0xEF};
+  auto r = UInt<32>::TryFromBeBytes(bytes);
+  EXPECT_FALSE(r.truncated);
+  EXPECT_EQ(r.value.value(), 0xDEADBEEFU);
+}
+
+TEST(BitVecTest, TryFromBeBytesShortInput) {
+  // W=32 BE with 1 byte: zero-pad on the high (front) end.
+  // [0x42] -> 0x00000042.
+  std::array<uint8_t, 1> bytes{0x42};
+  auto r = UInt<32>::TryFromBeBytes(bytes);
+  EXPECT_FALSE(r.truncated);
+  EXPECT_EQ(r.value.value(), 0x42U);
+}
+
+TEST(BitVecTest, TryFromBeBytesPartialBytePadOK) {
+  // W=12 BE: [0x0A, 0xBC] -> 0xABC (high nibble of byte 0 is zero).
+  std::array<uint8_t, 2> bytes{0x0A, 0xBC};
+  auto r = UInt<12>::TryFromBeBytes(bytes);
+  EXPECT_FALSE(r.truncated);
+  EXPECT_EQ(r.value.value(), 0xABCU);
+}
+
+TEST(BitVecTest, TryFromBeBytesPartialByteOverflow) {
+  // W=12 BE: [0xFA, 0xBC] - high nibble 0xF in byte 0 is non-zero ->
+  // truncated.
+  std::array<uint8_t, 2> bytes{0xFA, 0xBC};
+  auto r = UInt<12>::TryFromBeBytes(bytes);
+  EXPECT_TRUE(r.truncated);
+  EXPECT_EQ(r.value.value(), 0xABCU);  // High nibble masked off.
+}
+
+TEST(BitVecTest, TryFromBeBytesLongInputZeroExtra) {
+  // W=32 BE with 6 bytes; extra (high) bytes zero -> not truncated.
+  std::array<uint8_t, 6> bytes{0x00, 0x00, 0xDE, 0xAD, 0xBE, 0xEF};
+  auto r = UInt<32>::TryFromBeBytes(bytes);
+  EXPECT_FALSE(r.truncated);
+  EXPECT_EQ(r.value.value(), 0xDEADBEEFU);
+}
+
+TEST(BitVecTest, TryFromBeBytesLongInputNonzeroExtra) {
+  // W=32 BE with 6 bytes; extra (high) bytes non-zero -> truncated.
+  std::array<uint8_t, 6> bytes{0x01, 0x00, 0xDE, 0xAD, 0xBE, 0xEF};
+  auto r = UInt<32>::TryFromBeBytes(bytes);
+  EXPECT_TRUE(r.truncated);
+}
+
+TEST(BitVecTest, TryFromBeBytesWide) {
+  // W=128 BE roundtrip.
+  std::array<uint8_t, 16> be{};
+  be[0] = 0xFF;
+  be[15] = 0x11;
+  auto r = UInt<128>::TryFromBeBytes(be);
+  EXPECT_FALSE(r.truncated);
+  EXPECT_EQ(r.value.ToBeBytes(), be);
+}
+
+TEST(BitVecTest, FromBeBytesNarrow) {
+  std::array<uint8_t, 4> bytes{0xDE, 0xAD, 0xBE, 0xEF};
+  auto v = UInt<32>::FromBeBytes(bytes);
+  EXPECT_EQ(v.value(), 0xDEADBEEFU);
+}
+
+// NOLINTBEGIN(readability-function-cognitive-complexity)
+TEST(BitVecDeathTest, FromBeBytesAbortsOnTruncation) {
+  std::array<uint8_t, 2> bytes{0xFA, 0xBC};
+  EXPECT_DEATH((void)UInt<12>::FromBeBytes(bytes),
+               "construction value out of range");
+}
+// NOLINTEND(readability-function-cognitive-complexity)
+
+TEST(BitVecTest, BeAndLeAreInverse) {
+  // For an arbitrary value, FromBeBytes(ToBeBytes(v)) == v.
+  auto v = UInt<128>::From(uint64_t{0x0123456789ABCDEF});
+  auto roundtrip = UInt<128>::FromBeBytes(v.ToBeBytes());
+  EXPECT_EQ(v.ToLeBytes(), roundtrip.ToLeBytes());
+}
+
 }  // namespace
 }  // namespace z3w

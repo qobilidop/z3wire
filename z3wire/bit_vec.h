@@ -9,6 +9,7 @@
 #include <limits>
 #include <span>
 #include <type_traits>
+#include <vector>
 
 #include "z3wire/check.h"
 
@@ -192,6 +193,32 @@ class BitVec {
       bytes[i] = static_cast<uint8_t>(masked >> (i * 8));
     }
     return bytes;
+  }
+
+  // Serialize to big-endian bytes. Byte-reverse of ToLeBytes(): the value
+  // occupies the low-magnitude end of the array (back of the array for BE),
+  // and the partial-byte padding lives in the unused high bits of byte 0.
+  [[nodiscard]] std::array<uint8_t, kNumBytes> ToBeBytes() const {
+    auto bytes = ToLeBytes();
+    std::reverse(bytes.begin(), bytes.end());
+    return bytes;
+  }
+
+  // Construct from a big-endian byte sequence. "High" bytes are at the front
+  // (index 0). Shorter input zero-pads on the high (front) end; longer input
+  // must have the extra high bytes be zero or truncation is reported. For
+  // partial-byte widths (W % 8 != 0), the unused high bits of byte 0 must
+  // be zero or truncation is reported.
+  [[nodiscard]] static TryFromResult TryFromBeBytes(
+      std::span<const uint8_t> bytes) {
+    std::vector<uint8_t> reversed(bytes.rbegin(), bytes.rend());
+    return TryFromLeBytes(std::span<const uint8_t>{reversed});
+  }
+
+  static BitVec FromBeBytes(std::span<const uint8_t> bytes) {
+    auto r = TryFromBeBytes(bytes);
+    Z3W_CHECK(!r.truncated) << "construction value out of range";
+    return r.value;
   }
 
  private:
