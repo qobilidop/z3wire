@@ -9,6 +9,7 @@
 #include <limits>
 #include <span>
 #include <type_traits>
+#include <vector>
 
 #include "z3wire/check.h"
 
@@ -101,18 +102,18 @@ class BitVec {
     }
   }
 
-  // Byte-span overload (W > 64). Interprets bytes as little-endian, zero-padded
-  // if shorter than W bits, and reports truncation if any bits beyond W were
-  // non-zero.
-  [[nodiscard]] static TryFromResult TryFrom(std::span<const uint8_t> bytes)
-    requires(W > 64)
-  {
-    BitVec result;
+  // Construct from a little-endian byte sequence. Zero-pads if shorter than
+  // W bits, reports truncation if any bits beyond W were non-zero (extra
+  // bytes beyond kNumBytes, or unused high bits in the partial top byte
+  // when W % 8 != 0).
+  [[nodiscard]] static TryFromResult TryFromLeBytes(
+      std::span<const uint8_t> bytes) {
+    std::array<uint8_t, kNumBytes> raw{};
     bool truncated = false;
 
     size_t copy_len = std::min(bytes.size(), kNumBytes);
     for (size_t i = 0; i < copy_len; ++i) {
-      result.value_[i] = bytes[i];
+      raw[i] = bytes[i];
     }
 
     for (size_t i = kNumBytes; i < bytes.size(); ++i) {
@@ -125,13 +126,23 @@ class BitVec {
     constexpr size_t used_bits = W % 8;
     if constexpr (used_bits != 0) {
       constexpr uint8_t mask = (uint8_t{1} << used_bits) - 1;
-      if (result.value_[kNumBytes - 1] & ~mask) {
+      if (raw[kNumBytes - 1] & ~mask) {
         truncated = true;
       }
-      result.value_[kNumBytes - 1] &= mask;
+      raw[kNumBytes - 1] &= mask;
     }
 
-    return {result, truncated};
+    if constexpr (W > 64) {
+      BitVec result;
+      result.value_ = raw;
+      return {result, truncated};
+    } else {
+      uint64_t bits = 0;
+      for (size_t i = 0; i < kNumBytes; ++i) {
+        bits |= static_cast<uint64_t>(raw[i]) << (i * 8);
+      }
+      return {BitVec(bits), truncated};
+    }
   }
 
   // Runtime construction; aborts via Z3W_CHECK if the input is out of range.
@@ -143,16 +154,76 @@ class BitVec {
     return r.value;
   }
 
-  static BitVec From(std::span<const uint8_t> bytes)
-    requires(W > 64)
-  {
-    auto r = TryFrom(bytes);
+  // Like TryFromLeBytes, but aborts via Z3W_CHECK on truncation.
+  static BitVec FromLeBytes(std::span<const uint8_t> bytes) {
+    auto r = TryFromLeBytes(bytes);
     Z3W_CHECK(!r.truncated) << "construction value out of range";
     return r.value;
   }
 
-  // Access the stored value.
-  [[nodiscard]] constexpr ValueType value() const { return value_; }
+  // Access the stored value (narrow types only; W <= 64).
+  [[nodiscard]] constexpr ValueType value() const
+    requires(W <= 64)
+  {
+    return value_;
+  }
+
+  // Serialize to little-endian bytes. The value occupies the low-magnitude
+  // end of the array; if W % 8 != 0, the partial top byte's unused high
+  // bits are zero.
+  [[nodiscard]] std::array<uint8_t, kNumBytes> ToLeBytes() const
+    requires(W > 64)
+  {
+    return value_;
+  }
+
+  // Narrow (W <= 64) overload of ToLeBytes; same semantics as the wide
+  // overload above.
+  [[nodiscard]] std::array<uint8_t, kNumBytes> ToLeBytes() const
+    requires(W <= 64)
+  {
+    std::array<uint8_t, kNumBytes> bytes{};
+    // Cast to unsigned, then mask to W bits to clear sign-extension on signed
+    // narrow types, then write LE bytes.
+    auto raw = static_cast<NarrowUnsigned>(value_);
+    uint64_t masked;
+    if constexpr (W == 64) {
+      masked = static_cast<uint64_t>(raw);
+    } else {
+      masked = static_cast<uint64_t>(raw) & ((uint64_t{1} << W) - 1);
+    }
+    for (size_t i = 0; i < kNumBytes; ++i) {
+      bytes[i] = static_cast<uint8_t>(masked >> (i * 8));
+    }
+    return bytes;
+  }
+
+  // Serialize to big-endian bytes. Byte-reverse of ToLeBytes(): the value
+  // occupies the low-magnitude end of the array (back of the array for BE),
+  // and the partial-byte padding lives in the unused high bits of byte 0.
+  [[nodiscard]] std::array<uint8_t, kNumBytes> ToBeBytes() const {
+    auto bytes = ToLeBytes();
+    std::reverse(bytes.begin(), bytes.end());
+    return bytes;
+  }
+
+  // Construct from a big-endian byte sequence. "High" bytes are at the front
+  // (index 0). Shorter input zero-pads on the high (front) end; longer input
+  // must have the extra high bytes be zero or truncation is reported. For
+  // partial-byte widths (W % 8 != 0), the unused high bits of byte 0 must
+  // be zero or truncation is reported.
+  [[nodiscard]] static TryFromResult TryFromBeBytes(
+      std::span<const uint8_t> bytes) {
+    std::vector<uint8_t> reversed(bytes.rbegin(), bytes.rend());
+    return TryFromLeBytes(std::span<const uint8_t>{reversed});
+  }
+
+  // Like TryFromBeBytes, but aborts via Z3W_CHECK on truncation.
+  static BitVec FromBeBytes(std::span<const uint8_t> bytes) {
+    auto r = TryFromBeBytes(bytes);
+    Z3W_CHECK(!r.truncated) << "construction value out of range";
+    return r.value;
+  }
 
  private:
   constexpr explicit BitVec(uint64_t raw) : value_(make_value(raw)) {}
@@ -223,7 +294,11 @@ using SInt = BitVec<W, true>;
 
 template <size_t W, bool S>
 bool operator==(const BitVec<W, S>& lhs, const BitVec<W, S>& rhs) {
-  return lhs.value() == rhs.value();
+  if constexpr (W > 64) {
+    return lhs.ToLeBytes() == rhs.ToLeBytes();
+  } else {
+    return lhs.value() == rhs.value();
+  }
 }
 
 }  // namespace z3w

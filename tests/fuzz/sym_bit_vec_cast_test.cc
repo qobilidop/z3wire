@@ -12,6 +12,17 @@
 namespace z3w {
 namespace {
 
+// Helper to dispatch TryFrom call based on width.
+template <size_t W, bool S>
+typename BitVec<W, S>::TryFromResult TryFromValue(
+    const typename BitVec<W, S>::ValueType& val) {
+  if constexpr (W > 64) {
+    return BitVec<W, S>::TryFromLeBytes(val);
+  } else {
+    return BitVec<W, S>::TryFrom(val);
+  }
+}
+
 // Property: Same-width signed/unsigned unsafe_cast roundtrip preserves bits.
 // unsafe_cast<SymBitVec<W, S>>(unsafe_cast<SymBitVec<W, !S>>(v)) == v.
 template <size_t W, bool S>
@@ -32,8 +43,8 @@ void VerifyCastRoundtrip(const BitVec<W, S>& original) {
 
 #define CAST_ROUNDTRIP_FUZZ_TEST(Type, W)                                 \
   void Type##W##CastRoundtrip(Type<W>::ValueType raw) {                   \
-    /* TryFrom() masks raw to valid W-bit range. */                       \
-    auto r = Type<W>::TryFrom(raw);                                       \
+    /* TryFromValue() dispatches to TryFrom/TryFromLeBytes based on W. */ \
+    auto r = TryFromValue<W, Type<W>::kIsSigned>(raw);                    \
     VerifyCastRoundtrip(r.value);                                         \
   }                                                                       \
   FUZZ_TEST(SymBitVecCast, Type##W##CastRoundtrip)

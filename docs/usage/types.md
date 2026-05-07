@@ -80,9 +80,9 @@ std::optional<z3w::SymBool> opt_b = z3w::SymBool::TryFrom(raw);
 Concrete types store native values and do not require a `z3::context`.
 Bit-vector width must be at least 1.
 
-For widths up to 64, `.value()` returns a native integer type. For widths above
-64, `.value()` returns `std::array<uint8_t, (W + 7) / 8>` in little-endian byte
-order.
+For widths up to 64, `.value()` returns a native integer type. Wide types (W >
+64\) do not expose a byte-array `.value()` accessor; use `ToLeBytes()` or
+`ToBeBytes()` to serialize to bytes explicitly (see "Byte serialization" below).
 
 ### Construction
 
@@ -114,22 +114,39 @@ auto r = z3w::UInt<8>::TryFrom(300);
 // r.value.value() == 44, r.truncated == true (300 doesn't fit in 8 bits)
 ```
 
-Wide types (W > 64) store values as a byte array:
+Construction from a byte sequence (any width). `FromLeBytes`/`FromBeBytes` and
+`TryFromLeBytes`/`TryFromBeBytes` accept a `std::span<const uint8_t>`:
 
 ```cpp
-auto wide = z3w::UInt<128>::Literal<42>();
-wide.value();  // std::array<uint8_t, 16>, little-endian
-
-// Construction from byte array:
 std::array<uint8_t, 16> bytes = { /* ... */ };
-auto w = z3w::UInt<128>::TryFrom(std::span<const uint8_t>{bytes});
-// w.value.value() is the constructed bit-vector, w.truncated indicates
-// whether high bytes were dropped.
+auto w_le = z3w::UInt<128>::FromLeBytes(bytes);     // little-endian
+auto w_be = z3w::UInt<128>::FromBeBytes(bytes);     // big-endian
+auto [w, truncated] = z3w::UInt<128>::TryFromLeBytes(bytes);
 ```
+
+Inputs of any length are accepted. Shorter than `(W + 7) / 8` bytes zero-pads on
+the high-magnitude end (no truncation). Longer than that truncates and reports
+it iff any extra bytes are non-zero. For W not a multiple of 8, the partial
+byte's unused high bits must be zero or truncation is reported.
+
+### Byte serialization
+
+`ToLeBytes()` and `ToBeBytes()` return `std::array<uint8_t, (W + 7) / 8>`:
+
+```cpp
+auto x = z3w::UInt<32>::From(uint32_t{0xDEADBEEF});
+x.ToLeBytes();  // {0xEF, 0xBE, 0xAD, 0xDE}
+x.ToBeBytes();  // {0xDE, 0xAD, 0xBE, 0xEF}
+```
+
+For W not a multiple of 8, the value is right-aligned and padding lives in the
+unused high bits of the most-significant byte (the partial byte at index
+`kNumBytes - 1` for LE, index `0` for BE). For example, `UInt<12>` holding
+`0xABC` serializes as `{0xBC, 0x0A}` LE or `{0x0A, 0xBC}` BE.
 
 ### Value access
 
-`.value()` returns the stored value in its natural type:
+`.value()` returns the stored value in its natural type (narrow types only):
 
 ```cpp
 z3w::Bool flag = true;
