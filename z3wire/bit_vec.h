@@ -293,7 +293,7 @@ using SInt = BitVec<W, true>;
 // --- Equality (same type: same width and signedness) ---
 
 template <size_t W, bool S>
-bool operator==(const BitVec<W, S>& lhs, const BitVec<W, S>& rhs) {
+constexpr bool operator==(const BitVec<W, S>& lhs, const BitVec<W, S>& rhs) {
   if constexpr (W > 64) {
     return lhs.ToLeBytes() == rhs.ToLeBytes();
   } else {
