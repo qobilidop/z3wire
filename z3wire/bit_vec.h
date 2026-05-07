@@ -154,6 +154,7 @@ class BitVec {
     return r.value;
   }
 
+  // Like TryFromLeBytes, but aborts via Z3W_CHECK on truncation.
   static BitVec FromLeBytes(std::span<const uint8_t> bytes) {
     auto r = TryFromLeBytes(bytes);
     Z3W_CHECK(!r.truncated) << "construction value out of range";
@@ -176,6 +177,8 @@ class BitVec {
     return value_;
   }
 
+  // Narrow (W <= 64) overload of ToLeBytes; same semantics as the wide
+  // overload above.
   [[nodiscard]] std::array<uint8_t, kNumBytes> ToLeBytes() const
     requires(W <= 64)
   {
@@ -215,6 +218,7 @@ class BitVec {
     return TryFromLeBytes(std::span<const uint8_t>{reversed});
   }
 
+  // Like TryFromBeBytes, but aborts via Z3W_CHECK on truncation.
   static BitVec FromBeBytes(std::span<const uint8_t> bytes) {
     auto r = TryFromBeBytes(bytes);
     Z3W_CHECK(!r.truncated) << "construction value out of range";
