@@ -316,6 +316,75 @@ auto math_ne(const L& lhs, const R& rhs) {
   return math_ne(internal::promote(lhs, ctx), internal::promote(rhs, ctx));
 }
 
+// --- Mathematical ordering (heterogeneous: any width/signedness combination) ---
+
+// math_lt asks whether the first operand is mathematically less than the
+// second. Both operands are widened to a common width that preserves every
+// value from both sides before comparing: same signedness uses
+// max(W1, W2); mixed signedness uses max(W1, W2) + 1 so the unsigned
+// operand's full range fits in the signed domain. The comparison itself
+// uses z3::ult when both operands are unsigned, z3::slt otherwise.
+// math_le, math_gt, and math_ge are derived from math_lt.
+template <size_t W1, bool S1, size_t W2, bool S2>
+SymBool math_lt(const SymBitVec<W1, S1>& lhs, const SymBitVec<W2, S2>& rhs) {
+  constexpr bool kSigned = S1 || S2;
+  constexpr size_t kCommonWidth =
+      (S1 == S2) ? std::max(W1, W2) : std::max(W1, W2) + 1;
+  auto lhs_ext = internal::extend<kCommonWidth, W1, S1>(lhs);
+  auto rhs_ext = internal::extend<kCommonWidth, W2, S2>(rhs);
+  if constexpr (kSigned) {
+    return SymBool(z3::slt(lhs_ext, rhs_ext));
+  } else {
+    return SymBool(z3::ult(lhs_ext, rhs_ext));
+  }
+}
+
+// math_le(a, b) is equivalent to !math_lt(b, a). See math_lt for semantics.
+template <size_t W1, bool S1, size_t W2, bool S2>
+SymBool math_le(const SymBitVec<W1, S1>& lhs, const SymBitVec<W2, S2>& rhs) {
+  return !math_lt(rhs, lhs);
+}
+
+// math_gt(a, b) is equivalent to math_lt(b, a). See math_lt for semantics.
+template <size_t W1, bool S1, size_t W2, bool S2>
+SymBool math_gt(const SymBitVec<W1, S1>& lhs, const SymBitVec<W2, S2>& rhs) {
+  return math_lt(rhs, lhs);
+}
+
+// math_ge(a, b) is equivalent to !math_lt(a, b). See math_lt for semantics.
+template <size_t W1, bool S1, size_t W2, bool S2>
+SymBool math_ge(const SymBitVec<W1, S1>& lhs, const SymBitVec<W2, S2>& rhs) {
+  return !math_lt(lhs, rhs);
+}
+
+template <typename L, typename R>
+  requires mixed_operands<L, R>
+auto math_lt(const L& lhs, const R& rhs) {
+  auto& ctx = internal::get_ctx(lhs, rhs);
+  return math_lt(internal::promote(lhs, ctx), internal::promote(rhs, ctx));
+}
+
+template <typename L, typename R>
+  requires mixed_operands<L, R>
+auto math_le(const L& lhs, const R& rhs) {
+  auto& ctx = internal::get_ctx(lhs, rhs);
+  return math_le(internal::promote(lhs, ctx), internal::promote(rhs, ctx));
+}
+
+template <typename L, typename R>
+  requires mixed_operands<L, R>
+auto math_gt(const L& lhs, const R& rhs) {
+  auto& ctx = internal::get_ctx(lhs, rhs);
+  return math_gt(internal::promote(lhs, ctx), internal::promote(rhs, ctx));
+}
+
+template <typename L, typename R>
+  requires mixed_operands<L, R>
+auto math_ge(const L& lhs, const R& rhs) {
+  auto& ctx = internal::get_ctx(lhs, rhs);
+  return math_ge(internal::promote(lhs, ctx), internal::promote(rhs, ctx));
+}
+
 // --- Ordered comparison (relaxed: any width/signedness combination) ---
 
 template <size_t W1, bool S1, size_t W2, bool S2>
