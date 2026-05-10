@@ -34,9 +34,11 @@ int main() {
   // Correct semantics: 33-bit sum can't overflow, result is exact.
   z3w::SymUInt<33> correct = z3w::shr(a + b, one);
 
-  // Prove the buggy version can produce wrong results.
+  // Prove the buggy version can produce wrong results. buggy is SymUInt<32>
+  // but correct is SymUInt<33>; z3w::math_ne asks the mathematical
+  // value-based question across operand types.
   solver.push();
-  solver.add((buggy != correct).expr());
+  solver.add(z3w::math_ne(buggy, correct).expr());
 
   if (solver.check() == z3::sat) {
     auto model = solver.get_model();
@@ -51,10 +53,7 @@ int main() {
 
   // Prove the bit-hack always matches the correct result.
   solver.push();
-
-  // Z3Wire comparison is mathematical: SymUInt<32> and SymUInt<33> can be
-  // compared directly, checking whether their values are always equal.
-  solver.add((hack != correct).expr());
+  solver.add(z3w::math_ne(hack, correct).expr());
 
   if (solver.check() == z3::unsat) {
     std::cout << "Bit-hack verified correct for all inputs.\n";
