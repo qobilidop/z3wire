@@ -115,6 +115,71 @@ TEST_F(SymBitVecTest, Inequality) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
+// --- Mathematical equality (math_eq / math_ne) ---
+
+TEST_F(SymBitVecTest, MathEqSameSignednessMixedWidth) {
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<16> b(ctx_, "b");
+  SymBool eq = math_eq(a, b);
+
+  // a = 200 (8-bit), b = 200 (16-bit) → mathematically equal.
+  z3::solver s(ctx_);
+  s.add(eq.expr());
+  s.add(a.expr() == ctx_.bv_val(200, 8));
+  s.add(b.expr() != ctx_.bv_val(200, 16));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(SymBitVecTest, MathEqMixedSignednessBitPatternsDiffer) {
+  // SymUInt<8>(255) and SymSInt<8>(-1) share bit pattern 0xFF but are
+  // mathematically different (255 vs -1). math_eq must answer false.
+  SymUInt<8> u(ctx_, "u");
+  SymSInt<8> s(ctx_, "s");
+  SymBool eq = math_eq(u, s);
+
+  z3::solver solver(ctx_);
+  solver.add(u.expr() == ctx_.bv_val(255, 8));
+  solver.add(s.expr() == ctx_.bv_val(-1, 8));
+  solver.add(eq.expr());
+  EXPECT_EQ(solver.check(), z3::unsat);
+}
+
+TEST_F(SymBitVecTest, MathEqMixedSignednessMixedWidth) {
+  // SymSInt<8>(-1) vs SymUInt<16>(65535): different values, should be unequal.
+  SymSInt<8> a(ctx_, "a");
+  SymUInt<16> b(ctx_, "b");
+  SymBool eq = math_eq(a, b);
+
+  z3::solver s(ctx_);
+  s.add(a.expr() == ctx_.bv_val(-1, 8));
+  s.add(b.expr() == ctx_.bv_val(65535, 16));
+  s.add(eq.expr());
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(SymBitVecTest, MathEqSymWithConcrete) {
+  SymUInt<8> a(ctx_, "a");
+  auto lit = UInt<16>::Literal<200>();
+  SymBool eq = math_eq(a, lit);
+
+  z3::solver s(ctx_);
+  s.add(eq.expr());
+  s.add(a.expr() != ctx_.bv_val(200, 8));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(SymBitVecTest, MathNeMixedWidth) {
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<16> b(ctx_, "b");
+  SymBool ne = math_ne(a, b);
+
+  z3::solver s(ctx_);
+  s.add(ne.expr());
+  s.add(a.expr() == ctx_.bv_val(200, 8));
+  s.add(b.expr() == ctx_.bv_val(200, 16));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
 // --- Ordered comparison (unsigned) ---
 
 TEST_F(SymBitVecTest, UnsignedLessThan) {

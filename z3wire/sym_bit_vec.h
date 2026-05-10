@@ -277,6 +277,45 @@ SymBool operator!=(const SymBitVec<W1, S1>& lhs, const SymBitVec<W2, S2>& rhs) {
   return SymBool(lhs_ext != rhs_ext);
 }
 
+// --- Mathematical equality (heterogeneous: any width/signedness combination) ---
+
+// math_eq asks whether two operands represent the same mathematical value.
+// Both operands are widened to a common width that preserves every value from
+// both sides before equality is checked. Works for any combination of width
+// and signedness on the two operands.
+template <size_t W1, bool S1, size_t W2, bool S2>
+SymBool math_eq(const SymBitVec<W1, S1>& lhs, const SymBitVec<W2, S2>& rhs) {
+  constexpr size_t kCommonWidth =
+      (S1 == S2) ? std::max(W1, W2) : std::max(W1, W2) + 1;
+  auto lhs_ext = internal::extend<kCommonWidth, W1, S1>(lhs);
+  auto rhs_ext = internal::extend<kCommonWidth, W2, S2>(rhs);
+  return SymBool(lhs_ext == rhs_ext);
+}
+
+// math_ne is the negation of math_eq. See math_eq for semantics.
+template <size_t W1, bool S1, size_t W2, bool S2>
+SymBool math_ne(const SymBitVec<W1, S1>& lhs, const SymBitVec<W2, S2>& rhs) {
+  constexpr size_t kCommonWidth =
+      (S1 == S2) ? std::max(W1, W2) : std::max(W1, W2) + 1;
+  auto lhs_ext = internal::extend<kCommonWidth, W1, S1>(lhs);
+  auto rhs_ext = internal::extend<kCommonWidth, W2, S2>(rhs);
+  return SymBool(lhs_ext != rhs_ext);
+}
+
+template <typename L, typename R>
+  requires mixed_operands<L, R>
+auto math_eq(const L& lhs, const R& rhs) {
+  auto& ctx = internal::get_ctx(lhs, rhs);
+  return math_eq(internal::promote(lhs, ctx), internal::promote(rhs, ctx));
+}
+
+template <typename L, typename R>
+  requires mixed_operands<L, R>
+auto math_ne(const L& lhs, const R& rhs) {
+  auto& ctx = internal::get_ctx(lhs, rhs);
+  return math_ne(internal::promote(lhs, ctx), internal::promote(rhs, ctx));
+}
+
 // --- Ordered comparison (relaxed: any width/signedness combination) ---
 
 template <size_t W1, bool S1, size_t W2, bool S2>
