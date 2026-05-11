@@ -162,22 +162,22 @@ API surface. Adopted and applied to examples.
 
 Allow `ethertype == 0x0800` where `ethertype` is `SymUInt<16>`.
 
-**Why it's interesting:** the native integer literal could convert losslessly
-to a `BitVec` at the *symbolic operand's* width and signedness, after which
-the existing mixed-operand `operator==` (strict on matching types) handles the
-rest. Picking the symbolic operand's type for the conversion target keeps
-operator semantics consistent: every comparison still has matching width and
-signedness at the point of comparison.
+**Why it's interesting:** the native integer literal could convert losslessly to
+a `BitVec` at the *symbolic operand's* width and signedness, after which the
+existing mixed-operand `operator==` (strict on matching types) handles the rest.
+Picking the symbolic operand's type for the conversion target keeps operator
+semantics consistent: every comparison still has matching width and signedness
+at the point of comparison.
 
-**What the conversion has to check:** the native value must fit in the
-target width and signedness without truncation. If it does, the conversion
-is lossless; if it doesn't, the conversion is a compile error (for
-constant-expression literals) or a runtime check (for non-constant values).
-This is the same range-check `Literal<V>()` already performs.
+**What the conversion has to check:** the native value must fit in the target
+width and signedness without truncation. If it does, the conversion is lossless;
+if it doesn't, the conversion is a compile error (for constant-expression
+literals) or a runtime check (for non-constant values). This is the same
+range-check `Literal<V>()` already performs.
 
 **Scope:** Comparison operators only (`==`, `!=`, `<`, `<=`, `>`, `>=`).
-Arithmetic and bitwise with raw integers would produce surprising result
-types or width mismatches. Cross-type cases still go through `math_*`.
+Arithmetic and bitwise with raw integers would produce surprising result types
+or width mismatches. Cross-type cases still go through `math_*`.
 
 **Status:** Blocked on finalizing the auto-promotion strategy documented here.
 The design intersects with the strict-comparison decision: the native-int

@@ -277,7 +277,7 @@ SymBool operator!=(const SymBitVec<W1, S1>& lhs, const SymBitVec<W2, S2>& rhs) {
   return SymBool(lhs.expr() != rhs.expr());
 }
 
-// --- Mathematical equality (heterogeneous: any width/signedness combination) ---
+// --- Mathematical equality (heterogeneous) ---
 
 // math_eq asks whether two operands represent the same mathematical value.
 // Both operands are widened to a common width that preserves every value from
@@ -312,7 +312,7 @@ auto math_ne(const L& lhs, const R& rhs) {
   return math_ne(internal::promote(lhs, ctx), internal::promote(rhs, ctx));
 }
 
-// --- Mathematical ordering (heterogeneous: any width/signedness combination) ---
+// --- Mathematical ordering (heterogeneous) ---
 
 // math_lt asks whether the first operand is mathematically less than the
 // second. Both operands are widened to a common width that preserves every

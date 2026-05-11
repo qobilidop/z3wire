@@ -12,7 +12,7 @@ space, the reasoning behind the decisions made, and alternatives considered.
 - [Three-Tier Casting](three-tier-casting.md) — why there are three cast
     functions and when to use each
 - [Comparison Semantics](mathematical-comparison.md) — why comparison operators
-    are strict on width and signedness, and why mathematical comparisons use
-    the `z3w::math_*` free-function family
+    are strict on width and signedness, and why mathematical comparisons use the
+    `z3w::math_*` free-function family
 - [Bit-Growth Arithmetic](bit-growth-arithmetic.md) — why arithmetic and left
     shift widen their result types instead of wrapping

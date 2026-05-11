@@ -117,31 +117,31 @@ z3w::SymBool ne = (a != b);
 
 ### Integer comparison
 
-Comparison operators for `SymUInt` and `SymSInt` are strict: both operands
-must have the same width and signedness. For comparisons across types, use
-the `z3w::math_*` free-function family — it asks the mathematical
-(value-based) question, regardless of representation.
+Comparison operators for `SymUInt` and `SymSInt` are strict: both operands must
+have the same width and signedness. For comparisons across types, use the
+`z3w::math_*` free-function family — it asks the mathematical (value-based)
+question, regardless of representation.
 
 Typing rules:
 
-| Operation                | LHS            | RHS            | Syntax            | Result type |
-| :----------------------- | :------------- | :------------- | :---------------- | :---------- |
-| Equal to                 | `SymUInt<A> a` | `SymUInt<A> b` | `a == b`          | `SymBool`   |
-| Not equal to             | `SymUInt<A> a` | `SymUInt<A> b` | `a != b`          | `SymBool`   |
-| Greater than             | `SymUInt<A> a` | `SymUInt<A> b` | `a > b`           | `SymBool`   |
-| Greater than or equal to | `SymUInt<A> a` | `SymUInt<A> b` | `a >= b`          | `SymBool`   |
-| Less than                | `SymUInt<A> a` | `SymUInt<A> b` | `a < b`           | `SymBool`   |
-| Less than or equal to    | `SymUInt<A> a` | `SymUInt<A> b` | `a <= b`          | `SymBool`   |
-| Mathematical equal       | `SymUInt<A> a` | `SymSInt<B> b` | `math_eq(a, b)`   | `SymBool`   |
-| Mathematical not equal   | `SymUInt<A> a` | `SymSInt<B> b` | `math_ne(a, b)`   | `SymBool`   |
-| Mathematical greater     | `SymUInt<A> a` | `SymSInt<B> b` | `math_gt(a, b)`   | `SymBool`   |
-| Mathematical greater-eq  | `SymUInt<A> a` | `SymSInt<B> b` | `math_ge(a, b)`   | `SymBool`   |
-| Mathematical less        | `SymUInt<A> a` | `SymSInt<B> b` | `math_lt(a, b)`   | `SymBool`   |
-| Mathematical less-eq     | `SymUInt<A> a` | `SymSInt<B> b` | `math_le(a, b)`   | `SymBool`   |
+| Operation                | LHS            | RHS            | Syntax          | Result type |
+| :----------------------- | :------------- | :------------- | :-------------- | :---------- |
+| Equal to                 | `SymUInt<A> a` | `SymUInt<A> b` | `a == b`        | `SymBool`   |
+| Not equal to             | `SymUInt<A> a` | `SymUInt<A> b` | `a != b`        | `SymBool`   |
+| Greater than             | `SymUInt<A> a` | `SymUInt<A> b` | `a > b`         | `SymBool`   |
+| Greater than or equal to | `SymUInt<A> a` | `SymUInt<A> b` | `a >= b`        | `SymBool`   |
+| Less than                | `SymUInt<A> a` | `SymUInt<A> b` | `a < b`         | `SymBool`   |
+| Less than or equal to    | `SymUInt<A> a` | `SymUInt<A> b` | `a <= b`        | `SymBool`   |
+| Mathematical equal       | `SymUInt<A> a` | `SymSInt<B> b` | `math_eq(a, b)` | `SymBool`   |
+| Mathematical not equal   | `SymUInt<A> a` | `SymSInt<B> b` | `math_ne(a, b)` | `SymBool`   |
+| Mathematical greater     | `SymUInt<A> a` | `SymSInt<B> b` | `math_gt(a, b)` | `SymBool`   |
+| Mathematical greater-eq  | `SymUInt<A> a` | `SymSInt<B> b` | `math_ge(a, b)` | `SymBool`   |
+| Mathematical less        | `SymUInt<A> a` | `SymSInt<B> b` | `math_lt(a, b)` | `SymBool`   |
+| Mathematical less-eq     | `SymUInt<A> a` | `SymSInt<B> b` | `math_le(a, b)` | `SymBool`   |
 
 The `math_*` functions accept any combination of `SymUInt` / `SymSInt` widths
-and signednesses, and concrete `UInt` / `SInt` literals are accepted on
-either side.
+and signednesses, and concrete `UInt` / `SInt` literals are accepted on either
+side.
 
 Examples:
 
