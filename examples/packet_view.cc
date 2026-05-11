@@ -167,4 +167,25 @@ class EthView {
   z3w::SymUInt<BufW>* buf_;
 };
 
+// Top-level composite for a 54-byte Ethernet + IPv4 packet.
+//
+// Buffer layout (LSB-relative bit positions):
+//   [431:320] Ethernet header (14 bytes)
+//   [319:160] IPv4 header     (20 bytes)
+//   [159:0]   IPv4 payload    (20 bytes, not modeled)
+template <int BufW>
+class HdrView {
+ public:
+  static_assert(BufW >= 432, "HdrView requires BufW >= 432 bits.");
+
+  explicit HdrView(z3w::SymUInt<BufW>* buf)
+      : buf_(buf), eth(buf), ipv4(buf) {}
+
+  EthView<BufW, 320>  eth;
+  Ipv4View<BufW, 160> ipv4;
+
+ private:
+  z3w::SymUInt<BufW>* buf_;
+};
+
 int main() { return 0; }
