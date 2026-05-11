@@ -29,3 +29,9 @@ cc_binary(
     srcs = ["adder.cc"],
     deps = ["//z3wire:sym_bit_vec"],
 )
+
+cc_binary(
+    name = "packet_view",
+    srcs = ["packet_view.cc"],
+    deps = ["//z3wire:sym_bit_vec"],
+)
