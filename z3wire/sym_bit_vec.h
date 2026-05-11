@@ -385,34 +385,45 @@ auto math_ge(const L& lhs, const R& rhs) {
   return math_ge(internal::promote(lhs, ctx), internal::promote(rhs, ctx));
 }
 
-// --- Ordered comparison (relaxed: any width/signedness combination) ---
+// --- Ordered comparison (strict: same width and signedness) ---
 
 template <size_t W1, bool S1, size_t W2, bool S2>
 SymBool operator<(const SymBitVec<W1, S1>& lhs, const SymBitVec<W2, S2>& rhs) {
-  constexpr bool kSigned = S1 || S2;
-  constexpr size_t kCommonWidth =
-      (S1 == S2) ? std::max(W1, W2) : std::max(W1, W2) + 1;
-  auto lhs_ext = internal::extend<kCommonWidth, W1, S1>(lhs);
-  auto rhs_ext = internal::extend<kCommonWidth, W2, S2>(rhs);
-  if constexpr (kSigned) {
-    return SymBool(z3::slt(lhs_ext, rhs_ext));
+  static_assert(W1 == W2 && S1 == S2,
+                "comparison requires matching width and signedness; use "
+                "z3w::math_lt(a, b) for mathematical comparison, or cast one "
+                "operand to the other's type");
+  if constexpr (S1) {
+    return SymBool(z3::slt(lhs.expr(), rhs.expr()));
   } else {
-    return SymBool(z3::ult(lhs_ext, rhs_ext));
+    return SymBool(z3::ult(lhs.expr(), rhs.expr()));
   }
 }
 
 template <size_t W1, bool S1, size_t W2, bool S2>
 SymBool operator<=(const SymBitVec<W1, S1>& lhs, const SymBitVec<W2, S2>& rhs) {
+  static_assert(W1 == W2 && S1 == S2,
+                "comparison requires matching width and signedness; use "
+                "z3w::math_le(a, b) for mathematical comparison, or cast one "
+                "operand to the other's type");
   return !(rhs < lhs);
 }
 
 template <size_t W1, bool S1, size_t W2, bool S2>
 SymBool operator>(const SymBitVec<W1, S1>& lhs, const SymBitVec<W2, S2>& rhs) {
+  static_assert(W1 == W2 && S1 == S2,
+                "comparison requires matching width and signedness; use "
+                "z3w::math_gt(a, b) for mathematical comparison, or cast one "
+                "operand to the other's type");
   return rhs < lhs;
 }
 
 template <size_t W1, bool S1, size_t W2, bool S2>
 SymBool operator>=(const SymBitVec<W1, S1>& lhs, const SymBitVec<W2, S2>& rhs) {
+  static_assert(W1 == W2 && S1 == S2,
+                "comparison requires matching width and signedness; use "
+                "z3w::math_ge(a, b) for mathematical comparison, or cast one "
+                "operand to the other's type");
   return !(lhs < rhs);
 }
 

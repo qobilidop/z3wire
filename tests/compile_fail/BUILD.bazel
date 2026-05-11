@@ -127,6 +127,20 @@ cc_compile_fail_test(
 )
 
 cc_compile_fail_test(
+    name = "sym_bit_vec_lt_width_mismatch_test",
+    src = "sym_bit_vec_lt_width_mismatch_test.cc",
+    expected_message = "comparison requires matching width and signedness",
+    deps = ["//z3wire:sym_bit_vec"],
+)
+
+cc_compile_fail_test(
+    name = "sym_bit_vec_lt_signedness_mismatch_test",
+    src = "sym_bit_vec_lt_signedness_mismatch_test.cc",
+    expected_message = "comparison requires matching width and signedness",
+    deps = ["//z3wire:sym_bit_vec"],
+)
+
+cc_compile_fail_test(
     name = "bool_from_float_test",
     src = "bool_from_float_test.cc",
     expected_message = "deleted",
