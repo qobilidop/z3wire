@@ -78,4 +78,57 @@ class Ipv4AddrView {
   z3w::SymUInt<BufW>* buf_;
 };
 
+// IPv4 fixed (option-less) header.
+//
+// Local layout (LSB-relative, 160 bits / 20 bytes):
+//   [159:156] version    [155:152] ihl       [151:144] dscp_ecn
+//   [143:128] total_len  [127:112] id        [111:96]  flags_frag
+//   [95:88]   ttl        [87:80]   protocol  [79:64]   checksum
+//   [63:32]   src_addr   [31:0]    dst_addr
+//
+// Only a representative subset of the 14 IPv4 fields is modeled (version,
+// ihl, dscp_ecn, total_len, src_addr, dst_addr). The other fields follow
+// the same pattern and would add no new design content.
+template <int BufW, int BaseOffset>
+class Ipv4View {
+ public:
+  explicit Ipv4View(z3w::SymUInt<BufW>* buf)
+      : buf_(buf), src_addr(buf), dst_addr(buf) {}
+
+  z3w::SymUInt<4> version() const {
+    return z3w::extract<159 + BaseOffset, 156 + BaseOffset>(*buf_);
+  }
+  void set_version(const z3w::SymUInt<4>& v) {
+    *buf_ = z3w::replace<156 + BaseOffset>(*buf_, v);
+  }
+
+  z3w::SymUInt<4> ihl() const {
+    return z3w::extract<155 + BaseOffset, 152 + BaseOffset>(*buf_);
+  }
+  void set_ihl(const z3w::SymUInt<4>& v) {
+    *buf_ = z3w::replace<152 + BaseOffset>(*buf_, v);
+  }
+
+  z3w::SymUInt<8> dscp_ecn() const {
+    return z3w::extract<151 + BaseOffset, 144 + BaseOffset>(*buf_);
+  }
+  void set_dscp_ecn(const z3w::SymUInt<8>& v) {
+    *buf_ = z3w::replace<144 + BaseOffset>(*buf_, v);
+  }
+
+  z3w::SymUInt<16> total_len() const {
+    return z3w::extract<143 + BaseOffset, 128 + BaseOffset>(*buf_);
+  }
+  void set_total_len(const z3w::SymUInt<16>& v) {
+    *buf_ = z3w::replace<128 + BaseOffset>(*buf_, v);
+  }
+
+  // Decomposed sub-views, pinned at the appropriate IPv4-local offsets.
+  Ipv4AddrView<BufW, BaseOffset + 32> src_addr;  // IPv4-local [63:32]
+  Ipv4AddrView<BufW, BaseOffset +  0> dst_addr;  // IPv4-local [31:0]
+
+ private:
+  z3w::SymUInt<BufW>* buf_;
+};
+
 int main() { return 0; }
