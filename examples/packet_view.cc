@@ -39,35 +39,35 @@ class Ipv4AddrView {
  public:
   explicit Ipv4AddrView(z3w::SymUInt<BufW>* buf) : buf_(buf) {}
 
-  z3w::SymUInt<32> value() const {
+  [[nodiscard]] z3w::SymUInt<32> value() const {
     return z3w::extract<31 + BaseOffset, 0 + BaseOffset>(*buf_);
   }
   void set_value(const z3w::SymUInt<32>& v) {
     *buf_ = z3w::replace<0 + BaseOffset>(*buf_, v);
   }
 
-  z3w::SymUInt<8> octet0() const {
+  [[nodiscard]] z3w::SymUInt<8> octet0() const {
     return z3w::extract<31 + BaseOffset, 24 + BaseOffset>(*buf_);
   }
   void set_octet0(const z3w::SymUInt<8>& v) {
     *buf_ = z3w::replace<24 + BaseOffset>(*buf_, v);
   }
 
-  z3w::SymUInt<8> octet1() const {
+  [[nodiscard]] z3w::SymUInt<8> octet1() const {
     return z3w::extract<23 + BaseOffset, 16 + BaseOffset>(*buf_);
   }
   void set_octet1(const z3w::SymUInt<8>& v) {
     *buf_ = z3w::replace<16 + BaseOffset>(*buf_, v);
   }
 
-  z3w::SymUInt<8> octet2() const {
+  [[nodiscard]] z3w::SymUInt<8> octet2() const {
     return z3w::extract<15 + BaseOffset, 8 + BaseOffset>(*buf_);
   }
   void set_octet2(const z3w::SymUInt<8>& v) {
     *buf_ = z3w::replace<8 + BaseOffset>(*buf_, v);
   }
 
-  z3w::SymUInt<8> octet3() const {
+  [[nodiscard]] z3w::SymUInt<8> octet3() const {
     return z3w::extract<7 + BaseOffset, 0 + BaseOffset>(*buf_);
   }
   void set_octet3(const z3w::SymUInt<8>& v) {
@@ -95,28 +95,28 @@ class Ipv4View {
   explicit Ipv4View(z3w::SymUInt<BufW>* buf)
       : src_addr(buf), dst_addr(buf), buf_(buf) {}
 
-  z3w::SymUInt<4> version() const {
+  [[nodiscard]] z3w::SymUInt<4> version() const {
     return z3w::extract<159 + BaseOffset, 156 + BaseOffset>(*buf_);
   }
   void set_version(const z3w::SymUInt<4>& v) {
     *buf_ = z3w::replace<156 + BaseOffset>(*buf_, v);
   }
 
-  z3w::SymUInt<4> ihl() const {
+  [[nodiscard]] z3w::SymUInt<4> ihl() const {
     return z3w::extract<155 + BaseOffset, 152 + BaseOffset>(*buf_);
   }
   void set_ihl(const z3w::SymUInt<4>& v) {
     *buf_ = z3w::replace<152 + BaseOffset>(*buf_, v);
   }
 
-  z3w::SymUInt<8> dscp_ecn() const {
+  [[nodiscard]] z3w::SymUInt<8> dscp_ecn() const {
     return z3w::extract<151 + BaseOffset, 144 + BaseOffset>(*buf_);
   }
   void set_dscp_ecn(const z3w::SymUInt<8>& v) {
     *buf_ = z3w::replace<144 + BaseOffset>(*buf_, v);
   }
 
-  z3w::SymUInt<16> total_len() const {
+  [[nodiscard]] z3w::SymUInt<16> total_len() const {
     return z3w::extract<143 + BaseOffset, 128 + BaseOffset>(*buf_);
   }
   void set_total_len(const z3w::SymUInt<16>& v) {
@@ -142,21 +142,21 @@ class EthView {
  public:
   explicit EthView(z3w::SymUInt<BufW>* buf) : buf_(buf) {}
 
-  z3w::SymUInt<48> dst_mac() const {
+  [[nodiscard]] z3w::SymUInt<48> dst_mac() const {
     return z3w::extract<111 + BaseOffset, 64 + BaseOffset>(*buf_);
   }
   void set_dst_mac(const z3w::SymUInt<48>& v) {
     *buf_ = z3w::replace<64 + BaseOffset>(*buf_, v);
   }
 
-  z3w::SymUInt<48> src_mac() const {
+  [[nodiscard]] z3w::SymUInt<48> src_mac() const {
     return z3w::extract<63 + BaseOffset, 16 + BaseOffset>(*buf_);
   }
   void set_src_mac(const z3w::SymUInt<48>& v) {
     *buf_ = z3w::replace<16 + BaseOffset>(*buf_, v);
   }
 
-  z3w::SymUInt<16> ethertype() const {
+  [[nodiscard]] z3w::SymUInt<16> ethertype() const {
     return z3w::extract<15 + BaseOffset, 0 + BaseOffset>(*buf_);
   }
   void set_ethertype(const z3w::SymUInt<16>& v) {
