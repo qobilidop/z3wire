@@ -1380,10 +1380,10 @@ TEST_F(SymBitVecTest, IsSymbolicBool) { static_assert(is_symbolic_v<SymBool>); }
 
 // --- Cross-type symbolic comparison (different widths) ---
 
-TEST_F(SymBitVecTest, CrossTypeEqualityDifferentWidths) {
+TEST_F(SymBitVecTest, MathEqDifferentWidths) {
   SymUInt<8> a(ctx_, "a");
   SymUInt<16> b(ctx_, "b");
-  SymBool eq = (a == b);
+  SymBool eq = math_eq(a, b);
 
   // If a=42 and b=42, they should be equal.
   z3::solver s(ctx_);
@@ -1393,10 +1393,10 @@ TEST_F(SymBitVecTest, CrossTypeEqualityDifferentWidths) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-TEST_F(SymBitVecTest, CrossTypeInequalityDifferentWidths) {
+TEST_F(SymBitVecTest, MathNeDifferentWidths) {
   SymUInt<8> a(ctx_, "a");
   SymUInt<16> b(ctx_, "b");
-  SymBool neq = (a != b);
+  SymBool neq = math_ne(a, b);
 
   // If a=42 and b=42, they should not be unequal.
   z3::solver s(ctx_);
@@ -1450,10 +1450,10 @@ TEST_F(SymBitVecTest, CrossTypeGreaterEqualDifferentSignedness) {
 
 // --- Mixed concrete+symbolic cross-type comparison ---
 
-TEST_F(SymBitVecTest, MixedCrossTypeEquality) {
+TEST_F(SymBitVecTest, MixedCrossTypeMathEq) {
   SymUInt<8> sym(ctx_, "x");
   auto conc = UInt<16>::Literal<42>();
-  SymBool eq = (sym == conc);
+  SymBool eq = math_eq(sym, conc);
 
   z3::solver s(ctx_);
   s.add(eq.expr());

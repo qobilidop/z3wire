@@ -257,24 +257,24 @@ SymBitVec<W + 1, true> operator-(const SymBitVec<W, S>& val) {
   return SymBitVec<W + 1, true>(-ext);
 }
 
-// --- Equality (any width/signedness combination) ---
+// --- Equality (strict: same width and signedness) ---
 
 template <size_t W1, bool S1, size_t W2, bool S2>
 SymBool operator==(const SymBitVec<W1, S1>& lhs, const SymBitVec<W2, S2>& rhs) {
-  constexpr size_t kCommonWidth =
-      (S1 == S2) ? std::max(W1, W2) : std::max(W1, W2) + 1;
-  auto lhs_ext = internal::extend<kCommonWidth, W1, S1>(lhs);
-  auto rhs_ext = internal::extend<kCommonWidth, W2, S2>(rhs);
-  return SymBool(lhs_ext == rhs_ext);
+  static_assert(W1 == W2 && S1 == S2,
+                "comparison requires matching width and signedness; use "
+                "z3w::math_eq(a, b) for mathematical equality, or cast one "
+                "operand to the other's type");
+  return SymBool(lhs.expr() == rhs.expr());
 }
 
 template <size_t W1, bool S1, size_t W2, bool S2>
 SymBool operator!=(const SymBitVec<W1, S1>& lhs, const SymBitVec<W2, S2>& rhs) {
-  constexpr size_t kCommonWidth =
-      (S1 == S2) ? std::max(W1, W2) : std::max(W1, W2) + 1;
-  auto lhs_ext = internal::extend<kCommonWidth, W1, S1>(lhs);
-  auto rhs_ext = internal::extend<kCommonWidth, W2, S2>(rhs);
-  return SymBool(lhs_ext != rhs_ext);
+  static_assert(W1 == W2 && S1 == S2,
+                "comparison requires matching width and signedness; use "
+                "z3w::math_ne(a, b) for mathematical inequality, or cast one "
+                "operand to the other's type");
+  return SymBool(lhs.expr() != rhs.expr());
 }
 
 // --- Mathematical equality (heterogeneous: any width/signedness combination) ---
