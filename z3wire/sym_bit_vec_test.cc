@@ -115,6 +115,200 @@ TEST_F(SymBitVecTest, Inequality) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
+// --- Mathematical equality (math_eq / math_ne) ---
+
+TEST_F(SymBitVecTest, MathEqSameSignednessMixedWidth) {
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<16> b(ctx_, "b");
+  SymBool eq = math_eq(a, b);
+
+  // a = 200 (8-bit), b = 200 (16-bit) → mathematically equal.
+  z3::solver s(ctx_);
+  s.add(eq.expr());
+  s.add(a.expr() == ctx_.bv_val(200, 8));
+  s.add(b.expr() != ctx_.bv_val(200, 16));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(SymBitVecTest, MathEqMixedSignednessBitPatternsDiffer) {
+  // SymUInt<8>(255) and SymSInt<8>(-1) share bit pattern 0xFF but are
+  // mathematically different (255 vs -1). math_eq must answer false.
+  SymUInt<8> u(ctx_, "u");
+  SymSInt<8> s(ctx_, "s");
+  SymBool eq = math_eq(u, s);
+
+  z3::solver solver(ctx_);
+  solver.add(u.expr() == ctx_.bv_val(255, 8));
+  solver.add(s.expr() == ctx_.bv_val(-1, 8));
+  solver.add(eq.expr());
+  EXPECT_EQ(solver.check(), z3::unsat);
+}
+
+TEST_F(SymBitVecTest, MathEqMixedSignednessMixedWidth) {
+  // SymSInt<8>(-1) vs SymUInt<16>(65535): different values, should be unequal.
+  SymSInt<8> a(ctx_, "a");
+  SymUInt<16> b(ctx_, "b");
+  SymBool eq = math_eq(a, b);
+
+  z3::solver s(ctx_);
+  s.add(a.expr() == ctx_.bv_val(-1, 8));
+  s.add(b.expr() == ctx_.bv_val(65535, 16));
+  s.add(eq.expr());
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(SymBitVecTest, MathEqSymWithConcrete) {
+  SymUInt<8> a(ctx_, "a");
+  auto lit = UInt<16>::Literal<200>();
+  SymBool eq = math_eq(a, lit);
+
+  z3::solver s(ctx_);
+  s.add(eq.expr());
+  s.add(a.expr() != ctx_.bv_val(200, 8));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(SymBitVecTest, MathNeMixedWidth) {
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<16> b(ctx_, "b");
+  SymBool ne = math_ne(a, b);
+
+  z3::solver s(ctx_);
+  s.add(ne.expr());
+  s.add(a.expr() == ctx_.bv_val(200, 8));
+  s.add(b.expr() == ctx_.bv_val(200, 16));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+// --- Mathematical ordering (math_lt / math_le / math_gt / math_ge) ---
+
+TEST_F(SymBitVecTest, MathLtUnsignedMixedWidth) {
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<16> b(ctx_, "b");
+  SymBool lt = math_lt(a, b);
+
+  // 100 < 1000 should be sat.
+  z3::solver s(ctx_);
+  s.add(lt.expr());
+  s.add(a.expr() == ctx_.bv_val(100, 8));
+  s.add(b.expr() == ctx_.bv_val(1000, 16));
+  EXPECT_EQ(s.check(), z3::sat);
+}
+
+TEST_F(SymBitVecTest, MathLtMixedSignedness) {
+  // SymSInt<8>(-1) vs SymUInt<8>(1): mathematically -1 < 1.
+  SymSInt<8> a(ctx_, "a");
+  SymUInt<8> b(ctx_, "b");
+  SymBool lt = math_lt(a, b);
+
+  z3::solver s(ctx_);
+  s.add(a.expr() == ctx_.bv_val(-1, 8));
+  s.add(b.expr() == ctx_.bv_val(1, 8));
+  s.add(!lt.expr());
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(SymBitVecTest, MathGtMixedSignedness) {
+  SymUInt<8> a(ctx_, "a");
+  SymSInt<8> b(ctx_, "b");
+  SymBool gt = math_gt(a, b);
+
+  // a=1 (unsigned), b=-1 (signed) -> 1 > -1 is true.
+  z3::solver s(ctx_);
+  s.add(a.expr() == ctx_.bv_val(1, 8));
+  s.add(b.expr() == ctx_.bv_val(-1, 8));
+  s.add(!gt.expr());
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(SymBitVecTest, MathLeSameSignedness) {
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<8> b(ctx_, "b");
+  SymBool le = math_le(a, b);
+
+  // 42 <= 42 should be sat.
+  {
+    z3::solver s(ctx_);
+    s.add(le.expr());
+    s.add(a.expr() == ctx_.bv_val(42, 8));
+    s.add(b.expr() == ctx_.bv_val(42, 8));
+    EXPECT_EQ(s.check(), z3::sat);
+  }
+
+  // 43 <= 42 must be unsat — proves math_le is not trivially true.
+  {
+    z3::solver s(ctx_);
+    s.add(le.expr());
+    s.add(a.expr() == ctx_.bv_val(43, 8));
+    s.add(b.expr() == ctx_.bv_val(42, 8));
+    EXPECT_EQ(s.check(), z3::unsat);
+  }
+}
+
+TEST_F(SymBitVecTest, MathGeMixedWidthAndSignedness) {
+  SymSInt<8> a(ctx_, "a");
+  SymUInt<16> b(ctx_, "b");
+  SymBool ge = math_ge(a, b);
+
+  // a=-1 (signed 8-bit), b=0 (unsigned 16-bit) -> -1 >= 0 is false.
+  z3::solver s(ctx_);
+  s.add(a.expr() == ctx_.bv_val(-1, 8));
+  s.add(b.expr() == ctx_.bv_val(0, 16));
+  s.add(ge.expr());
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(SymBitVecTest, MathLtSymWithConcrete) {
+  // sum : SymUInt<9>; check sum < UInt<8>::Literal<255>() answers the
+  // overflow-check question (sum > 255 -> overflow).
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<8> b(ctx_, "b");
+  auto sum = a + b;  // SymUInt<9>
+  auto threshold = UInt<8>::Literal<255>();
+  SymBool lt = math_lt(sum, threshold);
+
+  // 100 + 100 = 200 < 255.
+  z3::solver s(ctx_);
+  s.add(a.expr() == ctx_.bv_val(100, 8));
+  s.add(b.expr() == ctx_.bv_val(100, 8));
+  s.add(!lt.expr());
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(SymBitVecTest, MathLeSymWithConcrete) {
+  SymUInt<8> a(ctx_, "a");
+  auto threshold = UInt<16>::Literal<255>();
+  SymBool le = math_le(a, threshold);
+
+  // Any SymUInt<8> is <= 255 (an 8-bit value's max).
+  z3::solver s(ctx_);
+  s.add(!le.expr());
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(SymBitVecTest, MathGtSymWithConcrete) {
+  SymUInt<8> a(ctx_, "a");
+  auto zero = UInt<16>::Literal<0>();
+  SymBool gt = math_gt(a, zero);
+
+  // a > 0 holds iff a != 0; pick a = 1 to confirm sat.
+  z3::solver s(ctx_);
+  s.add(gt.expr());
+  s.add(a.expr() == ctx_.bv_val(1, 8));
+  EXPECT_EQ(s.check(), z3::sat);
+}
+
+TEST_F(SymBitVecTest, MathGeSymWithConcrete) {
+  SymUInt<8> a(ctx_, "a");
+  auto zero = UInt<16>::Literal<0>();
+  SymBool ge = math_ge(a, zero);
+
+  // Any unsigned a >= 0.
+  z3::solver s(ctx_);
+  s.add(!ge.expr());
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
 // --- Ordered comparison (unsigned) ---
 
 TEST_F(SymBitVecTest, UnsignedLessThan) {
@@ -1186,10 +1380,10 @@ TEST_F(SymBitVecTest, IsSymbolicBool) { static_assert(is_symbolic_v<SymBool>); }
 
 // --- Cross-type symbolic comparison (different widths) ---
 
-TEST_F(SymBitVecTest, CrossTypeEqualityDifferentWidths) {
+TEST_F(SymBitVecTest, MathEqDifferentWidths) {
   SymUInt<8> a(ctx_, "a");
   SymUInt<16> b(ctx_, "b");
-  SymBool eq = (a == b);
+  SymBool eq = math_eq(a, b);
 
   // If a=42 and b=42, they should be equal.
   z3::solver s(ctx_);
@@ -1199,10 +1393,10 @@ TEST_F(SymBitVecTest, CrossTypeEqualityDifferentWidths) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-TEST_F(SymBitVecTest, CrossTypeInequalityDifferentWidths) {
+TEST_F(SymBitVecTest, MathNeDifferentWidths) {
   SymUInt<8> a(ctx_, "a");
   SymUInt<16> b(ctx_, "b");
-  SymBool neq = (a != b);
+  SymBool neq = math_ne(a, b);
 
   // If a=42 and b=42, they should not be unequal.
   z3::solver s(ctx_);
@@ -1212,10 +1406,10 @@ TEST_F(SymBitVecTest, CrossTypeInequalityDifferentWidths) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-TEST_F(SymBitVecTest, CrossTypeLessThanDifferentWidths) {
+TEST_F(SymBitVecTest, MathLtDifferentWidths) {
   SymUInt<8> a(ctx_, "a");
   SymUInt<16> b(ctx_, "b");
-  SymBool lt = (a < b);
+  SymBool lt = math_lt(a, b);
 
   // 100 < 200 should be sat (unsigned).
   z3::solver s(ctx_);
@@ -1227,12 +1421,12 @@ TEST_F(SymBitVecTest, CrossTypeLessThanDifferentWidths) {
 
 // --- Cross-type symbolic comparison (different signedness) ---
 
-TEST_F(SymBitVecTest, CrossTypeLessThanDifferentSignedness) {
+TEST_F(SymBitVecTest, MathLtDifferentSignedness) {
   // SymSInt<8> -1 (0xFF) < SymUInt<8> 200 should be true.
-  // Common type: signed, width = max(8,8)+1 = 9.
+  // math_lt widens to signed, width = max(8,8)+1 = 9, then uses slt.
   SymSInt<8> a(ctx_, "a");
   SymUInt<8> b(ctx_, "b");
-  SymBool lt = (a < b);
+  SymBool lt = math_lt(a, b);
 
   z3::solver s(ctx_);
   s.add(lt.expr());
@@ -1241,11 +1435,11 @@ TEST_F(SymBitVecTest, CrossTypeLessThanDifferentSignedness) {
   EXPECT_EQ(s.check(), z3::sat);
 }
 
-TEST_F(SymBitVecTest, CrossTypeGreaterEqualDifferentSignedness) {
+TEST_F(SymBitVecTest, MathGeDifferentSignedness) {
   // SymUInt<8> 200 >= SymSInt<8> -1 should be true.
   SymUInt<8> a(ctx_, "a");
   SymSInt<8> b(ctx_, "b");
-  SymBool ge = (a >= b);
+  SymBool ge = math_ge(a, b);
 
   z3::solver s(ctx_);
   s.add(a.expr() == ctx_.bv_val(200, 8));
@@ -1256,10 +1450,10 @@ TEST_F(SymBitVecTest, CrossTypeGreaterEqualDifferentSignedness) {
 
 // --- Mixed concrete+symbolic cross-type comparison ---
 
-TEST_F(SymBitVecTest, MixedCrossTypeEquality) {
+TEST_F(SymBitVecTest, MixedCrossTypeMathEq) {
   SymUInt<8> sym(ctx_, "x");
   auto conc = UInt<16>::Literal<42>();
-  SymBool eq = (sym == conc);
+  SymBool eq = math_eq(sym, conc);
 
   z3::solver s(ctx_);
   s.add(eq.expr());
@@ -1267,10 +1461,10 @@ TEST_F(SymBitVecTest, MixedCrossTypeEquality) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-TEST_F(SymBitVecTest, MixedCrossTypeLessThan) {
+TEST_F(SymBitVecTest, MixedCrossTypeMathLt) {
   SymUInt<8> sym(ctx_, "x");
   auto conc = UInt<16>::Literal<300>();
-  SymBool lt = (sym < conc);
+  SymBool lt = math_lt(sym, conc);
 
   // Any 8-bit unsigned value (0-255) is always < 300.
   z3::solver s(ctx_);

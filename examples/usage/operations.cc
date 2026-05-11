@@ -56,15 +56,32 @@ void demo_boolean_comparison() {
 
 void demo_integer_comparison() {
   z3::context ctx;
-  z3w::SymUInt<7> a(ctx, "a");
-  z3w::SymSInt<9> b(ctx, "b");
+  z3w::SymUInt<8> a(ctx, "a");
+  z3w::SymUInt<8> b(ctx, "b");
 
+  // Same-type operands. For comparisons across width or signedness,
+  // see demo_integer_math_comparison.
   z3w::SymBool eq = (a == b);
   z3w::SymBool ne = (a != b);
   z3w::SymBool gt = (a > b);
   z3w::SymBool ge = (a >= b);
   z3w::SymBool lt = (a < b);
   z3w::SymBool le = (a <= b);
+}
+
+void demo_integer_math_comparison() {
+  z3::context ctx;
+  z3w::SymUInt<7> a(ctx, "a");
+  z3w::SymSInt<9> b(ctx, "b");
+
+  // math_* free functions ask the mathematical (value-based) question
+  // across any combination of width and signedness.
+  z3w::SymBool eq = z3w::math_eq(a, b);
+  z3w::SymBool ne = z3w::math_ne(a, b);
+  z3w::SymBool gt = z3w::math_gt(a, b);
+  z3w::SymBool ge = z3w::math_ge(a, b);
+  z3w::SymBool lt = z3w::math_lt(a, b);
+  z3w::SymBool le = z3w::math_le(a, b);
 }
 
 // --- Arithmetic ---
@@ -237,6 +254,7 @@ int main() {
   demo_bitwise();
   demo_boolean_comparison();
   demo_integer_comparison();
+  demo_integer_math_comparison();
   demo_addition();
   demo_subtraction();
   demo_negate();

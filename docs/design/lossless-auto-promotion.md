@@ -103,7 +103,6 @@ proposition vs hardware wire). Z3Wire requires explicit conversion via
 | Context                            | What happens                                    | Promotion path           |
 | ---------------------------------- | ----------------------------------------------- | ------------------------ |
 | Mixed concrete/symbolic binary ops | Concrete side promoted to symbolic              | `to_symbolic(val, ctx)`  |
-| Comparison with different widths   | Both sides widened to common width              | `extend<CommonW>(val)`   |
 | Arithmetic with different widths   | Both sides widened, result has bit-growth width | Width rules per operator |
 
 ### What requires explicit conversion
@@ -118,11 +117,12 @@ proposition vs hardware wire). Z3Wire requires explicit conversion via
 
 ### What doesn't compile
 
-| Conversion                         | Why                                |
-| ---------------------------------- | ---------------------------------- |
-| Bitwise ops with mismatched widths | Would silently change semantics    |
-| `safe_cast` that would lose data   | `static_assert` fires              |
-| `safe_cast` signed → unsigned      | Always forbidden (negative values) |
+| Conversion                                     | Why                                        |
+| ---------------------------------------------- | ------------------------------------------ |
+| Bitwise ops with mismatched widths             | Would silently change semantics            |
+| Comparison with different widths or signedness | Operators are strict; use `math_*` or cast |
+| `safe_cast` that would lose data               | `static_assert` fires                      |
+| `safe_cast` signed → unsigned                  | Always forbidden (negative values)         |
 
 ## Considered and rejected
 
@@ -162,23 +162,24 @@ API surface. Adopted and applied to examples.
 
 Allow `ethertype == 0x0800` where `ethertype` is `SymUInt<16>`.
 
-**How it would work:**
+**Why it's interesting:** the native integer literal could convert losslessly to
+a `BitVec` at the *symbolic operand's* width and signedness, after which the
+existing mixed-operand `operator==` (strict on matching types) handles the rest.
+Picking the symbolic operand's type for the conversion target keeps operator
+semantics consistent: every comparison still has matching width and signedness
+at the point of comparison.
 
-1. Native `int` value `0x0800` converts to `BitVec<32, true>` (matching `int`'s
-    native width) — always lossless.
-1. Concrete `BitVec<32, true>` promotes to `SymBitVec<32, true>` via
-    `to_symbolic` — always lossless.
-1. `SymUInt<16> == SymSInt<32>` auto-widens both to a common width and compares
-    mathematically — always lossless.
+**What the conversion has to check:** the native value must fit in the target
+width and signedness without truncation. If it does, the conversion is lossless;
+if it doesn't, the conversion is a compile error (for constant-expression
+literals) or a runtime check (for non-constant values). This is the same
+range-check `Literal<V>()` already performs.
 
-No lossy conversion occurs at any point. If the value can't equal the symbolic
-variable (e.g., `SymUInt<16> == 0x10000`), the comparison is simply
-unsatisfiable — a correct mathematical result, not a runtime error.
-
-**Scope:** Comparisons only (`==`, `!=`, `<`, `<=`, `>`, `>=`). Arithmetic and
-bitwise with raw integers would produce surprising result types or width
-mismatches.
+**Scope:** Comparison operators only (`==`, `!=`, `<`, `<=`, `>`, `>=`).
+Arithmetic and bitwise with raw integers would produce surprising result types
+or width mismatches. Cross-type cases still go through `math_*`.
 
 **Status:** Blocked on finalizing the auto-promotion strategy documented here.
-The design is sound in isolation, but should be evaluated as part of a coherent
-promotion policy rather than added piecemeal.
+The design intersects with the strict-comparison decision: the native-int
+conversion must target the symbolic operand's type, not promote-then-widen.
+Evaluate as part of a coherent promotion policy rather than piecemeal.

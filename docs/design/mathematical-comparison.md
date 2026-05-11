@@ -1,43 +1,64 @@
-# Mathematical Comparison
+# Comparison Semantics
 
-Why Z3Wire comparisons operate on mathematical values rather than requiring
-matching types.
+Why Z3Wire comparison operators are strict on width and signedness, and why
+mathematical comparisons are surfaced as the `z3w::math_*` free-function family.
 
 ## The decision
 
-All six comparison operators (`==`, `!=`, `<`, `<=`, `>`, `>=`) accept operands
-of any width and signedness combination. Both operands are widened to a common
-type before comparing, so the comparison always answers the question: **do these
-operands represent the same mathematical value (or stand in the correct
-ordering)?**
+The six symbolic comparison operators (`==`, `!=`, `<`, `<=`, `>`, `>=`) require
+both operands to have the same width and signedness. A mismatch is a compile
+error.
+
+For cross-type comparison, use the parallel free-function family `math_eq`,
+`math_ne`, `math_lt`, `math_le`, `math_gt`, `math_ge`. These widen operands to a
+common type internally and answer the question: *do these operands represent the
+same mathematical value (or stand in the correct ordering)?*
 
 ```cpp
-auto sum = a + b;                            // SymUInt<9>
-auto [truncated, ok] = checked_cast<SymUInt<8>>(sum);
-SymBool matches = (sum == truncated);        // SymUInt<9> vs SymUInt<8>: works
-SymBool overflow = (sum > UInt<8>::Literal<255>());  // SymUInt<9> vs UInt<8>: works
+SymUInt<8> a(ctx, "a");
+SymUInt<8> b(ctx, "b");
+SymBool eq = (a == b);              // OK: same type.
+
+auto sum = a + b;                   // SymUInt<9>
+SymBool overflow = math_gt(sum, UInt<8>::Literal<255>());  // mathematical
+
+SymSInt<8> s(ctx, "s");
+SymBool meaning = math_eq(a, s);    // explicit mathematical equality
+// (a == s) would be a compile error pointing the user at math_eq or a cast.
 ```
 
-No manual casting is needed. The programmer states the mathematical question;
-the type system handles the representation.
+## Why strict by default
 
-## Why
+Z3Wire's other binary operators uphold an "explicit over implicit" principle:
+bitwise operators require matching width and signedness, and arithmetic uses
+bit-growth (the result type encodes the widening; the operands themselves are
+not silently extended). Comparison is the lone exception worth re-examining.
 
-In verification, the natural questions are about values:
+Two concerns argued against the original "mathematical default":
 
-- "Does this 9-bit sum equal this 8-bit input?" (checking for overflow)
-- "Is this unsigned counter less than this signed threshold?"
-- "Does the hardware output match the specification?"
+1. **Users from C++/Verilog backgrounds have no positive intuition for
+    mixed-signedness comparison.** Both languages have well-known footguns
+    there. Z3Wire's heterogeneous behavior was mathematically *correct* in all
+    cases, but silent — a user reading `a == b` could not tell from the call
+    site whether the operands matched in type, or which question the comparison
+    was answering.
 
-Requiring the programmer to manually match widths before comparing would add
-noise without adding safety. Unlike arithmetic (where the result width matters)
-or bitwise operations (where bit positions must align), comparisons produce a
-`SymBool` — there is no result type to be surprised by.
+1. **For `==` there is a real semantic choice that the silent default hides.**
+    `SymUInt<8>(255) == SymSInt<8>(-1)` is `false` mathematically but `true` if
+    compared as bit patterns. Strict matching forces the user to choose:
+    `math_eq(a, b)` for the mathematical question; cast then `==` for the
+    bit-pattern question.
 
-## The widening rule
+The strict design aligns comparison with the rest of the library and matches the
+dominant pattern across modern strongly-typed languages (Rust, Go, Haskell,
+Zig). The `math_*` family preserves the heterogeneous mathematical operation as
+an explicit, named call — the same pattern C++20 chose for `std::cmp_equal`,
+`std::cmp_less`, and their siblings.
+
+## Widening rule (used by `math_*`)
 
 Both operands are extended to a **common width** that preserves every value from
-both sides:
+both sides before the underlying Z3 comparison is performed:
 
 | Operand signedness | Common width    | Extension method                             |
 | ------------------ | --------------- | -------------------------------------------- |
@@ -45,51 +66,23 @@ both sides:
 | Both signed        | max(W1, W2)     | Narrower side sign-extended                  |
 | Mixed              | max(W1, W2) + 1 | Unsigned zero-extended, signed sign-extended |
 
-The mixed-signedness case needs one extra bit because the unsigned operand's
-full range (0 to 2^W − 1) requires W + 1 signed bits to represent without loss.
-
-### Ordered comparison semantics
-
-For ordered comparisons (`<`, `<=`, `>`, `>=`), the signedness of the comparison
-itself is determined by the operands:
-
-- **Both unsigned** — unsigned comparison (`ult`, `ule`, `ugt`, `uge`)
-- **Either signed** — signed comparison (`slt`, `sle`, `sgt`, `sge`)
-
-After widening to the common width, the operands have matching signedness (the
-extra bit in the mixed case ensures the unsigned values are correctly
-represented in the signed domain). The comparison then uses the appropriate Z3
-operation.
+For ordered `math_*` calls, the signedness of the underlying comparison is
+determined by the operands: both unsigned uses `ult`/`ule`/`ugt`/`uge`; either
+signed uses `slt`/`sle`/`sgt`/`sge` after widening. The mixed-width "+1 bit"
+rule guarantees the unsigned operand's full range fits in the signed domain.
 
 ## Contrast with other operators
 
-| Operator class | Width policy | Why                                                  |
-| -------------- | ------------ | ---------------------------------------------------- |
-| Comparison     | Auto-widen   | Asks about values; no result type to surprise        |
-| Arithmetic     | Bit-growth   | Result width encodes overflow capacity               |
-| Bitwise        | Strict match | Bit positions must align; widening changes semantics |
+| Operator class | Width policy             | Why                                                           |
+| -------------- | ------------------------ | ------------------------------------------------------------- |
+| Comparison     | Strict (`==`, `<`, …)    | Aligns with the rest of the library; no silent type-crossing. |
+| Comparison     | Heterogeneous (`math_*`) | Explicit free function names the mathematical question.       |
+| Arithmetic     | Bit-growth               | Result width encodes overflow capacity.                       |
+| Bitwise        | Strict match             | Bit positions must align; widening changes semantics.         |
 
-Bitwise operations require strict width matching because zero-extending an
-operand changes which bits participate. `0xFF & x` means something different for
-8-bit x vs 16-bit x. Comparisons have no such ambiguity — the mathematical value
-is independent of the representation width.
+## Reference
 
-## Connection to auto-promotion
-
-Mathematical comparison is what makes several ergonomic patterns work:
-
-- **Concrete literals in comparisons** —
-    `ethertype == UInt<16>::Literal<0x0800>()` works because the concrete side
-    is promoted to symbolic (same width), and the comparison auto-widens if
-    needed.
-
-- **Checked cast verification** — `sum == truncated` where `sum` is wider than
-    `truncated` is the natural way to ask "did truncation lose information?"
-
-- **Future: native integer comparisons** — `ethertype == 0x0800` would convert
-    the native int to a 32-bit concrete value, promote to symbolic, and
-    auto-widen for comparison. The mathematical semantics make this chain
-    lossless and correct.
-
-See [Lossless Auto-Promotion](lossless-auto-promotion.md) for the full
-auto-promotion strategy.
+- C++20 `<utility>` `std::cmp_equal` family — the direct precedent for surfacing
+    mathematical comparison as named free functions.
+- Rust `PartialEq<Rhs = Self>` / `PartialOrd<Rhs = Self>` — strict-typed
+    comparison as the default in a modern type system.

@@ -257,10 +257,34 @@ SymBitVec<W + 1, true> operator-(const SymBitVec<W, S>& val) {
   return SymBitVec<W + 1, true>(-ext);
 }
 
-// --- Equality (any width/signedness combination) ---
+// --- Equality (strict: same width and signedness) ---
 
 template <size_t W1, bool S1, size_t W2, bool S2>
 SymBool operator==(const SymBitVec<W1, S1>& lhs, const SymBitVec<W2, S2>& rhs) {
+  static_assert(W1 == W2 && S1 == S2,
+                "comparison requires matching width and signedness; use "
+                "z3w::math_eq(a, b) for mathematical equality, or cast one "
+                "operand to the other's type");
+  return SymBool(lhs.expr() == rhs.expr());
+}
+
+template <size_t W1, bool S1, size_t W2, bool S2>
+SymBool operator!=(const SymBitVec<W1, S1>& lhs, const SymBitVec<W2, S2>& rhs) {
+  static_assert(W1 == W2 && S1 == S2,
+                "comparison requires matching width and signedness; use "
+                "z3w::math_ne(a, b) for mathematical inequality, or cast one "
+                "operand to the other's type");
+  return SymBool(lhs.expr() != rhs.expr());
+}
+
+// --- Mathematical equality (heterogeneous) ---
+
+// math_eq asks whether two operands represent the same mathematical value.
+// Both operands are widened to a common width that preserves every value from
+// both sides before equality is checked. Works for any combination of width
+// and signedness on the two operands.
+template <size_t W1, bool S1, size_t W2, bool S2>
+SymBool math_eq(const SymBitVec<W1, S1>& lhs, const SymBitVec<W2, S2>& rhs) {
   constexpr size_t kCommonWidth =
       (S1 == S2) ? std::max(W1, W2) : std::max(W1, W2) + 1;
   auto lhs_ext = internal::extend<kCommonWidth, W1, S1>(lhs);
@@ -268,19 +292,37 @@ SymBool operator==(const SymBitVec<W1, S1>& lhs, const SymBitVec<W2, S2>& rhs) {
   return SymBool(lhs_ext == rhs_ext);
 }
 
+// math_ne is the negation of math_eq. See math_eq for semantics.
 template <size_t W1, bool S1, size_t W2, bool S2>
-SymBool operator!=(const SymBitVec<W1, S1>& lhs, const SymBitVec<W2, S2>& rhs) {
-  constexpr size_t kCommonWidth =
-      (S1 == S2) ? std::max(W1, W2) : std::max(W1, W2) + 1;
-  auto lhs_ext = internal::extend<kCommonWidth, W1, S1>(lhs);
-  auto rhs_ext = internal::extend<kCommonWidth, W2, S2>(rhs);
-  return SymBool(lhs_ext != rhs_ext);
+SymBool math_ne(const SymBitVec<W1, S1>& lhs, const SymBitVec<W2, S2>& rhs) {
+  return !math_eq(lhs, rhs);
 }
 
-// --- Ordered comparison (relaxed: any width/signedness combination) ---
+template <typename L, typename R>
+  requires mixed_operands<L, R>
+auto math_eq(const L& lhs, const R& rhs) {
+  auto& ctx = internal::get_ctx(lhs, rhs);
+  return math_eq(internal::promote(lhs, ctx), internal::promote(rhs, ctx));
+}
 
+template <typename L, typename R>
+  requires mixed_operands<L, R>
+auto math_ne(const L& lhs, const R& rhs) {
+  auto& ctx = internal::get_ctx(lhs, rhs);
+  return math_ne(internal::promote(lhs, ctx), internal::promote(rhs, ctx));
+}
+
+// --- Mathematical ordering (heterogeneous) ---
+
+// math_lt asks whether the first operand is mathematically less than the
+// second. Both operands are widened to a common width that preserves every
+// value from both sides before comparing: same signedness uses
+// max(W1, W2); mixed signedness uses max(W1, W2) + 1 so the unsigned
+// operand's full range fits in the signed domain. The comparison itself
+// uses z3::ult when both operands are unsigned, z3::slt otherwise.
+// math_le, math_gt, and math_ge are derived from math_lt.
 template <size_t W1, bool S1, size_t W2, bool S2>
-SymBool operator<(const SymBitVec<W1, S1>& lhs, const SymBitVec<W2, S2>& rhs) {
+SymBool math_lt(const SymBitVec<W1, S1>& lhs, const SymBitVec<W2, S2>& rhs) {
   constexpr bool kSigned = S1 || S2;
   constexpr size_t kCommonWidth =
       (S1 == S2) ? std::max(W1, W2) : std::max(W1, W2) + 1;
@@ -293,18 +335,91 @@ SymBool operator<(const SymBitVec<W1, S1>& lhs, const SymBitVec<W2, S2>& rhs) {
   }
 }
 
+// math_le(a, b) is equivalent to !math_lt(b, a). See math_lt for semantics.
+template <size_t W1, bool S1, size_t W2, bool S2>
+SymBool math_le(const SymBitVec<W1, S1>& lhs, const SymBitVec<W2, S2>& rhs) {
+  return !math_lt(rhs, lhs);
+}
+
+// math_gt(a, b) is equivalent to math_lt(b, a). See math_lt for semantics.
+template <size_t W1, bool S1, size_t W2, bool S2>
+SymBool math_gt(const SymBitVec<W1, S1>& lhs, const SymBitVec<W2, S2>& rhs) {
+  return math_lt(rhs, lhs);
+}
+
+// math_ge(a, b) is equivalent to !math_lt(a, b). See math_lt for semantics.
+template <size_t W1, bool S1, size_t W2, bool S2>
+SymBool math_ge(const SymBitVec<W1, S1>& lhs, const SymBitVec<W2, S2>& rhs) {
+  return !math_lt(lhs, rhs);
+}
+
+template <typename L, typename R>
+  requires mixed_operands<L, R>
+auto math_lt(const L& lhs, const R& rhs) {
+  auto& ctx = internal::get_ctx(lhs, rhs);
+  return math_lt(internal::promote(lhs, ctx), internal::promote(rhs, ctx));
+}
+
+template <typename L, typename R>
+  requires mixed_operands<L, R>
+auto math_le(const L& lhs, const R& rhs) {
+  auto& ctx = internal::get_ctx(lhs, rhs);
+  return math_le(internal::promote(lhs, ctx), internal::promote(rhs, ctx));
+}
+
+template <typename L, typename R>
+  requires mixed_operands<L, R>
+auto math_gt(const L& lhs, const R& rhs) {
+  auto& ctx = internal::get_ctx(lhs, rhs);
+  return math_gt(internal::promote(lhs, ctx), internal::promote(rhs, ctx));
+}
+
+template <typename L, typename R>
+  requires mixed_operands<L, R>
+auto math_ge(const L& lhs, const R& rhs) {
+  auto& ctx = internal::get_ctx(lhs, rhs);
+  return math_ge(internal::promote(lhs, ctx), internal::promote(rhs, ctx));
+}
+
+// --- Ordered comparison (strict: same width and signedness) ---
+
+template <size_t W1, bool S1, size_t W2, bool S2>
+SymBool operator<(const SymBitVec<W1, S1>& lhs, const SymBitVec<W2, S2>& rhs) {
+  static_assert(W1 == W2 && S1 == S2,
+                "comparison requires matching width and signedness; use "
+                "z3w::math_lt(a, b) for mathematical comparison, or cast one "
+                "operand to the other's type");
+  if constexpr (S1) {
+    return SymBool(z3::slt(lhs.expr(), rhs.expr()));
+  } else {
+    return SymBool(z3::ult(lhs.expr(), rhs.expr()));
+  }
+}
+
 template <size_t W1, bool S1, size_t W2, bool S2>
 SymBool operator<=(const SymBitVec<W1, S1>& lhs, const SymBitVec<W2, S2>& rhs) {
+  static_assert(W1 == W2 && S1 == S2,
+                "comparison requires matching width and signedness; use "
+                "z3w::math_le(a, b) for mathematical comparison, or cast one "
+                "operand to the other's type");
   return !(rhs < lhs);
 }
 
 template <size_t W1, bool S1, size_t W2, bool S2>
 SymBool operator>(const SymBitVec<W1, S1>& lhs, const SymBitVec<W2, S2>& rhs) {
+  static_assert(W1 == W2 && S1 == S2,
+                "comparison requires matching width and signedness; use "
+                "z3w::math_gt(a, b) for mathematical comparison, or cast one "
+                "operand to the other's type");
   return rhs < lhs;
 }
 
 template <size_t W1, bool S1, size_t W2, bool S2>
 SymBool operator>=(const SymBitVec<W1, S1>& lhs, const SymBitVec<W2, S2>& rhs) {
+  static_assert(W1 == W2 && S1 == S2,
+                "comparison requires matching width and signedness; use "
+                "z3w::math_ge(a, b) for mathematical comparison, or cast one "
+                "operand to the other's type");
   return !(lhs < rhs);
 }
 

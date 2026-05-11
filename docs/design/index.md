@@ -11,7 +11,8 @@ space, the reasoning behind the decisions made, and alternatives considered.
     happen implicitly, which require explicit casts, and why
 - [Three-Tier Casting](three-tier-casting.md) — why there are three cast
     functions and when to use each
-- [Mathematical Comparison](mathematical-comparison.md) — why comparisons
-    operate on mathematical values rather than requiring matching types
+- [Comparison Semantics](mathematical-comparison.md) — why comparison operators
+    are strict on width and signedness, and why mathematical comparisons use the
+    `z3w::math_*` free-function family
 - [Bit-Growth Arithmetic](bit-growth-arithmetic.md) — why arithmetic and left
     shift widen their result types instead of wrapping
