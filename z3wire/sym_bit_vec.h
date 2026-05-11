@@ -295,11 +295,7 @@ SymBool math_eq(const SymBitVec<W1, S1>& lhs, const SymBitVec<W2, S2>& rhs) {
 // math_ne is the negation of math_eq. See math_eq for semantics.
 template <size_t W1, bool S1, size_t W2, bool S2>
 SymBool math_ne(const SymBitVec<W1, S1>& lhs, const SymBitVec<W2, S2>& rhs) {
-  constexpr size_t kCommonWidth =
-      (S1 == S2) ? std::max(W1, W2) : std::max(W1, W2) + 1;
-  auto lhs_ext = internal::extend<kCommonWidth, W1, S1>(lhs);
-  auto rhs_ext = internal::extend<kCommonWidth, W2, S2>(rhs);
-  return SymBool(lhs_ext != rhs_ext);
+  return !math_eq(lhs, rhs);
 }
 
 template <typename L, typename R>

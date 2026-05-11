@@ -33,11 +33,12 @@
 
 - **Compare symbolic bit-vectors with native integers** — Allow
     `ethertype == 0x0800` instead of `ethertype == UInt<16>::Literal<0x0800>()`.
-    The native integer converts losslessly to a `BitVec` at its native width,
-    then the existing auto-widening comparison handles the rest. No lossy
-    conversion occurs at any point. Scoped to comparisons only (`==`, `!=`, `<`,
-    `<=`, `>`, `>=`) since arithmetic and bitwise with raw integers would
-    produce surprising result types. Blocked on a broader review of the
+    The native integer would convert to a `BitVec` at the symbolic operand's
+    width and signedness (range-checked, lossless when in range), after which
+    the mixed-operand strict operator handles the comparison. Scoped to
+    comparisons only (`==`, `!=`, `<`, `<=`, `>`, `>=`) since arithmetic and
+    bitwise with raw integers would produce surprising result types. Cross-type
+    cases continue to use `math_*`. Blocked on a broader review of the
     auto-promotion strategy.
 
 - **Symbolic struct construction helpers** — Creating structs of symbolic types
