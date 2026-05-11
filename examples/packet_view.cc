@@ -131,4 +131,40 @@ class Ipv4View {
   z3w::SymUInt<BufW>* buf_;
 };
 
+// Ethernet (DIX) header.
+//
+// Local layout (LSB-relative, 112 bits / 14 bytes):
+//   [111:64] dst_mac (48)
+//   [63:16]  src_mac (48)
+//   [15:0]   ethertype (16)
+template <int BufW, int BaseOffset>
+class EthView {
+ public:
+  explicit EthView(z3w::SymUInt<BufW>* buf) : buf_(buf) {}
+
+  z3w::SymUInt<48> dst_mac() const {
+    return z3w::extract<111 + BaseOffset, 64 + BaseOffset>(*buf_);
+  }
+  void set_dst_mac(const z3w::SymUInt<48>& v) {
+    *buf_ = z3w::replace<64 + BaseOffset>(*buf_, v);
+  }
+
+  z3w::SymUInt<48> src_mac() const {
+    return z3w::extract<63 + BaseOffset, 16 + BaseOffset>(*buf_);
+  }
+  void set_src_mac(const z3w::SymUInt<48>& v) {
+    *buf_ = z3w::replace<16 + BaseOffset>(*buf_, v);
+  }
+
+  z3w::SymUInt<16> ethertype() const {
+    return z3w::extract<15 + BaseOffset, 0 + BaseOffset>(*buf_);
+  }
+  void set_ethertype(const z3w::SymUInt<16>& v) {
+    *buf_ = z3w::replace<0 + BaseOffset>(*buf_, v);
+  }
+
+ private:
+  z3w::SymUInt<BufW>* buf_;
+};
+
 int main() { return 0; }
