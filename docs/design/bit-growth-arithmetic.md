@@ -97,7 +97,7 @@ Bit-growth arithmetic enables the core verification pattern in Z3Wire:
 
 1. **Compute the true result** — bit-growth guarantees it's exact.
 1. **Truncate to hardware width** — `checked_cast` makes this explicit.
-1. **Compare hardware vs specification** — mathematical comparison handles the
+1. **Compare hardware vs specification** — the `math_*` family handles the
     width mismatch.
 
 This is exactly the pattern in the adder example (`examples/adder.cc`): the
@@ -107,7 +107,7 @@ proves they agree.
 
 See also:
 
-- [Mathematical Comparison](mathematical-comparison.md) — how comparisons handle
+- [Comparison Semantics](mathematical-comparison.md) — how comparisons handle
     the width differences that bit-growth creates
 - [Lossless Auto-Promotion](lossless-auto-promotion.md) — the broader
     auto-promotion strategy

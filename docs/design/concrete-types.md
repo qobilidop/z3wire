@@ -105,7 +105,7 @@ z3w::SymUInt<8> x(ctx, "x");
 auto lit = z3w::UInt<8>::Literal<42>();
 
 auto sum = x + lit;          // UInt<8> promotes to SymUInt<8>, then bit-growth
-z3w::SymBool eq = (x == lit); // UInt<8> promotes, then mathematical comparison
+z3w::SymBool eq = (x == lit); // UInt<8> promotes to SymUInt<8>, then strict ==
 ```
 
 The programmer never needs concrete-on-concrete operations because the

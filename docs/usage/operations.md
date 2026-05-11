@@ -117,36 +117,50 @@ z3w::SymBool ne = (a != b);
 
 ### Integer comparison
 
-Comparison operations for `SymUInt` and `SymSInt`. Operand signednesses and bit
-widths don't need to match. We are comparing the mathematical values the
-operands represent, not their underlying bits.
+Comparison operators for `SymUInt` and `SymSInt` are strict: both operands
+must have the same width and signedness. For comparisons across types, use
+the `z3w::math_*` free-function family — it asks the mathematical
+(value-based) question, regardless of representation.
 
 Typing rules:
 
-- Both LHS and RHS could be either `SymUInt` or `SymSInt`. Only one combination
-    is shown below for brevity.
+| Operation                | LHS            | RHS            | Syntax            | Result type |
+| :----------------------- | :------------- | :------------- | :---------------- | :---------- |
+| Equal to                 | `SymUInt<A> a` | `SymUInt<A> b` | `a == b`          | `SymBool`   |
+| Not equal to             | `SymUInt<A> a` | `SymUInt<A> b` | `a != b`          | `SymBool`   |
+| Greater than             | `SymUInt<A> a` | `SymUInt<A> b` | `a > b`           | `SymBool`   |
+| Greater than or equal to | `SymUInt<A> a` | `SymUInt<A> b` | `a >= b`          | `SymBool`   |
+| Less than                | `SymUInt<A> a` | `SymUInt<A> b` | `a < b`           | `SymBool`   |
+| Less than or equal to    | `SymUInt<A> a` | `SymUInt<A> b` | `a <= b`          | `SymBool`   |
+| Mathematical equal       | `SymUInt<A> a` | `SymSInt<B> b` | `math_eq(a, b)`   | `SymBool`   |
+| Mathematical not equal   | `SymUInt<A> a` | `SymSInt<B> b` | `math_ne(a, b)`   | `SymBool`   |
+| Mathematical greater     | `SymUInt<A> a` | `SymSInt<B> b` | `math_gt(a, b)`   | `SymBool`   |
+| Mathematical greater-eq  | `SymUInt<A> a` | `SymSInt<B> b` | `math_ge(a, b)`   | `SymBool`   |
+| Mathematical less        | `SymUInt<A> a` | `SymSInt<B> b` | `math_lt(a, b)`   | `SymBool`   |
+| Mathematical less-eq     | `SymUInt<A> a` | `SymSInt<B> b` | `math_le(a, b)`   | `SymBool`   |
 
-| Operation                | LHS            | RHS            | Syntax   | Result type |
-| :----------------------- | :------------- | :------------- | :------- | :---------- |
-| Equal to                 | `SymUInt<A> a` | `SymSInt<B> b` | `a == b` | `SymBool`   |
-| Not equal to             | `SymUInt<A> a` | `SymSInt<B> b` | `a != b` | `SymBool`   |
-| Greater than             | `SymUInt<A> a` | `SymSInt<B> b` | `a > b`  | `SymBool`   |
-| Greater than or equal to | `SymUInt<A> a` | `SymSInt<B> b` | `a >= b` | `SymBool`   |
-| Less than                | `SymUInt<A> a` | `SymSInt<B> b` | `a < b`  | `SymBool`   |
-| Less than or equal to    | `SymUInt<A> a` | `SymSInt<B> b` | `a <= b` | `SymBool`   |
+The `math_*` functions accept any combination of `SymUInt` / `SymSInt` widths
+and signednesses, and concrete `UInt` / `SInt` literals are accepted on
+either side.
 
 Examples:
 
 ```cpp
-z3w::SymUInt<7> a(ctx, "a");
-z3w::SymSInt<9> b(ctx, "b");
+z3w::SymUInt<8> a(ctx, "a");
+z3w::SymUInt<8> b(ctx, "b");
 
+// Strict operators: same type required.
 z3w::SymBool eq = (a == b);
-z3w::SymBool ne = (a != b);
-z3w::SymBool gt = (a > b);
-z3w::SymBool ge = (a >= b);
 z3w::SymBool lt = (a < b);
-z3w::SymBool le = (a <= b);
+
+// Heterogeneous mathematical comparison.
+z3w::SymSInt<16> c(ctx, "c");
+z3w::SymBool eq_math = z3w::math_eq(a, c);
+z3w::SymBool lt_math = z3w::math_lt(a, c);
+
+// Overflow check: compare a wider sum against an 8-bit threshold.
+auto sum = a + b;  // SymUInt<9>
+z3w::SymBool overflow = z3w::math_gt(sum, z3w::UInt<8>::Literal<255>());
 ```
 
 ## Arithmetic
