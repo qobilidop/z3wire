@@ -224,7 +224,16 @@ void demo_static_replacement() {
   z3w::SymSInt<32> r2 = z3w::replace<13>(s32, field);
 }
 
-void demo_symbolic_replacement() {
+void demo_runtime_offset_replacement() {
+  z3::context ctx;
+  z3w::SymUInt<32> src(ctx, "src");
+  z3w::SymUInt<8> field(ctx, "field");
+
+  size_t lo = 4;
+  z3w::SymUInt<32> updated = z3w::replace(src, field, lo);
+}
+
+void demo_symbolic_offset_replacement() {
   z3::context ctx;
   z3w::SymUInt<32> u32(ctx, "u32");
   z3w::SymSInt<32> s32(ctx, "s32");
@@ -279,7 +288,8 @@ int main() {
   demo_runtime_offset_extraction();
   demo_symbolic_offset_extraction();
   demo_static_replacement();
-  demo_symbolic_replacement();
+  demo_runtime_offset_replacement();
+  demo_symbolic_offset_replacement();
   demo_concat();
   demo_ite();
   return 0;

@@ -447,12 +447,16 @@ operation to land (see roadmap).
 
 ### Static replacement
 
+Both the source position and the field are compile-time-fixed.
+
 Typing rules:
 
-| Source            | Replacement field | Low bit offset | Syntax                | Result type   | Compile-time checks |
-| :---------------- | :---------------- | :------------- | :-------------------- | :------------ | :------------------ |
-| `SymUInt<WS> src` | `SymUInt<WF> f`   | `size_t LO`    | `replace<LO>(src, f)` | `SymUInt<WS>` | `WS >= LO+WF`       |
-| `SymSInt<WS> src` | `SymUInt<WF> f`   | `size_t LO`    | `replace<LO>(src, f)` | `SymSInt<WS>` | `WS >= LO+WF`       |
+| Source            | Replacement field    | Low bit offset | Syntax                | Result type   | Compile-time checks |
+| :---------------- | :------------------- | :------------- | :-------------------- | :------------ | :------------------ |
+| `SymUInt<WS> src` | `SymBitVec<WF,SF> f` | `size_t LO`    | `replace<LO>(src, f)` | `SymUInt<WS>` | `LO + WF <= WS`     |
+| `SymSInt<WS> src` | `SymBitVec<WF,SF> f` | `size_t LO`    | `replace<LO>(src, f)` | `SymSInt<WS>` | `LO + WF <= WS`     |
+
+The field may have any signedness; its bits are placed as-is.
 
 Examples:
 
@@ -465,14 +469,41 @@ z3w::SymUInt<32> r1 = z3w::replace<13>(u32, field);
 z3w::SymSInt<32> r2 = z3w::replace<13>(s32, field);
 ```
 
-### Symbolic-offset replacement
+### Runtime-offset replacement
+
+The field width is compile-time; the low-bit offset is a runtime `size_t`. The
+width is checked at compile time; the offset is checked at runtime via
+`Z3W_CHECK`, which aborts on out-of-range access.
 
 Typing rules:
 
-| Source            | Replacement field | Low bit offset   | Syntax                | Result type   | Compile-time checks |
-| :---------------- | :---------------- | :--------------- | :-------------------- | :------------ | :------------------ |
-| `SymUInt<WS> src` | `SymUInt<WF> f`   | `SymUInt<WL> lo` | `replace(src, f, lo)` | `SymUInt<WS>` | `WS >= WF`          |
-| `SymSInt<WS> src` | `SymUInt<WF> f`   | `SymUInt<WL> lo` | `replace(src, f, lo)` | `SymSInt<WS>` | `WS >= WF`          |
+| Source            | Replacement field    | Low bit offset | Syntax                | Result type   | Compile-time checks | Runtime check   |
+| :---------------- | :------------------- | :------------- | :-------------------- | :------------ | :------------------ | :-------------- |
+| `SymUInt<WS> src` | `SymBitVec<WF,SF> f` | `size_t lo`    | `replace(src, f, lo)` | `SymUInt<WS>` | `WF <= WS`          | `lo + WF <= WS` |
+| `SymSInt<WS> src` | `SymBitVec<WF,SF> f` | `size_t lo`    | `replace(src, f, lo)` | `SymSInt<WS>` | `WF <= WS`          | `lo + WF <= WS` |
+
+Examples:
+
+```cpp
+z3w::SymUInt<32> src(ctx, "src");
+z3w::SymUInt<8> field(ctx, "field");
+
+for (size_t i = 0; i < 4; ++i) {
+  z3w::SymUInt<32> updated = z3w::replace(src, field, i * 8);
+}
+```
+
+### Symbolic-offset replacement
+
+The low-bit offset is a symbolic value. The result is defined for every solver
+model: field bits placed beyond the source width have no effect.
+
+Typing rules:
+
+| Source            | Replacement field    | Low bit offset   | Syntax                | Result type   | Compile-time checks |
+| :---------------- | :------------------- | :--------------- | :-------------------- | :------------ | :------------------ |
+| `SymUInt<WS> src` | `SymBitVec<WF,SF> f` | `SymUInt<WL> lo` | `replace(src, f, lo)` | `SymUInt<WS>` | `WF <= WS`          |
+| `SymSInt<WS> src` | `SymBitVec<WF,SF> f` | `SymUInt<WL> lo` | `replace(src, f, lo)` | `SymSInt<WS>` | `WF <= WS`          |
 
 Examples:
 
@@ -486,7 +517,19 @@ z3w::SymUInt<32> r1 = z3w::replace(u32, field, lo);
 z3w::SymSInt<32> r2 = z3w::replace(s32, field, lo);
 ```
 
-Replacement bits beyond the source width won't take any effect.
+Callers who want strict semantics (field must fit) can add a solver constraint:
+
+```cpp
+solver.add(lo <= z3w::SymUInt<5>::Literal<32 - 8>(ctx));
+```
+
+Unlike `extract`, the symbolic-offset form of `replace` is kept rather than
+removed in favor of explicit composition. The composition pattern for `replace`
+is ~8 lines with subtle correctness traps (`shl` widens its result and must be
+truncated back to source width, the all-ones mask construction has a `WF < 64`
+ceiling, signedness juggling around the bitwise ops). The OOB-policy menu is
+also narrower: silent-discard is the only choice with a clear hardware analogue,
+so there's no benefit to making the choice explicit at the call site.
 
 ### Concatenation
 
