@@ -85,16 +85,16 @@ cc_compile_fail_test(
 )
 
 cc_compile_fail_test(
-    name = "sym_bit_vec_extract_high_lt_low_test",
-    src = "sym_bit_vec_extract_high_lt_low_test.cc",
-    expected_message = "extract: High must be >= Low",
+    name = "sym_bit_vec_extract_out_of_bounds_test",
+    src = "sym_bit_vec_extract_out_of_bounds_test.cc",
+    expected_message = "extract: window out of range",
     deps = ["//z3wire:sym_bit_vec"],
 )
 
 cc_compile_fail_test(
-    name = "sym_bit_vec_extract_out_of_bounds_test",
-    src = "sym_bit_vec_extract_out_of_bounds_test.cc",
-    expected_message = "extract: High must be < input width",
+    name = "sym_bit_vec_extract_zero_width_test",
+    src = "sym_bit_vec_extract_zero_width_test.cc",
+    expected_message = "extract: W must be > 0",
     deps = ["//z3wire:sym_bit_vec"],
 )
 

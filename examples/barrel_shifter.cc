@@ -27,7 +27,7 @@ z3w::SymUInt<1> mux(z3w::SymUInt<1> sel, z3w::SymUInt<1> a, z3w::SymUInt<1> b) {
 // Extract bit I from a bit-vector as SymUInt<1>.
 template <size_t I, size_t W, bool S>
 z3w::SymUInt<1> bit(const z3w::SymBitVec<W, S>& val) {
-  return z3w::extract<I, I>(val);
+  return z3w::extract<1, I>(val);
 }
 
 // -- 8-bit barrel shifter (left shift) --------------------------------------

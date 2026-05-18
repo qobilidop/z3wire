@@ -700,16 +700,49 @@ TEST_F(SymBitVecTest, ToBoolRoundtrip) {
 
 TEST_F(SymBitVecTest, StaticExtract) {
   SymUInt<16> a(ctx_, "a");
-  auto high = extract<15, 8>(a);
-  auto low = extract<7, 0>(a);
+  auto high = extract<8, 8>(a);   // 8 bits starting at offset 8 → bits [15:8]
+  auto low = extract<8, 0>(a);    // 8 bits starting at offset 0 → bits [7:0]
 
   static_assert(decltype(high)::kWidth == 8);
   static_assert(decltype(low)::kWidth == 8);
 
   z3::solver s(ctx_);
   s.add(a.expr() == ctx_.bv_val(0x1234, 16));
-  s.add(high.expr() != ctx_.bv_val(0x12, 8));
+  s.add(high.expr() != ctx_.bv_val(0x12, 8) ||
+        low.expr() != ctx_.bv_val(0x34, 8));
   EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(SymBitVecTest, StaticExtractFullWidth) {
+  // Boundary: Lo + W == SrcW.
+  SymUInt<16> a(ctx_, "a");
+  auto full = extract<16, 0>(a);
+  static_assert(decltype(full)::kWidth == 16);
+
+  z3::solver s(ctx_);
+  s.add(a.expr() == ctx_.bv_val(0xBEEF, 16));
+  s.add(full.expr() != ctx_.bv_val(0xBEEF, 16));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(SymBitVecTest, StaticExtractSingleBit) {
+  // Single-bit extract: bit 5 of 0x1234 (binary 0001 0010 0011 0100) is 1.
+  SymUInt<16> a(ctx_, "a");
+  auto bit5 = extract<1, 5>(a);
+
+  static_assert(decltype(bit5)::kWidth == 1);
+
+  z3::solver s(ctx_);
+  s.add(a.expr() == ctx_.bv_val(0x1234, 16));
+  s.add(bit5.expr() != ctx_.bv_val(1, 1));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(SymBitVecTest, StaticExtractSignedSourceReturnsUnsigned) {
+  // Source is signed; result is always SymUInt regardless of source.
+  SymSInt<16> a(ctx_, "a");
+  auto slice = extract<8, 4>(a);
+  static_assert(std::is_same_v<decltype(slice), SymUInt<8>>);
 }
 
 TEST_F(SymBitVecTest, SymbolicExtract) {

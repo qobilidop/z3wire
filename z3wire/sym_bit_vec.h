@@ -644,12 +644,13 @@ inline SymBool as_bool(const SymUInt<1>& v) {
 
 // --- Bit slicing (extract) ---
 
-// Static extract: extract<High, Low>(val) -> SymUInt<High - Low + 1>.
-template <size_t High, size_t Low, size_t W, bool S>
-SymUInt<High - Low + 1> extract(const SymBitVec<W, S>& val) {
-  static_assert(High >= Low, "extract: High must be >= Low.");
-  static_assert(High < W, "extract: High must be < input width.");
-  return SymUInt<High - Low + 1>(val.expr().extract(High, Low));
+// Static extract: extract<W, Lo>(val) -> SymUInt<W>. Selects bits
+// [Lo + W - 1 : Lo].
+template <size_t W, size_t Lo, size_t SrcW, bool S>
+SymUInt<W> extract(const SymBitVec<SrcW, S>& val) {
+  static_assert(W > 0, "extract: W must be > 0.");
+  static_assert(Lo + W <= SrcW, "extract: window out of range.");
+  return SymUInt<W>(val.expr().extract(Lo + W - 1, Lo));
 }
 
 // Symbolic-offset extract: shift right by offset, then static extract.
