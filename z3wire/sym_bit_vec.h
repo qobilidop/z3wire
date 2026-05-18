@@ -668,26 +668,6 @@ SymUInt<W> extract(const SymBitVec<SrcW, S>& val, size_t lo) {
                          static_cast<unsigned>(lo)));
 }
 
-// Symbolic-offset extract: shift right by offset, then static extract.
-// Out-of-range offsets yield zero bits (zero-extension semantics).
-template <size_t TargetWidth, size_t W, bool S, size_t IdxW>
-SymUInt<TargetWidth> extract(const SymBitVec<W, S>& val,
-                             const SymUInt<IdxW>& start_idx) {
-  static_assert(TargetWidth > 0, "extract: TargetWidth must be > 0.");
-  static_assert(TargetWidth <= W,
-                "extract: TargetWidth must be <= input width.");
-  // Match widths for the shift. When IdxW > W, zero-extend the source so that
-  // large offsets correctly shift in zeros rather than wrapping.
-  constexpr size_t ShiftW = std::max(W, IdxW);
-  z3::expr wide_val =
-      (ShiftW > W) ? z3::zext(val.expr(), ShiftW - W) : val.expr();
-  z3::expr wide_idx = (ShiftW > IdxW)
-                          ? z3::zext(start_idx.expr(), ShiftW - IdxW)
-                          : start_idx.expr();
-  auto shifted = z3::lshr(wide_val, wide_idx);
-  return SymUInt<TargetWidth>(shifted.extract(TargetWidth - 1, 0));
-}
-
 // --- Bit replacement (replace) ---
 
 // Static replacement: replace<LO>(src, field) -> SymBitVec<WS, S>.

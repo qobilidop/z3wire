@@ -12,17 +12,6 @@ cc_test(
 )
 
 cc_test(
-    name = "sym_bit_vec_extract_test",
-    srcs = ["sym_bit_vec_extract_test.cc"],
-    deps = [
-        "//z3wire:sym_bit_vec",
-        "@fuzztest//fuzztest",
-        "@fuzztest//fuzztest:fuzztest_gtest_main",
-        "@googletest//:gtest",
-    ],
-)
-
-cc_test(
     name = "sym_bit_vec_rotate_test",
     srcs = ["sym_bit_vec_rotate_test.cc"],
     deps = [

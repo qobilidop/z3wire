@@ -99,20 +99,6 @@ cc_compile_fail_test(
 )
 
 cc_compile_fail_test(
-    name = "sym_bit_vec_symbolic_extract_zero_width_test",
-    src = "sym_bit_vec_symbolic_extract_zero_width_test.cc",
-    expected_message = "extract: TargetWidth must be > 0",
-    deps = ["//z3wire:sym_bit_vec"],
-)
-
-cc_compile_fail_test(
-    name = "sym_bit_vec_symbolic_extract_too_wide_test",
-    src = "sym_bit_vec_symbolic_extract_too_wide_test.cc",
-    expected_message = "extract: TargetWidth must be <= input width",
-    deps = ["//z3wire:sym_bit_vec"],
-)
-
-cc_compile_fail_test(
     name = "sym_bit_vec_eq_width_mismatch_test",
     src = "sym_bit_vec_eq_width_mismatch_test.cc",
     expected_message = "comparison requires matching width and signedness",

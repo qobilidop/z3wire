@@ -192,13 +192,24 @@ void demo_static_extraction() {
   z3w::SymUInt<1> bit5 = z3w::extract<1, 5>(src);
 }
 
-void demo_symbolic_extraction() {
+void demo_runtime_offset_extraction() {
+  z3::context ctx;
+  z3w::SymUInt<32> src(ctx, "src");
+
+  size_t offset = 4;
+  z3w::SymUInt<4> nibble = z3w::extract<4>(src, offset);
+  z3w::SymUInt<8> byte = z3w::extract<8>(src, offset);
+}
+
+void demo_symbolic_offset_extraction() {
   z3::context ctx;
   z3w::SymUInt<32> src(ctx, "src");
   z3w::SymUInt<5> offset(ctx, "offset");
 
-  z3w::SymUInt<4> nibble = z3w::extract<4>(src, offset);
-  z3w::SymUInt<8> byte = z3w::extract<8>(src, offset);
+  // Symbolic-offset extraction composes `shr` with a static zero-offset
+  // extract. `shr` selects lshr for unsigned sources and ashr for signed.
+  z3w::SymUInt<4> nibble = z3w::extract<4, 0>(z3w::shr(src, offset));
+  z3w::SymUInt<8> byte = z3w::extract<8, 0>(z3w::shr(src, offset));
 }
 
 void demo_static_replacement() {
@@ -263,7 +274,8 @@ int main() {
   demo_rotl();
   demo_rotr();
   demo_static_extraction();
-  demo_symbolic_extraction();
+  demo_runtime_offset_extraction();
+  demo_symbolic_offset_extraction();
   demo_static_replacement();
   demo_symbolic_replacement();
   demo_concat();
