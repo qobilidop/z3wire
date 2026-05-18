@@ -1020,6 +1020,38 @@ TEST_F(SymBitVecTest, ShrDifferentWidths) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
+TEST_F(SymBitVecTest, ShrWideAmountUnsigned) {
+  // Amount width K (16) > source width W (8). Amount value 256 does not fit
+  // in 8 bits; shifting by 256 should produce 0 (since 256 >= W).
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<16> n(ctx_, "n");
+  auto result = shr(a, n);
+  static_assert(std::is_same_v<decltype(result), SymUInt<8>>);
+
+  z3::solver s(ctx_);
+  s.add(a.expr() == ctx_.bv_val(0xFF, 8));
+  s.add(n.expr() == ctx_.bv_val(256, 16));
+  // Shifting an 8-bit value by 256 should yield 0.
+  s.add(result.expr() != ctx_.bv_val(0, 8));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(SymBitVecTest, ShrWideAmountSigned) {
+  // Amount width K (16) > source width W (8). Negative source: shifting by
+  // any amount >= W should produce the sign-bit replicated (all 1s).
+  SymSInt<8> a(ctx_, "a");
+  SymUInt<16> n(ctx_, "n");
+  auto result = shr(a, n);
+  static_assert(std::is_same_v<decltype(result), SymSInt<8>>);
+
+  z3::solver s(ctx_);
+  s.add(a.expr() == ctx_.bv_val(0x80, 8));  // -128 signed
+  s.add(n.expr() == ctx_.bv_val(256, 16));
+  // Arithmetic shift of -128 by 256 should yield 0xFF (-1).
+  s.add(result.expr() != ctx_.bv_val(0xFF, 8));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
 TEST_F(SymBitVecTest, ShlConcreteAmount) {
   SymUInt<8> a(ctx_, "a");
   auto one = UInt<3>::Literal<1>();

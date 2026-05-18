@@ -830,11 +830,29 @@ SymBitVec<W, S> shr(const SymBitVec<W, S>& val,
 
 template <size_t W, bool S, size_t K>
 SymBitVec<W, S> shr(const SymBitVec<W, S>& val, const SymUInt<K>& amount) {
-  auto amt_ext = unsafe_cast<SymUInt<W>>(amount);
-  if constexpr (S) {
-    return SymBitVec<W, S>(z3::ashr(val.expr(), amt_ext.expr()));
+  constexpr size_t kShiftW = std::max(W, K);
+
+  z3::expr wide_val = val.expr();
+  if constexpr (kShiftW > W) {
+    if constexpr (S) {
+      wide_val = z3::sext(val.expr(), kShiftW - W);
+    } else {
+      wide_val = z3::zext(val.expr(), kShiftW - W);
+    }
+  }
+
+  z3::expr wide_amount = amount.expr();
+  if constexpr (kShiftW > K) {
+    wide_amount = z3::zext(amount.expr(), kShiftW - K);
+  }
+
+  z3::expr shifted =
+      S ? z3::ashr(wide_val, wide_amount) : z3::lshr(wide_val, wide_amount);
+
+  if constexpr (kShiftW > W) {
+    return SymBitVec<W, S>(shifted.extract(W - 1, 0));
   } else {
-    return SymBitVec<W, S>(z3::lshr(val.expr(), amt_ext.expr()));
+    return SymBitVec<W, S>(shifted);
   }
 }
 
