@@ -825,6 +825,41 @@ TEST_F(SymBitVecTest, StaticReplaceHighBits) {
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
+TEST_F(SymBitVecTest, StaticReplaceSignedField) {
+  SymUInt<16> src(ctx_, "src");
+  SymSInt<4> field(ctx_, "field");
+  auto result = replace<4>(src, field);
+
+  static_assert(decltype(result)::kWidth == 16);
+  static_assert(!decltype(result)::kIsSigned);
+
+  // src=0xABCD, field=0xF (=-1 as SInt<4>), replace at bit 4 -> 0xABFD.
+  // The signedness of the field is structural; bits go in as-is.
+  z3::solver s(ctx_);
+  s.add(src.expr() == ctx_.bv_val(0xABCD, 16));
+  s.add(field.expr() == ctx_.bv_val(0xF, 4));
+  s.add(result.expr() != ctx_.bv_val(0xABFD, 16));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(SymBitVecTest, SymbolicReplaceSignedField) {
+  SymUInt<16> src(ctx_, "src");
+  SymSInt<4> field(ctx_, "field");
+  SymUInt<4> lo(ctx_, "lo");
+  auto result = replace(src, field, lo);
+
+  static_assert(decltype(result)::kWidth == 16);
+  static_assert(!decltype(result)::kIsSigned);
+
+  // src=0xABCD, field=0xF, lo=4 -> 0xABFD (same as static test).
+  z3::solver s(ctx_);
+  s.add(src.expr() == ctx_.bv_val(0xABCD, 16));
+  s.add(field.expr() == ctx_.bv_val(0xF, 4));
+  s.add(lo.expr() == ctx_.bv_val(4, 4));
+  s.add(result.expr() != ctx_.bv_val(0xABFD, 16));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
 TEST_F(SymBitVecTest, SymbolicReplace) {
   SymUInt<16> src(ctx_, "src");
   SymUInt<4> field(ctx_, "field");
