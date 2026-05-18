@@ -694,6 +694,36 @@ SymBitVec<WS, S> replace(const SymBitVec<WS, S>& src,
   return SymBitVec<WS, S>(result);
 }
 
+// Runtime-concrete-offset replacement: replace(src, field, lo) ->
+// SymBitVec<WS, S>. Replaces WF bits starting at runtime offset lo.
+// Aborts via Z3W_CHECK if lo + WF > WS.
+template <size_t WS, bool S, size_t WF, bool SF>
+SymBitVec<WS, S> replace(const SymBitVec<WS, S>& src,
+                         const SymBitVec<WF, SF>& field, size_t lo) {
+  static_assert(WF <= WS, "replace: field wider than source.");
+  // Phrased as `lo <= WS - WF` to avoid wraparound when lo is near SIZE_MAX.
+  // `WS - WF` cannot underflow because the static_assert above guarantees
+  // WS >= WF.
+  Z3W_CHECK(lo <= WS - WF) << "replace: lo + WF out of range";
+
+  const unsigned hi = static_cast<unsigned>(lo + WF);  // one past the top
+  const unsigned ulo = static_cast<unsigned>(lo);
+
+  z3::expr result = field.expr();
+
+  // Prepend high bits if any.
+  if (hi < WS) {
+    result = z3::concat(src.expr().extract(WS - 1, hi), result);
+  }
+
+  // Append low bits if any.
+  if (ulo > 0) {
+    result = z3::concat(result, src.expr().extract(ulo - 1, 0));
+  }
+
+  return SymBitVec<WS, S>(result);
+}
+
 // Symbolic-offset replacement: replace(src, field, lo) -> SymBitVec<WS, S>.
 // Replaces WF bits starting at symbolic offset lo. The field's signedness is
 // structural; bits are placed as-is.
