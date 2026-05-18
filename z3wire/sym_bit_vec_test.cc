@@ -745,6 +745,32 @@ TEST_F(SymBitVecTest, StaticExtractSignedSourceReturnsUnsigned) {
   static_assert(std::is_same_v<decltype(slice), SymUInt<8>>);
 }
 
+TEST_F(SymBitVecTest, RuntimeOffsetExtract) {
+  SymUInt<16> a(ctx_, "a");
+  size_t lo = 4;
+  auto nibble = extract<4>(a, lo);
+
+  static_assert(decltype(nibble)::kWidth == 4);
+
+  z3::solver s(ctx_);
+  s.add(a.expr() == ctx_.bv_val(0xABCD, 16));
+  // Bits [7:4] of 0xABCD are 0xC.
+  s.add(nibble.expr() != ctx_.bv_val(0xC, 4));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(SymBitVecTest, RuntimeOffsetExtractSignedSourceReturnsUnsigned) {
+  SymSInt<16> a(ctx_, "a");
+  auto slice = extract<8>(a, size_t{4});
+  static_assert(std::is_same_v<decltype(slice), SymUInt<8>>);
+}
+
+TEST_F(SymBitVecTest, RuntimeOffsetExtractDeathOnOutOfRange) {
+  // Z3W_CHECK fires when lo + W > SrcW.
+  SymUInt<8> a(ctx_, "a");
+  EXPECT_DEATH({ (void)extract<4>(a, size_t{5}); }, "Z3Wire check failed");
+}
+
 TEST_F(SymBitVecTest, SymbolicExtract) {
   SymUInt<16> a(ctx_, "a");
   SymUInt<4> idx(ctx_, "idx");

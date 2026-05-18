@@ -653,6 +653,21 @@ SymUInt<W> extract(const SymBitVec<SrcW, S>& val) {
   return SymUInt<W>(val.expr().extract(Lo + W - 1, Lo));
 }
 
+// Runtime-concrete-offset extract: extract<W>(val, lo) -> SymUInt<W>.
+// Selects bits [lo + W - 1 : lo]. Aborts via Z3W_CHECK if lo + W > SrcW.
+template <size_t W, size_t SrcW, bool S>
+SymUInt<W> extract(const SymBitVec<SrcW, S>& val, size_t lo) {
+  static_assert(W > 0, "extract: W must be > 0.");
+  static_assert(W <= SrcW, "extract: W must be <= source width.");
+  // Phrased as `lo <= SrcW - W` to avoid wraparound when lo is near SIZE_MAX.
+  // `SrcW - W` cannot underflow because the static_assert above guarantees
+  // SrcW >= W.
+  Z3W_CHECK(lo <= SrcW - W) << "extract: lo + W out of range";
+  return SymUInt<W>(
+      val.expr().extract(static_cast<unsigned>(lo + W - 1),
+                         static_cast<unsigned>(lo)));
+}
+
 // Symbolic-offset extract: shift right by offset, then static extract.
 // Out-of-range offsets yield zero bits (zero-extension semantics).
 template <size_t TargetWidth, size_t W, bool S, size_t IdxW>
