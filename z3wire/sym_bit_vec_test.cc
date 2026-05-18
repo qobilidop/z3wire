@@ -700,68 +700,75 @@ TEST_F(SymBitVecTest, ToBoolRoundtrip) {
 
 TEST_F(SymBitVecTest, StaticExtract) {
   SymUInt<16> a(ctx_, "a");
-  auto high = extract<15, 8>(a);
-  auto low = extract<7, 0>(a);
+  auto high = extract<8, 8>(a);  // 8 bits starting at offset 8 → bits [15:8]
+  auto low = extract<8, 0>(a);   // 8 bits starting at offset 0 → bits [7:0]
 
   static_assert(decltype(high)::kWidth == 8);
   static_assert(decltype(low)::kWidth == 8);
 
   z3::solver s(ctx_);
   s.add(a.expr() == ctx_.bv_val(0x1234, 16));
-  s.add(high.expr() != ctx_.bv_val(0x12, 8));
+  s.add(high.expr() != ctx_.bv_val(0x12, 8) ||
+        low.expr() != ctx_.bv_val(0x34, 8));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-TEST_F(SymBitVecTest, SymbolicExtract) {
+TEST_F(SymBitVecTest, StaticExtractFullWidth) {
+  // Boundary: Lo + W == SrcW.
   SymUInt<16> a(ctx_, "a");
-  SymUInt<4> idx(ctx_, "idx");
-  auto nibble = extract<4>(a, idx);
+  auto full = extract<16, 0>(a);
+  static_assert(decltype(full)::kWidth == 16);
+
+  z3::solver s(ctx_);
+  s.add(a.expr() == ctx_.bv_val(0xBEEF, 16));
+  s.add(full.expr() != ctx_.bv_val(0xBEEF, 16));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(SymBitVecTest, StaticExtractSingleBit) {
+  // Single-bit extract: bit 5 of 0x1234 (binary 0001 0010 0011 0100) is 1.
+  SymUInt<16> a(ctx_, "a");
+  auto bit5 = extract<1, 5>(a);
+
+  static_assert(decltype(bit5)::kWidth == 1);
+
+  z3::solver s(ctx_);
+  s.add(a.expr() == ctx_.bv_val(0x1234, 16));
+  s.add(bit5.expr() != ctx_.bv_val(1, 1));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(SymBitVecTest, StaticExtractSignedSourceReturnsUnsigned) {
+  // Source is signed; result is always SymUInt regardless of source.
+  SymSInt<16> a(ctx_, "a");
+  auto slice = extract<8, 4>(a);
+  static_assert(std::is_same_v<decltype(slice), SymUInt<8>>);
+}
+
+TEST_F(SymBitVecTest, RuntimeOffsetExtract) {
+  SymUInt<16> a(ctx_, "a");
+  size_t lo = 4;
+  auto nibble = extract<4>(a, lo);
 
   static_assert(decltype(nibble)::kWidth == 4);
 
   z3::solver s(ctx_);
   s.add(a.expr() == ctx_.bv_val(0xABCD, 16));
-  s.add(idx.expr() == ctx_.bv_val(4, 4));
-  // Shift right by 4: 0xABCD >> 4 = 0x0ABC, take low 4 bits = 0xC.
+  // Bits [7:4] of 0xABCD are 0xC.
   s.add(nibble.expr() != ctx_.bv_val(0xC, 4));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 
-TEST_F(SymBitVecTest, SymbolicExtractWideIndex) {
-  // Index wider than source: IdxW (16) > W (8).
+TEST_F(SymBitVecTest, RuntimeOffsetExtractSignedSourceReturnsUnsigned) {
+  SymSInt<16> a(ctx_, "a");
+  auto slice = extract<8>(a, size_t{4});
+  static_assert(std::is_same_v<decltype(slice), SymUInt<8>>);
+}
+
+TEST_F(SymBitVecTest, RuntimeOffsetExtractDeathOnOutOfRange) {
+  // Z3W_CHECK fires when lo + W > SrcW.
   SymUInt<8> a(ctx_, "a");
-  SymUInt<16> idx(ctx_, "idx");
-  auto nibble = extract<4>(a, idx);
-
-  static_assert(decltype(nibble)::kWidth == 4);
-
-  // In-range offset: 0xAB >> 4 = 0x0A, low 4 bits = 0xA.
-  {
-    z3::solver s(ctx_);
-    s.add(a.expr() == ctx_.bv_val(0xAB, 8));
-    s.add(idx.expr() == ctx_.bv_val(4, 16));
-    s.add(nibble.expr() != ctx_.bv_val(0xA, 4));
-    EXPECT_EQ(s.check(), z3::unsat);
-  }
-
-  // Out-of-range offset: shifting by 100 should yield zero (zero-extension).
-  {
-    z3::solver s(ctx_);
-    s.add(a.expr() == ctx_.bv_val(0xAB, 8));
-    s.add(idx.expr() == ctx_.bv_val(100, 16));
-    s.add(nibble.expr() != ctx_.bv_val(0, 4));
-    EXPECT_EQ(s.check(), z3::unsat);
-  }
-
-  // Solver must not find an out-of-range offset that produces non-zero.
-  // For any offset >= W (8), the result should be zero.
-  {
-    z3::solver s(ctx_);
-    s.add(a.expr() == ctx_.bv_val(0xFF, 8));
-    s.add(z3::uge(idx.expr(), ctx_.bv_val(8, 16)));
-    s.add(nibble.expr() != ctx_.bv_val(0, 4));
-    EXPECT_EQ(s.check(), z3::unsat);
-  }
+  EXPECT_DEATH({ (void)extract<4>(a, size_t{5}); }, "Z3Wire check failed");
 }
 
 // --- replace ---
@@ -1017,6 +1024,38 @@ TEST_F(SymBitVecTest, ShrDifferentWidths) {
   s.add(n.expr() == ctx_.bv_val(4, 3));
   // Logical shift: 0x80 >> 4 = 0x08.
   s.add(result.expr() != ctx_.bv_val(0x08, 8));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(SymBitVecTest, ShrWideAmountUnsigned) {
+  // Amount width K (16) > source width W (8). Amount value 256 does not fit
+  // in 8 bits; shifting by 256 should produce 0 (since 256 >= W).
+  SymUInt<8> a(ctx_, "a");
+  SymUInt<16> n(ctx_, "n");
+  auto result = shr(a, n);
+  static_assert(std::is_same_v<decltype(result), SymUInt<8>>);
+
+  z3::solver s(ctx_);
+  s.add(a.expr() == ctx_.bv_val(0xFF, 8));
+  s.add(n.expr() == ctx_.bv_val(256, 16));
+  // Shifting an 8-bit value by 256 should yield 0.
+  s.add(result.expr() != ctx_.bv_val(0, 8));
+  EXPECT_EQ(s.check(), z3::unsat);
+}
+
+TEST_F(SymBitVecTest, ShrWideAmountSigned) {
+  // Amount width K (16) > source width W (8). Negative source: shifting by
+  // any amount >= W should produce the sign-bit replicated (all 1s).
+  SymSInt<8> a(ctx_, "a");
+  SymUInt<16> n(ctx_, "n");
+  auto result = shr(a, n);
+  static_assert(std::is_same_v<decltype(result), SymSInt<8>>);
+
+  z3::solver s(ctx_);
+  s.add(a.expr() == ctx_.bv_val(0x80, 8));  // -128 signed
+  s.add(n.expr() == ctx_.bv_val(256, 16));
+  // Arithmetic shift of -128 by 256 should yield 0xFF (-1).
+  s.add(result.expr() != ctx_.bv_val(0xFF, 8));
   EXPECT_EQ(s.check(), z3::unsat);
 }
 

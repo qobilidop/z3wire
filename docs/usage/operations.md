@@ -381,43 +381,69 @@ All results are `SymUInt` regardless of input signedness.
 
 ### Static extraction
 
+Both the width and the low-bit offset are template parameters; both are checked
+at compile time.
+
 Typing rules:
 
-| Source           | High offset | Low offset | Syntax              | Result type      | Compile-time checks |
-| :--------------- | :---------- | :--------- | :------------------ | :--------------- | :------------------ |
-| `SymUInt<W> src` | `size_t H`  | `size_t L` | `extract<H,L>(src)` | `SymUInt<H-L+1>` | `W > H && H >= L`   |
-| `SymSInt<W> src` | `size_t H`  | `size_t L` | `extract<H,L>(src)` | `SymUInt<H-L+1>` | `W > H && H >= L`   |
+| Source           | Width      | Low offset  | Syntax                | Result type  | Compile-time checks    |
+| :--------------- | :--------- | :---------- | :-------------------- | :----------- | :--------------------- |
+| `SymUInt<W> src` | `size_t T` | `size_t Lo` | `extract<T, Lo>(src)` | `SymUInt<T>` | `T > 0 && Lo + T <= W` |
+| `SymSInt<W> src` | `size_t T` | `size_t Lo` | `extract<T, Lo>(src)` | `SymUInt<T>` | `T > 0 && Lo + T <= W` |
 
 Examples:
 
 ```cpp
 z3w::SymUInt<32> src(ctx, "src");
 
-z3w::SymUInt<8> hi = z3w::extract<31, 24>(src);
-z3w::SymUInt<4> lo = z3w::extract<3, 0>(src);
-z3w::SymUInt<1> bit5 = z3w::extract<5, 5>(src);
+z3w::SymUInt<8> hi = z3w::extract<8, 24>(src);    // bits [31:24]
+z3w::SymUInt<4> lo = z3w::extract<4, 0>(src);     // bits [3:0]
+z3w::SymUInt<1> bit5 = z3w::extract<1, 5>(src);   // bit 5
+```
+
+### Runtime-offset extraction
+
+The width is a template parameter; the low-bit offset is a runtime `size_t`. The
+width is checked at compile time; the offset is checked at runtime via
+`Z3W_CHECK`, which aborts on out-of-range access.
+
+Typing rules:
+
+| Source           | Width      | Low offset  | Syntax                | Result type  | Compile-time checks | Runtime check |
+| :--------------- | :--------- | :---------- | :-------------------- | :----------- | :------------------ | :------------ |
+| `SymUInt<W> src` | `size_t T` | `size_t lo` | `extract<T>(src, lo)` | `SymUInt<T>` | `T > 0 && T <= W`   | `lo + T <= W` |
+| `SymSInt<W> src` | `size_t T` | `size_t lo` | `extract<T>(src, lo)` | `SymUInt<T>` | `T > 0 && T <= W`   | `lo + T <= W` |
+
+Examples:
+
+```cpp
+z3w::SymUInt<32> src(ctx, "src");
+
+for (size_t i = 0; i < 4; ++i) {
+  z3w::SymUInt<8> byte = z3w::extract<8>(src, i * 8);
+}
 ```
 
 ### Symbolic-offset extraction
 
-Typing rules:
+There is no dedicated symbolic-offset overload. Compose `shr` with a static
+zero-offset extract. The chosen out-of-bounds semantic is visible at the call
+site.
 
-| Source            | Target width | Bit offset      | Syntax                | Result type   | Compile-time checks |
-| :---------------- | :----------- | :-------------- | :-------------------- | :------------ | :------------------ |
-| `SymUInt<WS> src` | `size_t WT`  | `SymUInt<WI> i` | `extract<WT>(src, i)` | `SymUInt<WT>` | `WS >= WT`          |
-| `SymSInt<WS> src` | `size_t WT`  | `SymUInt<WI> i` | `extract<WT>(src, i)` | `SymUInt<WT>` | `WS >= WT`          |
+In the table below, `u` is a `SymUInt<SrcW>`, `s` is a `SymSInt<SrcW>`, `v` is
+either, `idx` is a `SymUInt<K>`, `W` is the target width, and `ctx` is the Z3
+context.
 
-Examples:
+| Desired OOB semantic    | Expression                                                                             | Notes                                 |
+| :---------------------- | :------------------------------------------------------------------------------------- | :------------------------------------ |
+| Zero-fill               | `extract<W, 0>(shr(u, idx))`                                                           | `shr` uses `lshr` for unsigned `u`.   |
+| Sign-extend             | `extract<W, 0>(shr(s, idx))`                                                           | `shr` uses `ashr` for signed `s`.     |
+| Zero-fill, signed `src` | `extract<W, 0>(shr(as_unsigned(s), idx))`                                              | Cast first to opt into logical shift. |
+| Asserted via solver     | `extract<W, 0>(shr(v, idx))` + `solver.add(idx <= SymUInt<K>::Literal<SrcW - W>(ctx))` | Caller forbids OOB at proof time.     |
 
-```cpp
-z3w::SymUInt<32> src(ctx, "src");
-z3w::SymUInt<5> offset(ctx, "offset");
-
-z3w::SymUInt<4> nibble = z3w::extract<4>(src, offset);
-z3w::SymUInt<8> byte = z3w::extract<8>(src, offset);
-```
-
-Offsets beyond the source width yield zero bits (zero-extension semantics).
+Wraparound semantics (`idx mod SrcW`) require modular reduction, which Z3Wire
+does not yet expose. Drop to a raw `z3::urem` if needed, or wait for the
+operation to land (see roadmap).
 
 ### Static replacement
 

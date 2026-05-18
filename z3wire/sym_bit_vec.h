@@ -644,32 +644,27 @@ inline SymBool as_bool(const SymUInt<1>& v) {
 
 // --- Bit slicing (extract) ---
 
-// Static extract: extract<High, Low>(val) -> SymUInt<High - Low + 1>.
-template <size_t High, size_t Low, size_t W, bool S>
-SymUInt<High - Low + 1> extract(const SymBitVec<W, S>& val) {
-  static_assert(High >= Low, "extract: High must be >= Low.");
-  static_assert(High < W, "extract: High must be < input width.");
-  return SymUInt<High - Low + 1>(val.expr().extract(High, Low));
+// Static extract: extract<W, Lo>(val) -> SymUInt<W>. Selects bits
+// [Lo + W - 1 : Lo].
+template <size_t W, size_t Lo, size_t SrcW, bool S>
+SymUInt<W> extract(const SymBitVec<SrcW, S>& val) {
+  static_assert(W > 0, "extract: W must be > 0.");
+  static_assert(Lo + W <= SrcW, "extract: window out of range.");
+  return SymUInt<W>(val.expr().extract(Lo + W - 1, Lo));
 }
 
-// Symbolic-offset extract: shift right by offset, then static extract.
-// Out-of-range offsets yield zero bits (zero-extension semantics).
-template <size_t TargetWidth, size_t W, bool S, size_t IdxW>
-SymUInt<TargetWidth> extract(const SymBitVec<W, S>& val,
-                             const SymUInt<IdxW>& start_idx) {
-  static_assert(TargetWidth > 0, "extract: TargetWidth must be > 0.");
-  static_assert(TargetWidth <= W,
-                "extract: TargetWidth must be <= input width.");
-  // Match widths for the shift. When IdxW > W, zero-extend the source so that
-  // large offsets correctly shift in zeros rather than wrapping.
-  constexpr size_t ShiftW = std::max(W, IdxW);
-  z3::expr wide_val =
-      (ShiftW > W) ? z3::zext(val.expr(), ShiftW - W) : val.expr();
-  z3::expr wide_idx = (ShiftW > IdxW)
-                          ? z3::zext(start_idx.expr(), ShiftW - IdxW)
-                          : start_idx.expr();
-  auto shifted = z3::lshr(wide_val, wide_idx);
-  return SymUInt<TargetWidth>(shifted.extract(TargetWidth - 1, 0));
+// Runtime-concrete-offset extract: extract<W>(val, lo) -> SymUInt<W>.
+// Selects bits [lo + W - 1 : lo]. Aborts via Z3W_CHECK if lo + W > SrcW.
+template <size_t W, size_t SrcW, bool S>
+SymUInt<W> extract(const SymBitVec<SrcW, S>& val, size_t lo) {
+  static_assert(W > 0, "extract: W must be > 0.");
+  static_assert(W <= SrcW, "extract: W must be <= source width.");
+  // Phrased as `lo <= SrcW - W` to avoid wraparound when lo is near SIZE_MAX.
+  // `SrcW - W` cannot underflow because the static_assert above guarantees
+  // SrcW >= W.
+  Z3W_CHECK(lo <= SrcW - W) << "extract: lo + W out of range";
+  return SymUInt<W>(val.expr().extract(static_cast<unsigned>(lo + W - 1),
+                                       static_cast<unsigned>(lo)));
 }
 
 // --- Bit replacement (replace) ---
@@ -830,11 +825,29 @@ SymBitVec<W, S> shr(const SymBitVec<W, S>& val,
 
 template <size_t W, bool S, size_t K>
 SymBitVec<W, S> shr(const SymBitVec<W, S>& val, const SymUInt<K>& amount) {
-  auto amt_ext = unsafe_cast<SymUInt<W>>(amount);
-  if constexpr (S) {
-    return SymBitVec<W, S>(z3::ashr(val.expr(), amt_ext.expr()));
+  constexpr size_t kShiftW = std::max(W, K);
+
+  z3::expr wide_val = val.expr();
+  if constexpr (kShiftW > W) {
+    if constexpr (S) {
+      wide_val = z3::sext(val.expr(), kShiftW - W);
+    } else {
+      wide_val = z3::zext(val.expr(), kShiftW - W);
+    }
+  }
+
+  z3::expr wide_amount = amount.expr();
+  if constexpr (kShiftW > K) {
+    wide_amount = z3::zext(amount.expr(), kShiftW - K);
+  }
+
+  z3::expr shifted =
+      S ? z3::ashr(wide_val, wide_amount) : z3::lshr(wide_val, wide_amount);
+
+  if constexpr (kShiftW > W) {
+    return SymBitVec<W, S>(shifted.extract(W - 1, 0));
   } else {
-    return SymBitVec<W, S>(z3::lshr(val.expr(), amt_ext.expr()));
+    return SymBitVec<W, S>(shifted);
   }
 }
 

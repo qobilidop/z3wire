@@ -67,17 +67,12 @@ static_assert(all_keys_unique(kTable), "exact-match table keys must be unique");
 
 // Extract bytes at the given offsets and concatenate them into the match key.
 // MSB-first byte numbering: byte 0 is the high byte of the input.
-//
-// z3w::extract<H, L> requires compile-time bounds, so for runtime offsets we
-// drop to raw z3::expr per byte and re-wrap as SymUInt<N*8>. This is the only
-// place this example crosses below the Z3Wire abstraction.
 template <size_t N, size_t W>
 z3w::SymUInt<N * 8> extract_key(const z3w::SymUInt<W>& input,
                                 const std::array<size_t, N>& offsets) {
   z3::expr_vector bytes(input.expr().ctx());
   for (size_t off : offsets) {
-    assert(8 * off + 8 <= W);
-    bytes.push_back(input.expr().extract(W - 1 - 8 * off, W - 8 - 8 * off));
+    bytes.push_back(z3w::extract<8>(input, W - 8 - 8 * off).expr());
   }
   return z3w::SymUInt<N * 8>::From(z3::concat(bytes));
 }
