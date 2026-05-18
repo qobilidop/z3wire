@@ -101,10 +101,7 @@ cc_compile_fail_test(
 cc_compile_fail_test(
     name = "sym_bit_vec_replace_out_of_bounds_test",
     src = "sym_bit_vec_replace_out_of_bounds_test.cc",
-    # NOTE: the static_assert message is "replace: field doesn't fit at given
-    # offset." - the apostrophe in "doesn't" would break this shell-quoted
-    # expected_message string, so we match a unique substring instead.
-    expected_message = "fit at given offset",
+    expected_message = "replace: field doesn't fit at given offset",
     deps = ["//z3wire:sym_bit_vec"],
 )
 

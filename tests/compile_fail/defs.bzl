@@ -114,10 +114,15 @@ fi
                 'INCLUDE_FLAGS="$INCLUDE_FLAGS -isystem $RUNFILES_DIR/_main/{}"'.format(inc),
             )
 
+    # Escape single quotes for safe embedding in the single-quoted shell
+    # string `EXPECTED_MSG='...'`. The idiom is close-quote, literal apostrophe,
+    # reopen-quote.
+    escaped_expected_message = expected_message.replace("'", "'\\''")
+
     script_content = script_content.format(
         compiler = cc_compiler,
         src = src.short_path,
-        expected_message = expected_message,
+        expected_message = escaped_expected_message,
         extra_include_flags = "\n".join(extra_lines),
     )
 
