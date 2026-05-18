@@ -670,10 +670,11 @@ SymUInt<W> extract(const SymBitVec<SrcW, S>& val, size_t lo) {
 // --- Bit replacement (replace) ---
 
 // Static replacement: replace<LO>(src, field) -> SymBitVec<WS, S>.
-// Replaces bits [LO+WF-1 : LO] in src with field.
-template <size_t LO, size_t WS, bool S, size_t WF>
+// Replaces bits [LO+WF-1 : LO] in src with field. The field's signedness
+// is structural; bits are placed as-is.
+template <size_t LO, size_t WS, bool S, size_t WF, bool SF>
 SymBitVec<WS, S> replace(const SymBitVec<WS, S>& src,
-                         const SymUInt<WF>& field) {
+                         const SymBitVec<WF, SF>& field) {
   static_assert(WS >= LO + WF, "replace: field doesn't fit at given offset.");
 
   constexpr size_t kHigh = LO + WF;  // one past the top bit of field
@@ -693,11 +694,43 @@ SymBitVec<WS, S> replace(const SymBitVec<WS, S>& src,
   return SymBitVec<WS, S>(result);
 }
 
+// Runtime-concrete-offset replacement: replace(src, field, lo) ->
+// SymBitVec<WS, S>. Replaces WF bits starting at runtime offset lo.
+// Aborts via Z3W_CHECK if lo + WF > WS.
+template <size_t WS, bool S, size_t WF, bool SF>
+SymBitVec<WS, S> replace(const SymBitVec<WS, S>& src,
+                         const SymBitVec<WF, SF>& field, size_t lo) {
+  static_assert(WF <= WS, "replace: field wider than source.");
+  // Phrased as `lo <= WS - WF` to avoid wraparound when lo is near SIZE_MAX.
+  // `WS - WF` cannot underflow because the static_assert above guarantees
+  // WS >= WF.
+  Z3W_CHECK(lo <= WS - WF) << "replace: lo + WF out of range";
+
+  const unsigned hi = static_cast<unsigned>(lo + WF);  // one past the top
+  const unsigned ulo = static_cast<unsigned>(lo);
+
+  z3::expr result = field.expr();
+
+  // Prepend high bits if any.
+  if (hi < WS) {
+    result = z3::concat(src.expr().extract(WS - 1, hi), result);
+  }
+
+  // Append low bits if any.
+  if (ulo > 0) {
+    result = z3::concat(result, src.expr().extract(ulo - 1, 0));
+  }
+
+  return SymBitVec<WS, S>(result);
+}
+
 // Symbolic-offset replacement: replace(src, field, lo) -> SymBitVec<WS, S>.
-// Replaces WF bits starting at symbolic offset lo.
+// Replaces WF bits starting at symbolic offset lo. The field's signedness is
+// structural; bits are placed as-is.
 // Replacement bits beyond the source width have no effect.
-template <size_t WS, bool S, size_t WF, size_t WL>
-SymBitVec<WS, S> replace(const SymBitVec<WS, S>& src, const SymUInt<WF>& field,
+template <size_t WS, bool S, size_t WF, bool SF, size_t WL>
+SymBitVec<WS, S> replace(const SymBitVec<WS, S>& src,
+                         const SymBitVec<WF, SF>& field,
                          const SymUInt<WL>& lo) {
   static_assert(WS >= WF, "replace: field wider than source.");
 
