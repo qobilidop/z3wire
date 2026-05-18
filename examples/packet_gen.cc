@@ -59,21 +59,21 @@ int main() {
   // -- IPv4 fields (when ethertype = 0x0800) --
   auto ipv4_ihl = z3w::extract<4, 312>(packet);              // 4 bits
   auto ipv4_dscp_ecn = z3w::extract<8, 304>(packet);         // 8 bits
-  auto ipv4_total_len = z3w::extract<16, 288>(packet);        // 16 bits
-  auto ipv4_id = z3w::extract<16, 272>(packet);               // 16 bits
-  auto ipv4_flags_frag = z3w::extract<16, 256>(packet);       // 16 bits
+  auto ipv4_total_len = z3w::extract<16, 288>(packet);       // 16 bits
+  auto ipv4_id = z3w::extract<16, 272>(packet);              // 16 bits
+  auto ipv4_flags_frag = z3w::extract<16, 256>(packet);      // 16 bits
   auto ipv4_ttl = z3w::extract<8, 248>(packet);              // 8 bits
   auto ipv4_protocol = z3w::extract<8, 240>(packet);         // 8 bits
-  auto ipv4_checksum = z3w::extract<16, 224>(packet);         // 16 bits
-  auto ipv4_src_addr = z3w::extract<32, 192>(packet);         // 32 bits
-  auto ipv4_dst_addr = z3w::extract<32, 160>(packet);         // 32 bits
+  auto ipv4_checksum = z3w::extract<16, 224>(packet);        // 16 bits
+  auto ipv4_src_addr = z3w::extract<32, 192>(packet);        // 32 bits
+  auto ipv4_dst_addr = z3w::extract<32, 160>(packet);        // 32 bits
   auto ipv4_dst_first_octet = z3w::extract<8, 184>(packet);  // 8 bits
 
   // -- IPv6 fields (when ethertype = 0x86DD) --
   auto ipv6_traffic_flow = z3w::extract<28, 288>(packet);  // 28 bits
   auto ipv6_payload_len = z3w::extract<16, 272>(packet);   // 16 bits
-  auto ipv6_next_header = z3w::extract<8, 264>(packet);   // 8 bits
-  auto ipv6_hop_limit = z3w::extract<8, 256>(packet);     // 8 bits
+  auto ipv6_next_header = z3w::extract<8, 264>(packet);    // 8 bits
+  auto ipv6_hop_limit = z3w::extract<8, 256>(packet);      // 8 bits
   // auto ipv6_src_addr = z3w::extract<128, 128>(packet);     // 128 bits
   // auto ipv6_dst_addr = z3w::extract<128, 0>(packet);       // 128 bits
 

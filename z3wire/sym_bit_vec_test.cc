@@ -700,8 +700,8 @@ TEST_F(SymBitVecTest, ToBoolRoundtrip) {
 
 TEST_F(SymBitVecTest, StaticExtract) {
   SymUInt<16> a(ctx_, "a");
-  auto high = extract<8, 8>(a);   // 8 bits starting at offset 8 → bits [15:8]
-  auto low = extract<8, 0>(a);    // 8 bits starting at offset 0 → bits [7:0]
+  auto high = extract<8, 8>(a);  // 8 bits starting at offset 8 → bits [15:8]
+  auto low = extract<8, 0>(a);   // 8 bits starting at offset 0 → bits [7:0]
 
   static_assert(decltype(high)::kWidth == 8);
   static_assert(decltype(low)::kWidth == 8);

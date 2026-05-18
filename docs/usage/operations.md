@@ -434,11 +434,11 @@ In the table below, `u` is a `SymUInt<SrcW>`, `s` is a `SymSInt<SrcW>`, `v` is
 either, `idx` is a `SymUInt<K>`, `W` is the target width, and `ctx` is the Z3
 context.
 
-| Desired OOB semantic    | Expression                                                                                | Notes                                 |
-| :---------------------- | :---------------------------------------------------------------------------------------- | :------------------------------------ |
-| Zero-fill               | `extract<W, 0>(shr(u, idx))`                                                              | `shr` uses `lshr` for unsigned `u`.   |
-| Sign-extend             | `extract<W, 0>(shr(s, idx))`                                                              | `shr` uses `ashr` for signed `s`.     |
-| Zero-fill, signed `src` | `extract<W, 0>(shr(as_unsigned(s), idx))`                                                 | Cast first to opt into logical shift. |
+| Desired OOB semantic    | Expression                                                                             | Notes                                 |
+| :---------------------- | :------------------------------------------------------------------------------------- | :------------------------------------ |
+| Zero-fill               | `extract<W, 0>(shr(u, idx))`                                                           | `shr` uses `lshr` for unsigned `u`.   |
+| Sign-extend             | `extract<W, 0>(shr(s, idx))`                                                           | `shr` uses `ashr` for signed `s`.     |
+| Zero-fill, signed `src` | `extract<W, 0>(shr(as_unsigned(s), idx))`                                              | Cast first to opt into logical shift. |
 | Asserted via solver     | `extract<W, 0>(shr(v, idx))` + `solver.add(idx <= SymUInt<K>::Literal<SrcW - W>(ctx))` | Caller forbids OOB at proof time.     |
 
 Wraparound semantics (`idx mod SrcW`) require modular reduction, which Z3Wire

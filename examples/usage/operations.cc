@@ -5,6 +5,8 @@
 //
 // Run: ./dev.sh bazel run //examples/usage:operations
 
+#include <cstddef>
+
 #include <z3++.h>
 
 #include "z3wire/sym_bit_vec.h"

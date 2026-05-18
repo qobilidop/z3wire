@@ -663,9 +663,8 @@ SymUInt<W> extract(const SymBitVec<SrcW, S>& val, size_t lo) {
   // `SrcW - W` cannot underflow because the static_assert above guarantees
   // SrcW >= W.
   Z3W_CHECK(lo <= SrcW - W) << "extract: lo + W out of range";
-  return SymUInt<W>(
-      val.expr().extract(static_cast<unsigned>(lo + W - 1),
-                         static_cast<unsigned>(lo)));
+  return SymUInt<W>(val.expr().extract(static_cast<unsigned>(lo + W - 1),
+                                       static_cast<unsigned>(lo)));
 }
 
 // --- Bit replacement (replace) ---
