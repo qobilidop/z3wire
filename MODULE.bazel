@@ -7,7 +7,7 @@ module(
 # incompatible with Bazel 9. Fixed upstream but not yet in BCR.
 # See https://github.com/google/flatbuffers/issues/8901
 
-bazel_dep(name = "fuzztest", version = "20260219.0")
+bazel_dep(name = "fuzztest", version = "20260629.0")
 bazel_dep(name = "googletest", version = "1.17.0.bcr.2")
 bazel_dep(name = "rules_cc", version = "0.2.17")
 bazel_dep(name = "rules_shell", version = "0.8.0")
